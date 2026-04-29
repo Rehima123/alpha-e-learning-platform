@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructor Dashboard - Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AlphaFT">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/logo.png">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="instructor-dashboard.html">My Courses</a></li>
+                <li><a href="study-hub.html">📚 Study Hub</a></li>
+                <li><a href="department-guide.html">🎓 Departments</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="dashboard-header">
+            <h2>Instructor Dashboard</h2>
+            <button class="btn btn-success" onclick="showAddCourseModal()">+ Add New Course</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 id="totalCourses">0</h3>
+                <p>Total Courses</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="approvedCourses">0</h3>
+                <p>Approved</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="pendingCourses">0</h3>
+                <p>Pending</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalStudents">0</h3>
+                <p>Total Students</p>
+            </div>
+        </div>
+
+        <div class="instructor-courses" id="instructorCourses"></div>
+    </main>
+
+    <div id="addCourseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddCourseModal()">&times;</span>
+            <h2>Add New Course</h2>
+            <form id="addCourseForm" class="course-form">
+                <div class="form-group">
+                    <label for="courseTitle">Course Title</label>
+                    <input type="text" id="courseTitle" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="courseDescription">Description</label>
+                    <textarea id="courseDescription" required rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="courseCategory">Category</label>
+                        <select id="courseCategory" class="form-select">
+                            <option value="semester1">First Semester</option>
+                            <option value="semester2">Second Semester</option>
+                            <option value="natural">Natural Science Stream</option>
+                            <option value="social">Social Science Stream</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="courseLevel">Level</label>
+                        <select id="courseLevel" class="form-select">
+                            <option value="Freshman">Freshman</option>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="courseDuration">Duration</label>
+                        <input type="text" id="courseDuration" required placeholder="e.g., 8 weeks">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coursePrice">Price ($)</label>
+                        <input type="number" id="coursePrice" required min="0" step="0.01">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="courseIcon">Icon (emoji)</label>
+                    <input type="text" id="courseIcon" required placeholder="e.g., 🎓" maxlength="2">
+                </div>
+                
+                <button type="submit" class="btn btn-large btn-block btn-success">Submit for Approval</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="ai-assistant.js"></script>
+    <script src="api.js"></script>
+    <script src="auth-guard.js"></script>
+    <script src="notifications.js"></script>
+    <script src="instructor-dashboard.js"></script>
+    <script src="pwa.js"></script>
+</body>
+</html>

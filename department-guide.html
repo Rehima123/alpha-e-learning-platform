@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department Guide — Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        .dept-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .dept-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px var(--shadow); }
+        .dept-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--grad-start, #667eea), var(--grad-end, #764ba2));
+            color: white;
+        }
+        .dept-body { padding: 1.2rem 1.5rem; }
+        .career-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(102,126,234,0.1);
+            color: #667eea;
+            margin: 3px;
+        }
+        .stream-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .quiz-option-dept {
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            text-align: left;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+        .quiz-option-dept:hover { border-color: #667eea; background: rgba(102,126,234,0.05); }
+        .quiz-option-dept.selected { border-color: #667eea; background: rgba(102,126,234,0.1); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="dashboard.html">My Learning</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width:900px;padding:2rem 20px 4rem">
+        <div style="text-align:center;margin-bottom:2.5rem">
+            <h1 style="font-size:2rem;font-weight:800;color:var(--text-primary);margin-bottom:0.5rem">
+                🎓 Department Guide
+            </h1>
+            <p style="color:var(--text-secondary);font-size:1rem">
+                Explore departments, career paths, and find your perfect field
+            </p>
+        </div>
+
+        <!-- Stream selector -->
+        <div style="display:flex;gap:10px;justify-content:center;margin-bottom:2rem;flex-wrap:wrap">
+            <button class="filter-btn active" onclick="filterStream('all', this)">All Departments</button>
+            <button class="filter-btn" onclick="filterStream('natural', this)">🔬 Natural Science</button>
+            <button class="filter-btn" onclick="filterStream('social', this)">🌍 Social Science</button>
+        </div>
+
+        <!-- Department finder quiz -->
+        <div style="background:linear-gradient(135deg,rgba(102,126,234,0.1),rgba(118,75,162,0.1));
+            border-radius:16px;padding:1.5rem;margin-bottom:2rem;border:1px solid rgba(102,126,234,0.2)">
+            <h3 style="color:var(--text-primary);margin:0 0 0.5rem">🤔 Not sure which department?</h3>
+            <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">
+                Answer 3 quick questions to find your best match.
+            </p>
+            <button onclick="startDeptQuiz()" class="btn btn-success">Find My Department →</button>
+        </div>
+
+        <!-- Department quiz modal -->
+        <div id="deptQuizModal" style="display:none;background:var(--bg-secondary);border-radius:16px;
+            padding:1.5rem;margin-bottom:2rem;border:1px solid var(--border-color)">
+            <div id="deptQuizContent"></div>
+        </div>
+
+        <!-- Department grid -->
+        <div id="deptGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem">
+        </div>
+    </main>
+
+    <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
+
+    <script src="theme.js"></script>
+    <script src="api.js"></script>
+    <script src="notifications.js"></script>
+    <script>
+    const departments = [
+        { id:'engineering', name:'Engineering', icon:'⚙️', stream:'natural',
+          grad:['#667eea','#764ba2'],
+          description:'Design and build systems, machines, and structures. Covers civil, electrical, mechanical, software, and chemical engineering.',
+          subjects:['Mathematics','Physics','Chemistry','Computer Science'],
+          careers:['Civil Engineer','Software Developer','Electrical Engineer','Mechanical Engineer','Chemical Engineer'],
+          gpa:'3.5+', duration:'5 years', seats:'High demand' },
+        { id:'medicine', name:'Medicine & Health Sciences', icon:'🏥', stream:'natural',
+          grad:['#e74c3c','#c0392b'],
+          description:'Study human health, disease prevention, and treatment. Includes Medicine, Pharmacy, Nursing, and Public Health.',
+          subjects:['Biology','Chemistry','Physics','Mathematics'],
+          careers:['Medical Doctor','Pharmacist','Nurse','Public Health Officer','Dentist'],
+          gpa:'3.7+', duration:'6 years', seats:'Very competitive' },
+        { id:'natural-sciences', name:'Natural Sciences', icon:'🔬', stream:'natural',
+          grad:['#27ae60','#2ecc71'],
+          description:'Explore biology, chemistry, physics, and earth sciences. Foundation for research and applied sciences.',
+          subjects:['Biology','Chemistry','Physics','Mathematics'],
+          careers:['Biologist','Chemist','Physicist','Environmental Scientist','Lab Researcher'],
+          gpa:'3.0+', duration:'4 years', seats:'Moderate' },
+        { id:'agriculture', name:'Agriculture & Food Science', icon:'🌾', stream:'natural',
+          grad:['#f39c12','#e67e22'],
+          description:'Study crop production, animal science, food technology, and agricultural economics.',
+          subjects:['Biology','Chemistry','Mathematics','Geography'],
+          careers:['Agronomist','Food Scientist','Agricultural Engineer','Veterinarian','Farm Manager'],
+          gpa:'2.8+', duration:'4 years', seats:'Available' },
+        { id:'law', name:'Law', icon:'⚖️', stream:'social',
+          grad:['#8e44ad','#9b59b6'],
+          description:'Study legal systems, justice, and human rights. Covers constitutional, criminal, civil, and international law.',
+          subjects:['Civics','History','English','Economics'],
+          careers:['Lawyer','Judge','Legal Advisor','Human Rights Officer','Prosecutor'],
+          gpa:'3.3+', duration:'5 years', seats:'Competitive' },
+        { id:'business', name:'Business & Economics', icon:'💼', stream:'social',
+          grad:['#2980b9','#3498db'],
+          description:'Learn management, accounting, marketing, and economics. Prepares for business leadership and entrepreneurship.',
+          subjects:['Economics','Mathematics','English','Civics'],
+          careers:['Business Manager','Accountant','Economist','Marketing Specialist','Entrepreneur'],
+          gpa:'2.8+', duration:'4 years', seats:'High demand' },
+        { id:'education', name:'Education', icon:'📖', stream:'social',
+          grad:['#16a085','#1abc9c'],
+          description:'Train to become a teacher or educational leader. Covers pedagogy, curriculum design, and educational psychology.',
+          subjects:['English','Psychology','Civics','History'],
+          careers:['Teacher','School Principal','Curriculum Designer','Educational Researcher','Trainer'],
+          gpa:'2.5+', duration:'4 years', seats:'Available' },
+        { id:'social-sciences', name:'Social Sciences', icon:'🌍', stream:'social',
+          grad:['#d35400','#e67e22'],
+          description:'Study society, culture, politics, and human behavior. Includes Sociology, Political Science, and Anthropology.',
+          subjects:['History','Geography','Civics','English'],
+          careers:['Sociologist','Political Analyst','Diplomat','NGO Worker','Journalist'],
+          gpa:'2.8+', duration:'4 years', seats:'Moderate' },
+        { id:'ict', name:'Information Technology', icon:'💻', stream:'natural',
+          grad:['#2c3e50','#34495e'],
+          description:'Study computer science, software engineering, networking, and data science.',
+          subjects:['Mathematics','Physics','ICT','English'],
+          careers:['Software Engineer','Data Scientist','Network Admin','Cybersecurity Expert','AI Developer'],
+          gpa:'3.0+', duration:'4 years', seats:'High demand' },
+        { id:'architecture', name:'Architecture & Urban Planning', icon:'🏛️', stream:'natural',
+          grad:['#7f8c8d','#95a5a6'],
+          description:'Design buildings, cities, and spaces. Combines art, engineering, and social science.',
+          subjects:['Mathematics','Physics','Art','Geography'],
+          careers:['Architect','Urban Planner','Interior Designer','Structural Engineer','Landscape Architect'],
+          gpa:'3.2+', duration:'5 years', seats:'Moderate' },
+        { id:'journalism', name:'Journalism & Communication', icon:'📰', stream:'social',
+          grad:['#c0392b','#e74c3c'],
+          description:'Study media, communication, and public relations. Covers print, broadcast, and digital journalism.',
+          subjects:['English','History','Civics','ICT'],
+          careers:['Journalist','TV Presenter','PR Specialist','Media Manager','Content Creator'],
+          gpa:'2.8+', duration:'4 years', seats:'Available' },
+        { id:'psychology', name:'Psychology & Counseling', icon:'🧠', stream:'social',
+          grad:['#8e44ad','#6c3483'],
+          description:'Study human behavior, mental health, and counseling. Prepares for clinical and organizational psychology.',
+          subjects:['Psychology','Biology','English','Civics'],
+          careers:['Psychologist','Counselor','HR Specialist','Researcher','Social Worker'],
+          gpa:'2.8+', duration:'4 years', seats:'Moderate' }
+    ];
+
+    let currentStream = 'all';
+
+    function filterStream(stream, btn) {
+        currentStream = stream;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderDepts();
+    }
+
+    function renderDepts() {
+        const grid = document.getElementById('deptGrid');
+        const filtered = currentStream === 'all' ? departments : departments.filter(d => d.stream === currentStream);
+        grid.innerHTML = filtered.map(d => `
+            <div class="dept-card" onclick="showDeptDetail('${d.id}')">
+                <div class="dept-header" style="--grad-start:${d.grad[0]};--grad-end:${d.grad[1]}">
+                    <div style="font-size:2.5rem;margin-bottom:8px">${d.icon}</div>
+                    <h3 style="margin:0;font-size:1rem;font-weight:800">${d.name}</h3>
+                    <span class="stream-badge" style="background:rgba(255,255,255,0.2);color:white;margin-top:6px">
+                        ${d.stream === 'natural' ? '🔬 Natural Science' : '🌍 Social Science'}
+                    </span>
+                </div>
+                <div class="dept-body">
+                    <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 10px;
+                        display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+                        ${d.description}
+                    </p>
+                    <div style="display:flex;gap:8px;font-size:0.78rem;color:var(--text-secondary);margin-bottom:10px">
+                        <span>📊 GPA: ${d.gpa}</span>
+                        <span>⏱️ ${d.duration}</span>
+                    </div>
+                    <div>${d.careers.slice(0,3).map(c => `<span class="career-tag">${c}</span>`).join('')}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function showDeptDetail(id) {
+        const d = departments.find(x => x.id === id);
+        if (!d) return;
+        const modal = document.createElement('div');
+        modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;
+            display:flex;align-items:center;justify-content:center;padding:20px`;
+        modal.innerHTML = `
+            <div style="background:var(--bg-secondary);border-radius:20px;max-width:560px;width:100%;
+                max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+                <div style="background:linear-gradient(135deg,${d.grad[0]},${d.grad[1]});
+                    padding:2rem;border-radius:20px 20px 0 0;color:white">
+                    <div style="font-size:3rem;margin-bottom:8px">${d.icon}</div>
+                    <h2 style="margin:0;font-size:1.4rem">${d.name}</h2>
+                    <p style="margin:6px 0 0;opacity:0.85;font-size:0.88rem">
+                        ${d.stream === 'natural' ? '🔬 Natural Science Stream' : '🌍 Social Science Stream'}
+                    </p>
+                </div>
+                <div style="padding:1.5rem">
+                    <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;margin-bottom:1.2rem">${d.description}</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.2rem">
+                        <div style="background:var(--bg-primary);border-radius:10px;padding:12px">
+                            <p style="font-size:0.75rem;color:var(--text-secondary);margin:0 0 4px">Min GPA</p>
+                            <p style="font-weight:700;color:var(--text-primary);margin:0">${d.gpa}</p>
+                        </div>
+                        <div style="background:var(--bg-primary);border-radius:10px;padding:12px">
+                            <p style="font-size:0.75rem;color:var(--text-secondary);margin:0 0 4px">Duration</p>
+                            <p style="font-weight:700;color:var(--text-primary);margin:0">${d.duration}</p>
+                        </div>
+                    </div>
+                    <h4 style="color:var(--text-primary);margin:0 0 8px;font-size:0.9rem">📚 Required Subjects</h4>
+                    <div style="margin-bottom:1.2rem">${d.subjects.map(s => `<span class="career-tag">${s}</span>`).join('')}</div>
+                    <h4 style="color:var(--text-primary);margin:0 0 8px;font-size:0.9rem">💼 Career Opportunities</h4>
+                    <div style="margin-bottom:1.5rem">${d.careers.map(c => `<span class="career-tag">${c}</span>`).join('')}</div>
+                    <div style="display:flex;gap:10px">
+                        <a href="courses.html?search=${encodeURIComponent(d.subjects[0])}" class="btn btn-success" style="flex:1;text-align:center">
+                            📚 Study Related Courses
+                        </a>
+                        <button onclick="this.closest('div[style*=fixed]').remove()" class="btn" style="flex:1">Close</button>
+                    </div>
+                </div>
+            </div>`;
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+        document.body.appendChild(modal);
+    }
+
+    // Department finder quiz
+    const deptQuizQuestions = [
+        { q: 'What subject do you enjoy most?', options: ['Mathematics & Physics', 'Biology & Chemistry', 'History & Geography', 'English & Communication'], weights: [['engineering','ict','architecture'],['medicine','natural-sciences','agriculture'],['law','social-sciences','journalism'],['education','journalism','psychology']] },
+        { q: 'What type of work appeals to you?', options: ['Building & designing things', 'Helping & healing people', 'Analyzing society & culture', 'Teaching & communicating'], weights: [['engineering','architecture','ict'],['medicine','psychology','agriculture'],['law','social-sciences','journalism'],['education','journalism','psychology']] },
+        { q: 'What is your career goal?', options: ['High-tech & innovation', 'Healthcare & research', 'Justice & public service', 'Business & leadership'], weights: [['engineering','ict','architecture'],['medicine','natural-sciences','agriculture'],['law','social-sciences','education'],['business','journalism','psychology']] }
+    ];
+    let deptQuizStep = 0;
+    let deptScores = {};
+
+    function startDeptQuiz() {
+        deptQuizStep = 0;
+        deptScores = {};
+        departments.forEach(d => deptScores[d.id] = 0);
+        document.getElementById('deptQuizModal').style.display = 'block';
+        renderDeptQuizStep();
+    }
+
+    function renderDeptQuizStep() {
+        const q = deptQuizQuestions[deptQuizStep];
+        document.getElementById('deptQuizContent').innerHTML = `
+            <div style="display:flex;justify-content:space-between;margin-bottom:1rem">
+                <h3 style="color:var(--text-primary);margin:0;font-size:1rem">${q.q}</h3>
+                <span style="font-size:0.8rem;color:var(--text-secondary)">${deptQuizStep+1}/${deptQuizQuestions.length}</span>
+            </div>
+            ${q.options.map((opt, i) => `
+                <button class="quiz-option-dept" onclick="selectDeptAnswer(${i})">${opt}</button>
+            `).join('')}
+        `;
+    }
+
+    function selectDeptAnswer(optIdx) {
+        const q = deptQuizQuestions[deptQuizStep];
+        q.weights[optIdx].forEach(id => { if (deptScores[id] !== undefined) deptScores[id] += 3; });
+        deptQuizStep++;
+        if (deptQuizStep < deptQuizQuestions.length) {
+            renderDeptQuizStep();
+        } else {
+            showDeptResult();
+        }
+    }
+
+    function showDeptResult() {
+        const sorted = Object.entries(deptScores).sort((a,b) => b[1]-a[1]);
+        const top3 = sorted.slice(0,3).map(([id]) => departments.find(d => d.id === id)).filter(Boolean);
+        document.getElementById('deptQuizContent').innerHTML = `
+            <h3 style="color:var(--text-primary);margin:0 0 1rem">🎯 Your Best Matches</h3>
+            ${top3.map((d, i) => `
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;
+                    background:var(--bg-primary);border-radius:10px;margin-bottom:8px;cursor:pointer"
+                    onclick="showDeptDetail('${d.id}')">
+                    <div style="font-size:2rem">${d.icon}</div>
+                    <div style="flex:1">
+                        <p style="font-weight:700;color:var(--text-primary);margin:0">${i+1}. ${d.name}</p>
+                        <p style="font-size:0.78rem;color:var(--text-secondary);margin:2px 0 0">${d.careers.slice(0,2).join(', ')}</p>
+                    </div>
+                    <span style="color:#667eea;font-size:0.8rem">View →</span>
+                </div>
+            `).join('')}
+            <button onclick="document.getElementById('deptQuizModal').style.display='none'"
+                class="btn" style="width:100%;margin-top:10px">Close</button>
+        `;
+    }
+
+    renderDepts();
+    </script>
+    <script src="/pwa.js"></script>
+</body>
+</html>

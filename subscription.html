@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Full Access — Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        .sub-hero {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-align: center;
+            padding: 3rem 1rem 2rem;
+        }
+        .sub-hero h1 { font-size: 2rem; font-weight: 800; margin: 0 0 0.5rem; }
+        .sub-hero p  { opacity: 0.88; font-size: 1rem; margin: 0; }
+        .what-you-get {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .get-item {
+            background: var(--bg-secondary);
+            border-radius: 14px;
+            padding: 1.2rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        .get-item .icon { font-size: 2rem; margin-bottom: 8px; }
+        .get-item h4 { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+        .get-item p  { font-size: 0.78rem; color: var(--text-secondary); margin: 0; }
+        .plan-card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 2px solid var(--border-color);
+            text-align: center;
+            transition: all 0.25s;
+            position: relative;
+        }
+        .plan-card.featured {
+            border-color: #667eea;
+            box-shadow: 0 8px 32px rgba(102,126,234,0.2);
+            transform: scale(1.03);
+        }
+        .plan-card:hover { box-shadow: 0 12px 40px var(--shadow); }
+        .plan-badge {
+            position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; padding: 4px 18px; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 700; white-space: nowrap;
+        }
+        .plan-price { font-size: 3rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+        .plan-price span { font-size: 1rem; font-weight: 400; color: var(--text-secondary); }
+        .plan-etb { font-size: 1rem; color: #667eea; font-weight: 600; margin: 4px 0 0; }
+        .plan-features { list-style: none; text-align: left; margin: 1.2rem 0; padding: 0; }
+        .plan-features li { padding: 6px 0; font-size: 0.88rem; color: var(--text-secondary); display: flex; gap: 8px; }
+        .plan-features li::before { content: '✓'; color: #27ae60; font-weight: 700; flex-shrink: 0; }
+        .plan-features li.no::before { content: '✗'; color: #e74c3c; }
+        .guarantee { background: rgba(39,174,96,0.08); border: 1px solid rgba(39,174,96,0.3);
+            border-radius: 12px; padding: 1rem 1.5rem; text-align: center; margin: 1.5rem 0; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="sub-hero">
+        <h1>📚 One Payment. All 22 Courses.</h1>
+        <p>Get unlimited access to every Ethiopian freshman course — videos, notes, quizzes, AI tutor</p>
+    </div>
+
+    <div class="container" style="max-width:900px;padding:2rem 20px 4rem">
+
+        <!-- What you get -->
+        <h2 style="text-align:center;color:var(--text-primary);margin-bottom:1.2rem">What's Included</h2>
+        <div class="what-you-get">
+            <div class="get-item"><div class="icon">🎬</div><h4>22 Video Courses</h4><p>All semester 1 & 2 + streams</p></div>
+            <div class="get-item"><div class="icon">📝</div><h4>Study Notes</h4><p>AI-generated notes per lesson</p></div>
+            <div class="get-item"><div class="icon">🧠</div><h4>AI Quiz Generator</h4><p>Unlimited practice quizzes</p></div>
+            <div class="get-item"><div class="icon">🏆</div><h4>Certificates</h4><p>On course completion</p></div>
+            <div class="get-item"><div class="icon">📴</div><h4>Offline Access</h4><p>Study without internet</p></div>
+            <div class="get-item"><div class="icon">🎓</div><h4>Department Guide</h4><p>Career path planning</p></div>
+        </div>
+
+        <!-- Pricing -->
+        <h2 style="text-align:center;color:var(--text-primary);margin:2rem 0 1.5rem">Choose Your Plan</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;align-items:start">
+
+            <!-- Monthly -->
+            <div class="plan-card">
+                <h3 style="color:var(--text-primary);margin:0 0 0.8rem">Monthly</h3>
+                <div class="plan-price">1,650 <span>ETB</span></div>
+                <div class="plan-etb">≈ $29 USD / month</div>
+                <ul class="plan-features">
+                    <li>All 22 courses + videos</li>
+                    <li>AI tutor & quiz generator</li>
+                    <li>Study notes & planner</li>
+                    <li>Offline access</li>
+                    <li>Completion certificates</li>
+                    <li class="no">Priority support</li>
+                </ul>
+                <button class="btn btn-large btn-block" onclick="subscribe('monthly')">
+                    Pay 1,650 ETB
+                </button>
+                <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:8px">Via Telebirr, CBE, Awash</p>
+            </div>
+
+            <!-- Annual (featured) -->
+            <div class="plan-card featured">
+                <div class="plan-badge">🔥 Best Value — Save 40%</div>
+                <h3 style="color:var(--text-primary);margin:0 0 0.8rem">Annual</h3>
+                <div class="plan-price">11,300 <span>ETB</span></div>
+                <div class="plan-etb">≈ $199 USD / year</div>
+                <ul class="plan-features">
+                    <li>Everything in Monthly</li>
+                    <li>Priority support</li>
+                    <li>New courses free</li>
+                    <li>1-on-1 guidance sessions</li>
+                    <li>Exclusive workshops</li>
+                    <li>Career counseling</li>
+                </ul>
+                <button class="btn btn-large btn-block btn-success" onclick="subscribe('annual')">
+                    Pay 11,300 ETB
+                </button>
+                <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:8px">Best for full freshman year</p>
+            </div>
+
+        </div>
+
+        <!-- Guarantee -->
+        <div class="guarantee">
+            <p style="margin:0;font-size:0.9rem;color:#27ae60;font-weight:600">
+                ✅ 7-day money-back guarantee — not satisfied? Full refund, no questions asked.
+            </p>
+        </div>
+
+        <!-- Free preview note -->
+        <div style="text-align:center;padding:1rem;background:var(--bg-secondary);border-radius:12px;
+            border:1px solid var(--border-color)">
+            <p style="margin:0;font-size:0.88rem;color:var(--text-secondary)">
+                Want to try first?
+                <a href="courses.html" style="color:#667eea;font-weight:600">Browse free preview lessons →</a>
+                (First 2 lessons of each course are free)
+            </p>
+        </div>
+
+    </div>
+
+    <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
+
+    <script src="theme.js"></script>
+    <script src="api.js"></script>
+    <script src="notifications.js"></script>
+    <script src="subscription.js"></script>
+    <script src="/pwa.js"></script>
+</body>
+</html>

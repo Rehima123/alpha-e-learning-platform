@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout — Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AlphaFT">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <style>
+        .checkout-layout { display:grid; grid-template-columns:1fr 380px; gap:2rem; margin:2rem 0; }
+        .checkout-form-box { background:var(--bg-secondary); border-radius:16px; padding:2rem; box-shadow:0 2px 12px var(--shadow); }
+        .order-box { background:var(--bg-secondary); border-radius:16px; padding:1.5rem; box-shadow:0 2px 12px var(--shadow); height:fit-content; position:sticky; top:80px; }
+        .order-row { display:flex; justify-content:space-between; padding:8px 0; font-size:0.9rem; color:var(--text-secondary); }
+        .order-row.total { border-top:2px solid var(--border-color); margin-top:8px; padding-top:14px; font-weight:700; font-size:1.05rem; color:var(--text-primary); }
+        .order-row.discount { color:#27ae60; }
+        .coupon-row { display:flex; gap:8px; margin:1rem 0; }
+        .coupon-row input { flex:1; padding:10px 14px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-primary); color:var(--text-primary); }
+        .payment-methods { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:1.2rem 0; }
+        .pay-method { border:2px solid var(--border-color); border-radius:10px; padding:14px; cursor:pointer; text-align:center; transition:all 0.2s; }
+        .pay-method.selected { border-color:#667eea; background:rgba(102,126,234,0.06); }
+        .pay-method img { height:28px; object-fit:contain; }
+        .pay-method p { font-size:0.8rem; margin:6px 0 0; color:var(--text-secondary); }
+        .secure-badge { display:flex; align-items:center; gap:6px; font-size:0.8rem; color:#888; margin-top:1rem; }
+        @media(max-width:768px){ .checkout-layout{grid-template-columns:1fr} .order-box{position:static} }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container"><span class="platform-name">Alpha Freshman Tutorial</span></a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h2 style="margin-top:1.5rem;color:var(--text-primary)">🛒 Checkout</h2>
+
+        <div class="checkout-layout">
+            <!-- Left: Payment form -->
+            <div class="checkout-form-box">
+                <h3 style="margin-bottom:1.2rem;color:var(--text-primary)">Payment Method</h3>
+
+                <div class="payment-methods">
+                    <div class="pay-method selected" id="method-chapa" onclick="selectMethod('chapa')">
+                        <div style="font-size:1.8rem">🇪🇹</div>
+                        <strong style="color:var(--text-primary)">Chapa</strong>
+                        <p>Telebirr, CBE, Awash & more</p>
+                    </div>
+                    <div class="pay-method" id="method-card" onclick="selectMethod('card')">
+                        <div style="font-size:1.8rem">💳</div>
+                        <strong style="color:var(--text-primary)">Card</strong>
+                        <p>Visa / Mastercard</p>
+                    </div>
+                </div>
+
+                <!-- Chapa section -->
+                <div id="chapa-section">
+                    <div style="background:rgba(102,126,234,0.08);border:1px solid #667eea;border-radius:10px;padding:16px;margin:1rem 0">
+                        <p style="margin:0;font-size:0.9rem;color:var(--text-primary)">
+                            🔒 You'll be redirected to <strong>Chapa</strong> to complete payment securely.<br>
+                            Supports: <strong>Telebirr, CBE Birr, Awash Bank, Dashen Bank</strong> and more.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card section (hidden by default) -->
+                <div id="card-section" style="display:none">
+                    <div class="form-group">
+                        <label>Cardholder Name</label>
+                        <input type="text" id="cardName" placeholder="Full name on card">
+                    </div>
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                        <div class="form-group">
+                            <label>Expiry</label>
+                            <input type="text" id="expiry" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="text" id="cvv" placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                </div>
+
+                <button id="payBtn" class="btn btn-large btn-success" style="width:100%;margin-top:1rem" onclick="processPayment()">
+                    Pay with Chapa
+                </button>
+
+                <div class="secure-badge">
+                    🔒 Secured by Chapa · SSL Encrypted · PCI Compliant
+                </div>
+            </div>
+
+            <!-- Right: Order summary -->
+            <div class="order-box">
+                <h3 style="margin-bottom:1rem;color:var(--text-primary)">Order Summary</h3>
+                <div id="orderItem" style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-color);margin-bottom:8px">
+                    <span id="orderIcon" style="font-size:2rem">📚</span>
+                    <div>
+                        <div id="orderTitle" style="font-weight:600;color:var(--text-primary)">Loading...</div>
+                        <div id="orderType" style="font-size:0.8rem;color:var(--text-secondary)"></div>
+                    </div>
+                </div>
+
+                <!-- Coupon -->
+                <div class="coupon-row">
+                    <input type="text" id="couponInput" placeholder="Coupon code" style="text-transform:uppercase">
+                    <button class="btn btn-sm" onclick="applyCoupon()">Apply</button>
+                </div>
+                <div id="couponMsg" style="font-size:0.82rem;margin-bottom:8px"></div>
+
+                <div class="order-row"><span>Subtotal</span><span id="subtotalDisplay">—</span></div>
+                <div class="order-row discount" id="discountRow" style="display:none"><span>Discount</span><span id="discountDisplay"></span></div>
+                <div class="order-row"><span>Tax (15%)</span><span id="taxDisplay">—</span></div>
+                <div class="order-row total"><span>Total</span><span id="totalDisplay">—</span></div>
+
+                <p style="font-size:0.78rem;color:#888;margin-top:12px;text-align:center">
+                    All prices in Ethiopian Birr (ETB)
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script src="theme.js"></script>
+    <script src="api.js"></script>
+    <script src="notifications.js"></script>
+    <script src="payment.js"></script>
+    <script src="/pwa.js"></script>
+</body>
+</html>

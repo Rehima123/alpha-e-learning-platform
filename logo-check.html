@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logo Diagnostic</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 20px; }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 4px solid #3498db;
+        }
+        .test-section h2 {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 2px dashed #ccc;
+            padding: 10px;
+            background: white;
+        }
+        .success { color: #27ae60; font-weight: bold; }
+        .error { color: #e74c3c; font-weight: bold; }
+        .info { background: #e8f5e9; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .btn:hover { background: #2980b9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Logo Diagnostic Tool</h1>
+        <p>This page will help you verify if your logo is loading correctly.</p>
+
+        <div class="test-section">
+            <h2>Test 1: Direct Image Load</h2>
+            <p>Testing: <code>&lt;img src="logo.png"&gt;</code></p>
+            <img src="logo.png" alt="Logo Test" id="test1" onload="showSuccess('test1')" onerror="showError('test1')">
+            <p id="test1-result"></p>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 2: With Relative Path</h2>
+            <p>Testing: <code>&lt;img src="./logo.png"&gt;</code></p>
+            <img src="./logo.png" alt="Logo Test" id="test2" onload="showSuccess('test2')" onerror="showError('test2')">
+            <p id="test2-result"></p>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 3: Styled Logo (As in Navbar)</h2>
+            <p>Testing with CSS styling:</p>
+            <div style="background: #2c3e50; padding: 20px;">
+                <img src="logo.png" alt="Logo" style="height: 60px; width: auto;" id="test3" onload="showSuccess('test3')" onerror="showError('test3')">
+            </div>
+            <p id="test3-result"></p>
+        </div>
+
+        <div class="info">
+            <h3>✅ If you see the logo above:</h3>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>The logo file is in the correct location</li>
+                <li>The file is a valid image</li>
+                <li>Your browser can load it</li>
+            </ul>
+            <p style="margin-top: 15px;"><strong>Solution:</strong> Clear your browser cache (Ctrl+Shift+Delete) and refresh home.html</p>
+        </div>
+
+        <div class="info" style="background: #ffebee;">
+            <h3>❌ If you DON'T see the logo:</h3>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>Make sure <code>logo.png</code> is in the same folder as this HTML file</li>
+                <li>Check the file name is exactly <code>logo.png</code> (not logo.png.png)</li>
+                <li>Verify it's a valid PNG image file</li>
+                <li>Try re-saving the image</li>
+            </ul>
+        </div>
+
+        <a href="home.html" class="btn">← Back to Home</a>
+    </div>
+
+    <script>
+        function showSuccess(testId) {
+            document.getElementById(testId + '-result').innerHTML = 
+                '<span class="success">✓ SUCCESS: Logo loaded correctly!</span>';
+        }
+        
+        function showError(testId) {
+            document.getElementById(testId + '-result').innerHTML = 
+                '<span class="error">✗ ERROR: Logo failed to load. Check file location.</span>';
+        }
+
+        // Check if file exists
+        window.onload = function() {
+            console.log('Logo diagnostic page loaded');
+            console.log('Current URL:', window.location.href);
+            console.log('Logo path should be:', window.location.href.replace('logo-check.html', 'logo.png'));
+        };
+    </script>
+</body>
+</html>

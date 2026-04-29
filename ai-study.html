@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Tools — Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        .study-tabs { display:flex; gap:8px; margin-bottom:1.5rem; }
+        .study-tab { padding:10px 22px; border:2px solid var(--border-color); border-radius:24px;
+            background:var(--bg-secondary); color:var(--text-primary); cursor:pointer;
+            font-size:0.9rem; font-weight:600; transition:all 0.2s; }
+        .study-tab.active { background:linear-gradient(135deg,#667eea,#764ba2);
+            border-color:transparent; color:white; }
+
+        .quiz-card { background:var(--bg-secondary); border-radius:16px; padding:2rem;
+            box-shadow:0 4px 20px var(--shadow); margin-bottom:1.5rem; }
+        .quiz-question { font-size:1.1rem; font-weight:700; color:var(--text-primary);
+            margin-bottom:1.2rem; line-height:1.5; }
+        .quiz-options { display:flex; flex-direction:column; gap:10px; }
+        .quiz-option { padding:12px 18px; border:2px solid var(--border-color); border-radius:10px;
+            cursor:pointer; font-size:0.9rem; color:var(--text-primary); background:var(--bg-primary);
+            transition:all 0.2s; text-align:left; }
+        .quiz-option:hover:not(:disabled) { border-color:#667eea; background:rgba(102,126,234,0.05); }
+        .quiz-option.correct  { border-color:#27ae60; background:rgba(39,174,96,0.1); color:#27ae60; font-weight:600; }
+        .quiz-option.wrong    { border-color:#e74c3c; background:rgba(231,76,60,0.1); color:#e74c3c; }
+        .quiz-option.reveal   { border-color:#27ae60; background:rgba(39,174,96,0.05); }
+        .quiz-explanation { margin-top:12px; padding:12px; background:rgba(102,126,234,0.08);
+            border-radius:8px; font-size:0.85rem; color:var(--text-secondary); display:none; }
+
+        .notes-output { background:var(--bg-secondary); border-radius:16px; padding:2rem;
+            box-shadow:0 4px 20px var(--shadow); white-space:pre-wrap; font-family:monospace;
+            font-size:0.88rem; line-height:1.8; color:var(--text-primary); max-height:70vh;
+            overflow-y:auto; }
+        .notes-output h1 { font-size:1.3rem; font-weight:800; color:#667eea; margin:0 0 12px; }
+        .notes-output h2 { font-size:1.05rem; font-weight:700; color:var(--text-primary); margin:16px 0 8px; }
+        .notes-output h3 { font-size:0.95rem; font-weight:600; color:#764ba2; margin:12px 0 6px; }
+
+        .score-ring { width:120px; height:120px; margin:0 auto 1rem; }
+        .score-ring circle { fill:none; stroke-width:10; }
+        .score-ring .bg   { stroke:#e8ecef; }
+        .score-ring .fill { stroke:#667eea; stroke-linecap:round; transition:stroke-dasharray 1s ease; }
+
+        .ai-controls { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:1.5rem; align-items:center; }
+        .ai-controls select, .ai-controls input {
+            padding:9px 14px; border:1px solid var(--border-color); border-radius:10px;
+            background:var(--bg-secondary); color:var(--text-primary); font-size:0.88rem; }
+        .offline-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 12px;
+            border-radius:20px; font-size:0.75rem; font-weight:600; }
+        .offline-badge.online  { background:#e8f5e9; color:#27ae60; }
+        .offline-badge.offline { background:#fff3e0; color:#f39c12; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="dashboard.html">My Learning</a></li>
+                <li><a href="study-hub.html">📚 Study Hub</a></li>
+                <li><a href="department-guide.html">🎓 Departments</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width:800px;padding:2rem 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px">
+            <div>
+                <h2 style="color:var(--text-primary);margin:0">🤖 AI Study Tools</h2>
+                <p style="color:var(--text-secondary);font-size:0.9rem;margin:4px 0 0">Generate quizzes & notes from any course — works offline</p>
+            </div>
+            <span id="connectionBadge" class="offline-badge online">🟢 Online</span>
+        </div>
+
+        <!-- Course selector -->
+        <div class="ai-controls">
+            <select id="courseSelect" style="flex:1;min-width:200px">
+                <option value="">Select a course...</option>
+            </select>
+            <select id="difficultySelect">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            <select id="questionCount">
+                <option value="3">3 Questions</option>
+                <option value="5" selected>5 Questions</option>
+                <option value="10">10 Questions</option>
+            </select>
+        </div>
+
+        <!-- Tabs -->
+        <div class="study-tabs">
+            <button class="study-tab active" onclick="switchTab('quiz')">🧠 Quiz</button>
+            <button class="study-tab" onclick="switchTab('notes')">📝 Notes</button>
+            <button class="study-tab" onclick="switchTab('summary')">📋 Summary</button>
+            <button class="study-tab" onclick="switchTab('mindmap')">🗺️ Mind Map</button>
+        </div>
+
+        <!-- Quiz tab -->
+        <div id="tab-quiz">
+            <div style="display:flex;gap:10px;margin-bottom:1.5rem">
+                <button class="btn btn-large btn-success" onclick="startQuiz()" id="generateQuizBtn" style="flex:1">
+                    🎯 Generate Quiz
+                </button>
+                <button class="btn" onclick="resetQuiz()" id="resetBtn" style="display:none">🔄 New Quiz</button>
+            </div>
+            <div id="quizContainer"></div>
+            <div id="quizResult" style="display:none"></div>
+        </div>
+
+        <!-- Notes tab -->
+        <div id="tab-notes" style="display:none">
+            <button class="btn btn-large btn-success" onclick="generateNotes('bullet')" style="width:100%;margin-bottom:1rem">
+                📝 Generate Bullet Notes
+            </button>
+            <div id="notesContainer"></div>
+        </div>
+
+        <!-- Summary tab -->
+        <div id="tab-summary" style="display:none">
+            <button class="btn btn-large btn-success" onclick="generateNotes('summary')" style="width:100%;margin-bottom:1rem">
+                📋 Generate Summary
+            </button>
+            <div id="summaryContainer"></div>
+        </div>
+
+        <!-- Mind map tab -->
+        <div id="tab-mindmap" style="display:none">
+            <button class="btn btn-large btn-success" onclick="generateNotes('mindmap')" style="width:100%;margin-bottom:1rem">
+                🗺️ Generate Mind Map
+            </button>
+            <div id="mindmapContainer"></div>
+        </div>
+
+        <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
+    </main>
+
+    <script src="theme.js"></script>
+    <script src="api.js"></script>
+    <script src="offline-db.js"></script>
+    <script src="notifications.js"></script>
+    <script src="ai-engine.js"></script>
+    <script src="ai-study.js"></script>
+    <script src="/pwa.js"></script>
+</body>
+</html>

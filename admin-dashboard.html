@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AlphaFT">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <style>
+        .tab-bar { display:flex; gap:8px; margin:1.5rem 0 1rem; flex-wrap:wrap; }
+        .tab-btn { padding:9px 20px; border:2px solid var(--border-color); border-radius:24px;
+            background:var(--bg-secondary); color:var(--text-primary); cursor:pointer;
+            font-size:0.88rem; font-weight:500; transition:all 0.2s; }
+        .tab-btn.active { background:linear-gradient(135deg,#667eea,#764ba2);
+            border-color:transparent; color:white; }
+        .admin-tab-content { display:none; }
+        .admin-tab-content.active { display:block; }
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+            z-index:1000; align-items:center; justify-content:center; }
+        .modal-box { background:var(--bg-secondary); border-radius:16px; padding:2rem;
+            width:90%; max-width:560px; max-height:90vh; overflow-y:auto; }
+        .modal-box h3 { margin-bottom:1.2rem; color:var(--text-primary); }
+        .form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        .badge-count { background:#e74c3c; color:white; border-radius:50%;
+            padding:1px 7px; font-size:0.72rem; font-weight:700; margin-left:6px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="study-hub.html">📚 Study Hub</a></li>
+                <li><a href="department-guide.html">🎓 Departments</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-bottom:3rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem">
+            <h2 style="color:var(--text-primary)">⚙️ Admin Dashboard</h2>
+            <button class="btn btn-success" onclick="showCreateCourseModal()">+ Create Course</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="dashboard-stats" style="margin-top:1.2rem">
+            <div class="stat-card">
+                <h3 id="totalUsers">—</h3>
+                <p>Total Users</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalInstructors">—</h3>
+                <p>Instructors</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="pendingApprovals">—</h3>
+                <p>Pending Courses</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="pendingEnrollCount">—</h3>
+                <p>Pending Enrollments</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="enrollments" onclick="showTab('enrollments')">
+                📋 Enrollment Requests <span class="badge-count" id="enrollBadge"></span>
+            </button>
+            <button class="tab-btn" data-tab="courses" onclick="showTab('courses')">
+                📚 Course Approvals
+            </button>
+            <button class="tab-btn" data-tab="revenue" onclick="showTab('revenue');loadRevenue()">
+                💰 Revenue
+            </button>
+            <button class="tab-btn" data-tab="coupons" onclick="showTab('coupons');loadCoupons()">
+                🎟️ Coupons
+            </button>
+            <button class="tab-btn" data-tab="videos" onclick="showTab('videos');loadVideoManager()">
+                🎬 Videos
+            </button>
+            <button class="tab-btn" data-tab="users" onclick="showTab('users')">
+                👥 Users
+            </button>
+        </div>
+
+        <!-- Tab: Enrollments -->
+        <div id="tab-enrollments" class="admin-tab-content" style="display:block">
+            <h3 style="margin-bottom:1rem;color:var(--text-primary)">Student Enrollment Requests</h3>
+            <div id="enrollmentRequestsList">
+                <p style="color:var(--text-secondary)">Loading...</p>
+            </div>
+        </div>
+
+        <!-- Tab: Course Approvals -->
+        <div id="tab-courses" class="admin-tab-content">
+            <h3 style="margin-bottom:1rem;color:var(--text-primary)">Pending Course Approvals</h3>
+            <div id="pendingCoursesList">
+                <p style="color:var(--text-secondary)">Loading...</p>
+            </div>
+        </div>
+
+        <!-- Tab: Users -->
+        <div id="tab-users" class="admin-tab-content">
+            <h3 style="margin-bottom:1rem;color:var(--text-primary)">All Users</h3>
+            <div id="usersList">
+                <p style="color:var(--text-secondary)">Loading...</p>
+            </div>
+        </div>
+
+        <!-- Tab: Revenue -->
+        <div id="tab-revenue" class="admin-tab-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                <h3 style="color:var(--text-primary)">💰 Revenue Report</h3>
+                <select id="revPeriod" onchange="loadRevenue()" style="padding:8px 12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary)">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                    <option value="365">Last year</option>
+                </select>
+            </div>
+            <div id="revenueContent"><p style="color:var(--text-secondary)">Loading...</p></div>
+        </div>
+
+        <!-- Tab: Coupons -->
+        <div id="tab-coupons" class="admin-tab-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                <h3 style="color:var(--text-primary)">🎟️ Discount Coupons</h3>
+                <button class="btn btn-success btn-sm" onclick="showCouponForm()">+ New Coupon</button>
+            </div>
+            <div id="couponFormBox" style="display:none;background:var(--bg-primary);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+                <h4 style="margin-bottom:1rem;color:var(--text-primary)">Create Coupon</h4>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem">
+                    <div class="form-group"><label>Code</label><input type="text" id="cpCode" placeholder="SAVE20" style="text-transform:uppercase"></div>
+                    <div class="form-group"><label>Type</label>
+                        <select id="cpType" class="form-select"><option value="percent">Percent (%)</option><option value="fixed">Fixed (ETB)</option></select>
+                    </div>
+                    <div class="form-group"><label>Value</label><input type="number" id="cpValue" placeholder="20"></div>
+                    <div class="form-group"><label>Max Uses</label><input type="number" id="cpMaxUses" placeholder="Unlimited"></div>
+                    <div class="form-group"><label>Expires</label><input type="date" id="cpExpires"></div>
+                    <div class="form-group"><label>Description</label><input type="text" id="cpDesc" placeholder="Optional"></div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:1rem">
+                    <button class="btn btn-success btn-sm" onclick="createCoupon()">Create</button>
+                    <button class="btn btn-sm" onclick="document.getElementById('couponFormBox').style.display='none'">Cancel</button>
+                </div>
+            </div>
+            <div id="couponsList"><p style="color:var(--text-secondary)">Loading...</p></div>
+        </div>
+
+        <!-- Tab: Videos -->
+        <div id="tab-videos" class="admin-tab-content">
+            <h3 style="margin-bottom:0.5rem;color:var(--text-primary)">🎬 Manage YouTube Video Links</h3>
+            <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1.2rem">
+                Upload videos to YouTube (unlisted), then paste the link here. Only paid students can watch.
+            </p>
+            <div class="form-group" style="margin-bottom:1rem">
+                <label>Select Course</label>
+                <select id="videoCourseSelect" class="form-select" onchange="loadCourseChapters()">
+                    <option value="">Choose a course...</option>
+                </select>
+            </div>
+            <div id="videoChaptersList"></div>
+        </div>
+    </main>
+
+    <!-- Create Course Modal -->
+    <div class="modal-overlay" id="createCourseModal">
+        <div class="modal-box">
+            <h3>📚 Create New Course</h3>
+            <form id="createCourseForm">
+                <div class="form-group">
+                    <label>Course Title</label>
+                    <input type="text" id="newTitle" required placeholder="e.g. General Physics">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="newDescription" required rows="3" placeholder="Course description..." style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);resize:vertical"></textarea>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="newCategory" class="form-select">
+                            <option value="semester1">First Semester</option>
+                            <option value="semester2">Second Semester</option>
+                            <option value="natural">Natural Science</option>
+                            <option value="social">Social Science</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Level</label>
+                        <select id="newLevel" class="form-select">
+                            <option value="Freshman">Freshman</option>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Duration</label>
+                        <input type="text" id="newDuration" required placeholder="e.g. 1 Semester">
+                    </div>
+                    <div class="form-group">
+                        <label>Price ($)</label>
+                        <input type="number" id="newPrice" required min="0" step="0.01" placeholder="0 for free">
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Icon (emoji)</label>
+                        <input type="text" id="newIcon" placeholder="📚" maxlength="4">
+                    </div>
+                    <div class="form-group">
+                        <label>Access Type</label>
+                        <select id="newIsPremium" class="form-select">
+                            <option value="true">Premium</option>
+                            <option value="false">Free</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Free Preview (first 2 lessons unlocked for trial users)</label>
+                    <select id="newFreePreview" class="form-select">
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:1.2rem">
+                    <button type="submit" class="btn btn-success" style="flex:1">Create Course</button>
+                    <button type="button" class="btn" onclick="closeCreateCourseModal()" style="flex:1">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="theme.js"></script>
+    <script src="api.js"></script>
+    <script src="auth-guard.js"></script>
+    <script src="notifications.js"></script>
+    <script src="ai-assistant.js"></script>
+    <script src="admin-dashboard.js"></script>
+    <script src="pwa.js"></script>
+</body>
+</html>

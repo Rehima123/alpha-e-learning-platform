@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Details — Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AlphaFT">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <style>
+        /* ── Breadcrumb ── */
+        .breadcrumb {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.82rem; color: var(--text-secondary);
+            margin-bottom: 1.2rem; flex-wrap: wrap;
+        }
+        .breadcrumb a { color: #667eea; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { color: var(--text-secondary); }
+
+        /* ── Chapter accordion ── */
+        .chapter-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .chapter-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; cursor: pointer;
+            background: var(--bg-secondary);
+            transition: background 0.2s;
+            user-select: none;
+        }
+        .chapter-header:hover { background: rgba(102,126,234,0.05); }
+        .chapter-header.open { border-bottom: 1px solid var(--border-color); }
+        .chapter-title-row { display: flex; align-items: center; gap: 12px; }
+        .chapter-num {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg,#667eea,#764ba2);
+            color: white; font-weight: 700; font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .chapter-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+        .chapter-info p  { font-size: 0.78rem; color: var(--text-secondary); margin: 2px 0 0; }
+        .chapter-meta { display: flex; align-items: center; gap: 10px; }
+        .chapter-arrow { font-size: 0.9rem; color: var(--text-secondary); transition: transform 0.25s; }
+        .chapter-arrow.open { transform: rotate(180deg); }
+        .chapter-lessons { display: none; }
+        .chapter-lessons.open { display: block; }
+
+        /* ── Lesson row ── */
+        .lesson-row {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .lesson-row:last-child { border-bottom: none; }
+        .lesson-row:hover { background: rgba(102,126,234,0.04); }
+        .lesson-row.active { background: rgba(102,126,234,0.08); border-left: 3px solid #667eea; }
+        .lesson-row.done { background: rgba(39,174,96,0.04); }
+        .lesson-num {
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.78rem; font-weight: 700; flex-shrink: 0;
+            background: var(--bg-primary); color: var(--text-secondary);
+            border: 2px solid var(--border-color);
+        }
+        .lesson-num.done { background: #27ae60; color: white; border-color: #27ae60; }
+        .lesson-num.active { background: #667eea; color: white; border-color: #667eea; }
+        .lesson-info-col { flex: 1; min-width: 0; }
+        .lesson-info-col h5 { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); margin: 0; }
+        .lesson-info-col span { font-size: 0.75rem; color: var(--text-secondary); }
+        .lesson-lock { color: var(--text-secondary); font-size: 0.9rem; }
+
+        /* ── Lesson viewer panel ── */
+        .lesson-viewer {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .lesson-viewer-header {
+            display: flex; align-items: flex-start; justify-content: space-between;
+            margin-bottom: 1.5rem; gap: 12px; flex-wrap: wrap;
+        }
+        .lesson-viewer h2 { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+        .lesson-viewer-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.2rem; }
+        .lesson-viewer-meta span {
+            font-size: 0.78rem; padding: 3px 10px; border-radius: 12px;
+            background: var(--bg-primary); color: var(--text-secondary);
+        }
+
+        /* Notes area */
+        .lesson-notes {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+        .lesson-notes h2 { font-size: 1.1rem; font-weight: 700; color: #667eea; margin: 0 0 10px; }
+        .lesson-notes h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 16px 0 6px; }
+        .lesson-notes p  { margin: 6px 0; }
+        .lesson-notes ul { padding-left: 1.2rem; margin: 6px 0; }
+        .lesson-notes li { margin: 4px 0; }
+        .lesson-notes blockquote {
+            border-left: 3px solid #667eea;
+            padding: 8px 14px;
+            background: rgba(102,126,234,0.06);
+            border-radius: 0 8px 8px 0;
+            margin: 10px 0;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        /* Action buttons */
+        .lesson-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .lesson-actions .btn { flex: 1; min-width: 140px; text-align: center; }
+
+        /* Layout: sidebar + viewer on desktop */
+        @media (min-width: 900px) {
+            .course-layout { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; align-items: start; }
+            .course-sidebar { position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="dashboard.html">My Learning</a></li>
+                <li><a href="study-hub.html">📚 Study Hub</a></li>
+                <li><a href="department-guide.html">🎓 Departments</a></li>
+                <li><a href="ai-study.html">🤖 AI Study</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-bottom:3rem">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb" id="breadcrumb">
+            <a href="courses.html">Courses</a>
+            <span>›</span>
+            <span id="bc-dept">—</span>
+            <span>›</span>
+            <span id="bc-course">—</span>
+        </div>
+
+        <!-- Course header (injected by JS) -->
+        <div id="courseDetail"></div>
+
+        <!-- Chapter / Lesson layout -->
+        <div class="course-layout" id="courseLayout" style="display:none">
+            <!-- Left: chapter list -->
+            <div class="course-sidebar" id="chapterSidebar"></div>
+            <!-- Right: lesson viewer -->
+            <div id="lessonViewer"></div>
+        </div>
+    </main>
+
+    <script src="theme.js"></script>
+    <script src="ai-assistant.js"></script>
+    <script src="api.js"></script>
+    <script src="offline-db.js"></script>
+    <script src="notifications.js"></script>
+    <script src="ai-engine.js"></script>
+    <script src="course-detail.js"></script>
+    <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
+    <script src="/pwa.js"></script>
+</body>
+</html>
