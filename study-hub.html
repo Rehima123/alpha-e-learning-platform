@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Hub — Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="dashboard.html">My Learning</a></li>
+                <li><a href="ai-study.html">🤖 AI</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width:900px;padding:1.5rem 20px 4rem">
+        <h2 style="color:var(--text-primary);margin-bottom:0.3rem">📚 Study Hub</h2>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1.5rem">
+            Your personal learning command center
+        </p>
+
+        <!-- Quick stats bar -->
+        <div id="quickStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+            gap:10px;margin-bottom:1.5rem"></div>
+
+        <!-- Tabs -->
+        <div class="study-tabs" style="margin-bottom:1.5rem">
+            <button class="study-tab active" onclick="switchHubTab('planner')">📅 Planner</button>
+            <button class="study-tab" onclick="switchHubTab('bookmarks')">📌 Bookmarks</button>
+            <button class="study-tab" onclick="switchHubTab('downloads')">💾 Downloads</button>
+            <button class="study-tab" onclick="switchHubTab('leaderboard')">🏆 Leaderboard</button>
+            <button class="study-tab" onclick="switchHubTab('search')">🔍 Search</button>
+        </div>
+
+        <div id="hub-planner"><div id="plannerContainer"></div></div>
+        <div id="hub-bookmarks" style="display:none"><div id="bookmarksContainer"></div></div>
+        <div id="hub-downloads" style="display:none"><div id="downloadsContainer"></div></div>
+        <div id="hub-leaderboard" style="display:none"><div id="leaderboardContainer"></div></div>
+        <div id="hub-search" style="display:none">
+            <div style="margin-bottom:1rem">
+                <input type="search" id="lessonSearchInput" placeholder="🔍 Search lessons, topics, chapters..."
+                    class="input" oninput="searchLessons(this.value)">
+            </div>
+            <div id="searchResults"></div>
+        </div>
+    </main>
+
+    <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
+
+    <script src="theme.js"></script>
+    <script src="api.js"></script>
+    <script src="offline-db.js"></script>
+    <script src="notifications.js"></script>
+    <script src="analytics.js"></script>
+    <script src="study-planner.js"></script>
+    <script src="bookmarks.js"></script>
+    <script src="lesson-download.js"></script>
+    <script>
+    let allCourses = [];
+
+    async function init() {
+        // Load courses for search
+        try {
+            const res = await api.getCourses();
+            if (res.success) allCourses = res.courses || [];
+            else if (typeof offlineDB !== 'undefined') allCourses = await offlineDB.getAll('courses').catch(() => []);
+        } catch {
+            if (typeof offlineDB !== 'undefined') allCourses = await offlineDB.getAll('courses').catch(() => []);
+        }
+
+        renderQuickStats();
+        studyPlanner.render('plannerContainer');
+    }
+
+    function renderQuickStats() {
+        const pts   = parseInt(localStorage.getItem('totalPoints') || '0');
+        const level = typeof QuizSystem !== 'undefined' ? QuizSystem.getLevel(pts) : { icon:'🌱', name:'Beginner' };
+        const streak = JSON.parse(localStorage.getItem('studyStreak') || '{"streak":0}').streak;
+        const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]').length;
+        const downloads = JSON.parse(localStorage.getItem('downloadedLessons') || '[]').length;
+
+        document.getElementById('quickStats').innerHTML = [
+            { icon: level.icon, val: level.name, label: 'Level' },
+            { icon: '⚡', val: pts, label: 'Points' },
+            { icon: '🔥', val: streak + ' days', label: 'Streak' },
+            { icon: '📌', val: bookmarks, label: 'Bookmarks' },
+            { icon: '💾', val: downloads, label: 'Downloads' }
+        ].map(s => `
+            <div class="stat-card" style="padding:14px;text-align:center">
+                <div style="font-size:1.4rem">${s.icon}</div>
+                <div style="font-weight:700;color:var(--text-primary);font-size:1rem">${s.val}</div>
+                <div style="font-size:0.72rem;color:var(--text-secondary)">${s.label}</div>
+            </div>
+        `).join('');
+    }
+
+    function switchHubTab(tab) {
+        ['planner','bookmarks','downloads','leaderboard','search'].forEach(t => {
+            document.getElementById(`hub-${t}`).style.display = t === tab ? 'block' : 'none';
+        });
+        document.querySelectorAll('.study-tab').forEach((btn, i) => {
+            btn.classList.toggle('active', ['planner','bookmarks','downloads','leaderboard','search'][i] === tab);
+        });
+
+        if (tab === 'bookmarks')   bookmarkManager.renderList('bookmarksContainer');
+        if (tab === 'downloads')   lessonDownloader.renderDownloadedList('downloadsContainer');
+        if (tab === 'leaderboard') renderLeaderboard('leaderboardContainer');
+    }
+
+    // ── Lesson search ─────────────────────────────────────────────────────────
+    function searchLessons(query) {
+        const q = query.toLowerCase().trim();
+        const container = document.getElementById('searchResults');
+
+        if (q.length < 2) {
+            container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem">Type at least 2 characters to search...</p>';
+            return;
+        }
+
+        const results = [];
+        allCourses.forEach(course => {
+            // Search in chapters
+            (course.chapters || []).forEach((ch, ci) => {
+                (ch.lessons || []).forEach((lesson, li) => {
+                    if (lesson.title.toLowerCase().includes(q) ||
+                        ch.title.toLowerCase().includes(q) ||
+                        course.title.toLowerCase().includes(q)) {
+                        results.push({ course, chapter: ch, lesson, ci, li });
+                    }
+                });
+            });
+            // Search in flat lessons
+            if (!course.chapters?.length) {
+                (course.lessons || []).forEach(lesson => {
+                    if (lesson.title.toLowerCase().includes(q) || course.title.toLowerCase().includes(q)) {
+                        results.push({ course, lesson });
+                    }
+                });
+            }
+        });
+
+        if (results.length === 0) {
+            container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem">No lessons found for "${query}"</p>`;
+            return;
+        }
+
+        container.innerHTML = `
+            <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:10px">${results.length} result${results.length !== 1 ? 's' : ''}</p>
+            ${results.slice(0, 20).map(r => `
+                <div style="background:var(--bg-secondary);border-radius:12px;padding:14px 16px;
+                    margin-bottom:8px;border:1px solid var(--border-color);
+                    display:flex;align-items:center;gap:12px">
+                    <div style="font-size:1.8rem">${r.course.icon || '📚'}</div>
+                    <div style="flex:1;min-width:0">
+                        <h4 style="margin:0;font-size:0.9rem;color:var(--text-primary)">
+                            ${highlight(r.lesson.title, q)}
+                        </h4>
+                        <p style="margin:2px 0 0;font-size:0.78rem;color:var(--text-secondary)">
+                            ${r.course.title}${r.chapter ? ' › ' + r.chapter.title : ''}
+                        </p>
+                    </div>
+                    <a href="course-detail.html?id=${r.course._id}" class="btn btn-sm" style="font-size:0.75rem;padding:5px 10px;flex-shrink:0">
+                        Open
+                    </a>
+                </div>
+            `).join('')}
+        `;
+    }
+
+    function highlight(text, query) {
+        const re = new RegExp(`(${query})`, 'gi');
+        return text.replace(re, '<mark style="background:#fff3cd;padding:0 2px;border-radius:2px">$1</mark>');
+    }
+
+    // ── Leaderboard ───────────────────────────────────────────────────────────
+    async function renderLeaderboard(containerId) {
+        const el = document.getElementById(containerId);
+        el.innerHTML = '<p style="color:var(--text-secondary);padding:1rem">Loading...</p>';
+        try {
+            const res = await api.request('/users/leaderboard');
+            const users = res.success ? res.users : [];
+            const medals = ['🥇','🥈','🥉'];
+
+            if (users.length === 0) {
+                el.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem">No leaderboard data yet. Complete quizzes to earn points!</p>';
+                return;
+            }
+
+            el.innerHTML = `
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    ${users.map((u, i) => `
+                        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;
+                            background:${i < 3 ? 'linear-gradient(135deg,rgba(102,126,234,0.08),rgba(118,75,162,0.08))' : 'var(--bg-secondary)'};
+                            border-radius:12px;border:1px solid var(--border-color)">
+                            <span style="font-size:1.4rem;min-width:30px;text-align:center">
+                                ${medals[i] || `#${i+1}`}
+                            </span>
+                            <div style="flex:1">
+                                <p style="font-weight:600;color:var(--text-primary);margin:0;font-size:0.9rem">${u.fullName}</p>
+                                <p style="font-size:0.75rem;color:var(--text-secondary);margin:2px 0 0">
+                                    ${u.completedCourses || 0} courses completed
+                                </p>
+                            </div>
+                            <div style="text-align:right">
+                                <p style="font-weight:700;color:#667eea;margin:0">${u.points || 0} pts</p>
+                                <p style="font-size:0.72rem;color:var(--text-secondary);margin:2px 0 0">
+                                    ${typeof QuizSystem !== 'undefined' ? QuizSystem.getLevel(u.points||0).icon : '🌱'}
+                                </p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } catch {
+            el.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem">Leaderboard coming soon</p>';
+        }
+    }
+
+    document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try { await api.logout(); } catch {}
+        api.removeAuthToken();
+        localStorage.removeItem('currentUser');
+        window.location.href = 'home.html';
+    });
+
+    init();
+    </script>
+    <script src="/pwa.js"></script>
+</body>
+</html>

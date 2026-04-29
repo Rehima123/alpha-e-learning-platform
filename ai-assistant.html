@@ -1,0 +1,91 @@
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">AI Learning Assistant</h3>
+                    <p class="mb-0">Get instant help with your studies</p>
+                </div>
+                <div class="card-body">
+                    <div class="ai-chat-container" style="height: 500px; overflow-y: auto; margin-bottom: 20px;">
+                        <div class="ai-message alert alert-info">
+                            <strong>AI Tutor:</strong> Hello! I'm your AI learning assistant. How can I help you with your studies today?
+                        </div>
+                        <!-- Messages will appear here -->
+                    </div>
+                    <form id="aiChatForm">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="aiQuestion" placeholder="Ask me anything about your coursework..." required>
+                            <button class="btn btn-primary" type="submit">Ask</button>
+                        </div>
+                        <div class="form-text">
+                            Example questions: "Explain quadratic equations", "Help me understand photosynthesis", "Give me an example of a thesis statement"
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>The AI assistant may occasionally generate incorrect information. Always verify important facts with your instructors.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('aiChatForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const question = document.getElementById('aiQuestion').value;
+    
+    if (!question.trim()) return;
+    
+    // Add user question to chat
+    const chatContainer = document.querySelector('.ai-chat-container');
+    const userMessage = document.createElement('div');
+    userMessage.className = 'ai-message alert alert-secondary text-end';
+    userMessage.innerHTML = `<strong>You:</strong> ${question}`;
+    chatContainer.appendChild(userMessage);
+    
+    // Clear input
+    document.getElementById('aiQuestion').value = '';
+    
+    // Show loading indicator
+    const loadingMsg = document.createElement('div');
+    loadingMsg.className = 'ai-message alert alert-light';
+    loadingMsg.innerHTML = '<strong>AI Tutor:</strong> Thinking...';
+    chatContainer.appendChild(loadingMsg);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+    try {
+        // Call backend API
+        const response = await fetch('/api/ai/ask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ question })
+        });
+        
+        const data = await response.json();
+        
+        // Remove loading message
+        chatContainer.removeChild(loadingMsg);
+        
+        // Add AI response
+        const aiMessage = document.createElement('div');
+        aiMessage.className = 'ai-message alert alert-info';
+        aiMessage.innerHTML = `<strong>AI Tutor:</strong> ${data.answer}`;
+        chatContainer.appendChild(aiMessage);
+        
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    } catch (err) {
+        console.error('Error:', err);
+        chatContainer.removeChild(loadingMsg);
+        
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'ai-message alert alert-danger';
+        errorMsg.innerHTML = '<strong>Error:</strong> Sorry, something went wrong. Please try again.';
+        chatContainer.appendChild(errorMsg);
+    }
+});
+</script>

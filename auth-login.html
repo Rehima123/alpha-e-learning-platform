@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AlphaFT">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/logo.png">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>Welcome Back</h2>
+            <p class="auth-subtitle">Login to continue your learning journey</p>
+            
+            <form id="loginForm" class="auth-form">
+                <div id="errorMessage" style="display: none; color: #e74c3c; background: #fadbd8; padding: 10px; border-radius: 5px; margin-bottom: 15px;"></div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Enter your password">
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="remember">
+                        Remember me
+                    </label>
+                    <a href="#" class="link">Forgot password?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-large btn-block">Login</button>
+                
+                <div class="auth-divider">
+                    <span>OR</span>
+                </div>
+                
+                <button type="button" class="btn btn-social btn-google">
+                    🔍 Continue with Google
+                </button>
+                
+                <p class="auth-footer">
+                    Don't have an account? <a href="auth-register.html" class="link">Sign up</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script src="theme.js"></script>
+    <script src="ai-assistant.js"></script>
+    <script src="init-admin.js"></script>
+    <script src="api.js"></script>
+    <script src="notifications.js"></script>
+    <script src="auth-login.js"></script>
+    <script src="pwa.js"></script>
+</body>
+</html>

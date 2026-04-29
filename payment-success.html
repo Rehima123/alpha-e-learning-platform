@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful — Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container"><span class="platform-name">Alpha Freshman Tutorial</span></a>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width:600px;margin:4rem auto;text-align:center">
+        <div style="background:var(--bg-secondary);border-radius:20px;padding:3rem;box-shadow:0 4px 24px var(--shadow)">
+            <div style="font-size:4rem;margin-bottom:1rem">🎉</div>
+            <h2 style="color:#27ae60;margin-bottom:0.5rem">Payment Successful!</h2>
+            <p style="color:var(--text-secondary);margin-bottom:2rem">Your payment has been processed successfully.</p>
+
+            <div id="invoiceBox" style="background:var(--bg-primary);border-radius:12px;padding:1.5rem;margin-bottom:2rem;text-align:left">
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                    <span style="color:var(--text-secondary)">Invoice #</span>
+                    <strong id="invoiceNum" style="color:var(--text-primary)">—</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                    <span style="color:var(--text-secondary)">Item</span>
+                    <strong id="invoiceItem" style="color:var(--text-primary)">—</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                    <span style="color:var(--text-secondary)">Amount Paid</span>
+                    <strong id="invoiceAmount" style="color:#667eea">—</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between">
+                    <span style="color:var(--text-secondary)">Date</span>
+                    <span id="invoiceDate" style="color:var(--text-primary)">—</span>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+                <button onclick="downloadInvoice()" class="btn btn-success">📄 Download Invoice</button>
+                <a href="courses.html" class="btn">Browse Courses</a>
+                <a href="dashboard.html" class="btn">My Dashboard</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="theme.js"></script>
+    <script src="api.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const txRef   = params.get('tx_ref');
+        const invoice = params.get('invoice');
+
+        async function loadPaymentInfo() {
+            try {
+                if (txRef) {
+                    const res = await api.request(`/payments/verify?tx_ref=${txRef}`);
+                    if (res.success && res.payment) showInvoice(res.payment);
+                } else if (invoice) {
+                    // Try to find by invoice number from my payments
+                    const res = await api.request('/payments/my-payments');
+                    if (res.success) {
+                        const p = res.payments.find(p => p.invoiceNumber === invoice);
+                        if (p) showInvoice(p);
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function showInvoice(p) {
+            document.getElementById('invoiceNum').textContent    = p.invoiceNumber || '—';
+            document.getElementById('invoiceItem').textContent   = p.course?.title || (p.plan + ' Subscription');
+            document.getElementById('invoiceAmount').textContent = `${p.total?.toLocaleString()} ETB`;
+            document.getElementById('invoiceDate').textContent   = new Date(p.paidAt || p.createdAt).toLocaleDateString();
+            window._paymentData = p;
+        }
+
+        function downloadInvoice() {
+            const p = window._paymentData;
+            if (!p) return alert('Invoice data not loaded yet');
+            const html = `
+                <html><head><title>Invoice ${p.invoiceNumber}</title>
+                <style>body{font-family:Arial,sans-serif;max-width:600px;margin:40px auto;color:#333}
+                h1{color:#667eea}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee}
+                .total{font-weight:bold;font-size:1.1rem;color:#667eea}</style></head>
+                <body>
+                <h1>Alpha Freshman Tutorial</h1>
+                <p>Invoice #${p.invoiceNumber} · ${new Date(p.paidAt).toLocaleDateString()}</p>
+                <div class="row"><span>Item</span><span>${p.course?.title || p.plan + ' Subscription'}</span></div>
+                <div class="row"><span>Subtotal</span><span>${p.subtotal?.toLocaleString()} ETB</span></div>
+                ${p.discount > 0 ? `<div class="row"><span>Discount</span><span>-${p.discount?.toLocaleString()} ETB</span></div>` : ''}
+                <div class="row"><span>Tax (15%)</span><span>${p.tax?.toLocaleString()} ETB</span></div>
+                <div class="row total"><span>Total Paid</span><span>${p.total?.toLocaleString()} ETB</span></div>
+                <p style="margin-top:30px;color:#888;font-size:0.85rem">Thank you for choosing Alpha Freshman Tutorial!</p>
+                </body></html>`;
+            const w = window.open('', '_blank');
+            w.document.write(html);
+            w.document.close();
+            w.print();
+        }
+
+        loadPaymentInfo();
+    </script>
+</body>
+</html>
