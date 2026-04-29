@@ -1,7 +1,21 @@
 {
-  "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/server/server.js" },
-    { "source": "/", "destination": "/index.html" }
-  ]
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/home", "destination": "/home.html" },
+    { "source": "/courses", "destination": "/courses.html" },
+    { "source": "/login", "destination": "/auth-login.html" },
+    { "source": "/register", "destination": "/auth-register.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/course-detail", "destination": "/course-detail.html" },
+    { "source": "/course-payment", "destination": "/course-payment.html" },
+    { "source": "/payment", "destination": "/payment.html" },
+    { "source": "/subscription", "destination": "/subscription.html" },
+    { "source": "/admin", "destination": "/admin-dashboard.html" },
+    { "source": "/instructor", "destination": "/instructor-dashboard.html" },
+    { "source": "/ai-assistant", "destination": "/ai-assistant.html" },
+    { "source": "/ai-study", "destination": "/ai-study.html" }
+  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite"
 }
