@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/index.html" },
     { "source": "/home", "destination": "/home.html" },
     { "source": "/courses", "destination": "/courses.html" },
     { "source": "/login", "destination": "/auth-login.html" },
@@ -18,8 +17,5 @@
     { "source": "/study-hub", "destination": "/study-hub.html" },
     { "source": "/department-guide", "destination": "/department-guide.html" },
     { "source": "/offline", "destination": "/offline.html" }
-  ],
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite"
+  ]
 }
