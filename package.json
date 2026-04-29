@@ -4,7 +4,7 @@
   "description": "E-Learning Platform with React and Tailwind CSS",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "echo 'Static site - no build needed'",
     "preview": "vite preview"
   },
   "dependencies": {
