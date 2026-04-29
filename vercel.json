@@ -9,6 +9,7 @@
     { "source": "/course-detail", "destination": "/course-detail.html" },
     { "source": "/course-payment", "destination": "/course-payment.html" },
     { "source": "/payment", "destination": "/payment.html" },
+    { "source": "/payment-success", "destination": "/payment-success.html" },
     { "source": "/subscription", "destination": "/subscription.html" },
     { "source": "/admin", "destination": "/admin-dashboard.html" },
     { "source": "/instructor", "destination": "/instructor-dashboard.html" },
@@ -16,7 +17,7 @@
     { "source": "/ai-study", "destination": "/ai-study.html" },
     { "source": "/study-hub", "destination": "/study-hub.html" },
     { "source": "/department-guide", "destination": "/department-guide.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" }
+    { "source": "/offline", "destination": "/offline.html" }
   ],
   "buildCommand": "npm run build",
   "outputDirectory": "dist",

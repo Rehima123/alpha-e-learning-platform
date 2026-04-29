@@ -146,3 +146,42 @@ async function loadLiveStats() {
         animateCounter(document.getElementById('stat-instructors'), 15);
     }
 }
+
+// ─── Study Streak Tracker ─────────────────────────────────────────────────────
+const streakTracker = {
+    getStreak() {
+        const data = JSON.parse(localStorage.getItem('studyStreak') || '{"streak":0,"lastDate":null}');
+        const today = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+        if (data.lastDate === today) return data;
+        if (data.lastDate === yesterday) {
+            // Extend streak
+            data.streak = (data.streak || 0) + 1;
+            data.lastDate = today;
+        } else if (data.lastDate !== today) {
+            // Streak broken
+            data.streak = 1;
+            data.lastDate = today;
+        }
+        localStorage.setItem('studyStreak', JSON.stringify(data));
+        return data;
+    },
+
+    renderBadge(el) {
+        if (!el) return;
+        const { streak } = this.getStreak();
+        if (streak < 1) return;
+
+        const color = streak >= 30 ? '#e74c3c' : streak >= 7 ? '#e67e22' : '#f39c12';
+        el.innerHTML = `
+            <div style="display:inline-flex;align-items:center;gap:8px;
+                background:${color}22;border:1px solid ${color};
+                border-radius:20px;padding:6px 14px;font-size:0.85rem;font-weight:600;color:${color}">
+                🔥 ${streak}-day streak!
+                ${streak >= 7  ? ' 🏅' : ''}
+                ${streak >= 30 ? ' 🏆' : ''}
+            </div>
+        `;
+    }
+};
