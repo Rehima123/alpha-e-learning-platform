@@ -13,7 +13,10 @@
     { "source": "/admin", "destination": "/admin-dashboard.html" },
     { "source": "/instructor", "destination": "/instructor-dashboard.html" },
     { "source": "/ai-assistant", "destination": "/ai-assistant.html" },
-    { "source": "/ai-study", "destination": "/ai-study.html" }
+    { "source": "/ai-study", "destination": "/ai-study.html" },
+    { "source": "/study-hub", "destination": "/study-hub.html" },
+    { "source": "/department-guide", "destination": "/department-guide.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" }
   ],
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
