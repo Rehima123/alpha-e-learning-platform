@@ -1,4 +1,7 @@
 {
+  "framework": null,
+  "buildCommand": "",
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/home", "destination": "/home.html" },
     { "source": "/courses", "destination": "/courses.html" },
