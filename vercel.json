@@ -1,6 +1,5 @@
 {
-  "framework": null,
-  "buildCommand": "",
+  "buildCommand": "echo 'No build needed'",
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/home", "destination": "/home.html" },
