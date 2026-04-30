@@ -1,9 +1,13 @@
 
 // API Configuration and Service Layer
-// Auto-detects: Vercel production URL or local dev server
+// ─── SET YOUR BACKEND URL HERE ────────────────────────────────────────────────
+// After deploying backend to Render, replace the URL below:
+const BACKEND_URL = 'https://alpha-freshman-api.onrender.com';
+// ─────────────────────────────────────────────────────────────────────────────
+
 const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:5000/api'
-    : '/api';
+    : `${BACKEND_URL}/api`;
 
 class APIService {
     constructor() {
@@ -303,6 +307,9 @@ class APIService {
     async rejectEnrollment(id, reason = '') {
         return this.request(`/enrollments/${id}/reject`, { method: 'PUT', body: JSON.stringify({ reason }) });
     }
+    async updateProgress(enrollmentId, progressData) {
+        return this.request(`/enrollments/${enrollmentId}/progress`, { method: 'PUT', body: JSON.stringify(progressData) });
+    }
 
     // ── Payment endpoints ───────────────────────────────────────────────────────
     async createPaymentIntent(data) {
@@ -310,202 +317,6 @@ class APIService {
     }
     async confirmPayment(id) {
         return this.request(`/payments/${id}/confirm`, { method: 'POST' });
-    }
-}
-
-const api = new APIService();
-
-
-class APIService {
-    constructor() {
-        this.baseURL = API_BASE_URL;
-    }
-
-    getAuthToken() {
-        return localStorage.getItem('authToken');
-    }
-
-    setAuthToken(token) {
-        localStorage.setItem('authToken', token);
-    }
-
-    removeAuthToken() {
-        localStorage.removeItem('authToken');
-    }
-
-    async request(endpoint, options = {}) {
-        const url = `${this.baseURL}${endpoint}`;
-        const token = this.getAuthToken();
-
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` }),
-                ...options.headers
-            },
-            ...options
-        };
-
-        try {
-            const response = await fetch(url, config);
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'API request failed');
-            }
-
-            return data;
-        } catch (error) {
-            // If offline and response has offline flag, return it gracefully
-            if (error instanceof TypeError && !navigator.onLine) {
-                console.warn('[API] Offline — returning cached/empty response');
-                return { success: false, offline: true, message: 'You are offline', courses: [], enrollments: [], users: [] };
-            }
-            console.error('API Error:', error);
-            throw error;
-        }
-    }
-
-    // Auth endpoints
-    async register(userData) {
-        return this.request('/auth/register', {
-            method: 'POST',
-            body: JSON.stringify(userData)
-        });
-    }
-
-    async login(credentials) {
-        return this.request('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify(credentials)
-        });
-    }
-
-    async getMe() {
-        return this.request('/auth/me');
-    }
-
-    async logout() {
-        return this.request('/auth/logout', { method: 'POST' });
-    }
-
-    // Course endpoints
-    async getCourses(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
-        return this.request(`/courses${queryString ? '?' + queryString : ''}`);
-    }
-
-    async getCourse(id) {
-        return this.request(`/courses/${id}`);
-    }
-
-    async createCourse(courseData) {
-        return this.request('/courses', {
-            method: 'POST',
-            body: JSON.stringify(courseData)
-        });
-    }
-
-    async updateCourse(id, courseData) {
-        return this.request(`/courses/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(courseData)
-        });
-    }
-
-    async deleteCourse(id) {
-        return this.request(`/courses/${id}`, { method: 'DELETE' });
-    }
-
-    async getInstructorCourses() {
-        return this.request('/courses/instructor/my-courses');
-    }
-
-    async addReview(courseId, reviewData) {
-        return this.request(`/courses/${courseId}/review`, {
-            method: 'POST',
-            body: JSON.stringify(reviewData)
-        });
-    }
-
-    // Admin endpoints
-    async getPendingCourses() {
-        return this.request('/admin/courses/pending');
-    }
-
-    async approveCourse(id) {
-        return this.request(`/admin/courses/${id}/approve`, { method: 'PUT' });
-    }
-
-    async rejectCourse(id) {
-        return this.request(`/admin/courses/${id}/reject`, { method: 'PUT' });
-    }
-
-    async getAllUsers() {
-        return this.request('/admin/users');
-    }
-
-    async deactivateUser(id) {
-        return this.request(`/admin/users/${id}/deactivate`, { method: 'PUT' });
-    }
-
-    async activateUser(id) {
-        return this.request(`/admin/users/${id}/activate`, { method: 'PUT' });
-    }
-
-    async getAdminStats() {
-        return this.request('/admin/stats');
-    }
-
-    // Enrollment endpoints
-    async requestEnrollment(courseId) {
-        return this.request('/enrollments', {
-            method: 'POST',
-            body: JSON.stringify({ courseId })
-        });
-    }
-
-    async getMyEnrollments() {
-        return this.request('/enrollments/my-enrollments');
-    }
-
-    async updateProgress(enrollmentId, progressData) {
-        return this.request(`/enrollments/${enrollmentId}/progress`, {
-            method: 'PUT',
-            body: JSON.stringify(progressData)
-        });
-    }
-
-    // Admin enrollment endpoints
-    async getPendingEnrollments() {
-        return this.request('/enrollments/pending');
-    }
-
-    async getAllEnrollments() {
-        return this.request('/enrollments/all');
-    }
-
-    async approveEnrollment(id) {
-        return this.request(`/enrollments/${id}/approve`, { method: 'PUT' });
-    }
-
-    async rejectEnrollment(id, reason = '') {
-        return this.request(`/enrollments/${id}/reject`, {
-            method: 'PUT',
-            body: JSON.stringify({ reason })
-        });
-    }
-
-    // Payment endpoints
-    async createPaymentIntent(paymentData) {
-        return this.request('/payments/create-intent', {
-            method: 'POST',
-            body: JSON.stringify(paymentData)
-        });
-    }
-
-    async confirmPayment(paymentId) {
-        return this.request(`/payments/${paymentId}/confirm`, { method: 'POST' });
     }
 }
 
