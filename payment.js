@@ -25,7 +25,7 @@ async function init() {
                 document.getElementById('orderType').textContent  = `Course · ${c.category}`;
                 subtotal = Math.round(c.price * ETB_RATE);
             }
-        } catch { toast.error('Failed to load course info'); }
+        } catch { toast?.error('Failed to load course info'); }
     } else if (plan && planInfo[plan]) {
         document.getElementById('orderIcon').textContent  = plan === 'annual' ? '⭐' : '📅';
         document.getElementById('orderTitle').textContent = planInfo[plan].name;
@@ -107,14 +107,14 @@ async function processPayment() {
                 body: JSON.stringify({ txRef: res.txRef })
             });
             if (verify.success) {
-                toast.success('Payment successful! 🎉');
+                toast?.success('Payment successful! 🎉');
                 setTimeout(() => window.location.href = `payment-success.html?invoice=${verify.invoiceNumber}`, 1500);
             }
         } else if (res.checkoutUrl) {
             window.location.href = res.checkoutUrl;
         }
     } catch (e) {
-        toast.error(e.message || 'Payment failed. Please try again.');
+        toast?.error(e.message || 'Payment failed. Please try again.');
         btn.disabled = false;
         btn.textContent = selectedMethod === 'chapa' ? 'Pay with Chapa' : 'Pay with Card';
     }
