@@ -38,10 +38,14 @@ app.use(helmet({
 }));
 
 // CORS Configuration — lock down for production
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000').split(',').map(o => o.trim());
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://alpha-freshman-tutorial.vercel.app',
+    ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(o => o.trim()) : [])
+];
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, curl) or matching origins
         if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
             callback(null, true);
         } else {
