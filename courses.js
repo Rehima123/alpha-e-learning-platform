@@ -185,71 +185,30 @@ const STATIC_COURSES = [
 ];
 
 // ── Skeleton loader ───────────────────────────────────────────────────────────
-function showSkeletons(containerId, count = 6) {
+function showSkeletonsLocal(containerId, count = 6) {
+    if (typeof showSkeletons === 'function') { showSkeletons(containerId, count); return; }
     const grid = document.getElementById(containerId);
-    if (!grid) return;
-    grid.innerHTML = Array(count).fill(`
-        <div class="course-card" style="pointer-events:none">
-            <div class="course-image" style="background:var(--border-color);animation:pulse 1.5s infinite">
-                <div style="height:100%;background:linear-gradient(90deg,var(--border-color) 25%,var(--bg-secondary) 50%,var(--border-color) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite"></div>
-            </div>
-            <div class="course-content">
-                <div style="height:14px;background:var(--border-color);border-radius:4px;margin-bottom:10px;width:40%;animation:shimmer 1.5s infinite"></div>
-                <div style="height:18px;background:var(--border-color);border-radius:4px;margin-bottom:8px;animation:shimmer 1.5s infinite"></div>
-                <div style="height:14px;background:var(--border-color);border-radius:4px;margin-bottom:8px;width:70%;animation:shimmer 1.5s infinite"></div>
-                <div style="height:14px;background:var(--border-color);border-radius:4px;margin-bottom:16px;width:50%;animation:shimmer 1.5s infinite"></div>
-                <div style="height:36px;background:var(--border-color);border-radius:8px;animation:shimmer 1.5s infinite"></div>
-            </div>
-        </div>
-    `).join('');
-
-    // Add shimmer keyframes once
-    if (!document.getElementById('shimmerStyle')) {
-        const s = document.createElement('style');
-        s.id = 'shimmerStyle';
-        s.textContent = `
-            @keyframes shimmer {
-                0%   { background-position: 200% 0; }
-                100% { background-position: -200% 0; }
-            }
-            @keyframes pulse {
-                0%, 100% { opacity: 1; }
-                50%       { opacity: 0.6; }
-            }
-        `;
-        document.head.appendChild(s);
-    }
+    if (grid) grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:2rem">Loading...</p>';
 }
 
 // ── Load courses from API with static fallback ────────────────────────────────
 async function loadCourses() {
-    showSkeletons('coursesGrid', 6);
-
-    // Always show static courses immediately, then try to upgrade from API
+    // Show static courses FIRST — instant, no waiting
     loadStaticCourses();
 
+    // Then silently try API in background (don't block UI)
     try {
-        const params = {};
-        if (currentCategory !== 'all') params.category = currentCategory;
-        if (currentSort !== 'newest') params.sort = currentSort;
-
         const response = await Promise.race([
-            api.getCourses(params),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+            api.getCourses({}),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000))
         ]);
-
-        if (response && response.success && response.courses && response.courses.length > 0) {
+        if (response && response.success && Array.isArray(response.courses) && response.courses.length > 0) {
             allCourses = response.courses;
-            if (typeof offlineDB !== 'undefined') {
-                offlineDB.putAll('courses', allCourses).catch(() => {});
-            }
             filteredCourses = [...allCourses];
             applySearch();
         }
-        // else: keep the static courses already displayed
-    } catch (error) {
-        // Static courses are already showing — no action needed
-        console.warn('[Courses] Backend unavailable, static data shown');
+    } catch (_) {
+        // Static courses already showing — nothing to do
     }
 }
 
@@ -437,14 +396,30 @@ function updateNavbar() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 updateNavbar();
-document.addEventListener('DOMContentLoaded', () => {
-    // Handle ?search= from home page hero
+
+// Load static courses IMMEDIATELY — don't wait for DOMContentLoaded
+(function initCourses() {
     const urlSearch = new URLSearchParams(window.location.search).get('search');
     if (urlSearch) {
         const input = document.getElementById('searchInput');
         if (input) input.value = urlSearch;
     }
+    loadEnrollments().catch(() => {});
+    loadCourses();
+})();
 
-    new LiveSearch('searchInput', (id) => window.location.href = `course-detail.html?id=${id}`);
-    loadEnrollments().then(() => loadCourses());
+document.addEventListener('DOMContentLoaded', () => {
+    // Handle ?search= from home page hero
+    const urlSearch = new URLSearchParams(window.location.search).get('search');
+    if (urlSearch) {
+        const input = document.getElementById('searchInput');
+        if (input) {
+            input.value = urlSearch;
+            applySearch();
+        }
+    }
+    // LiveSearch for suggestions dropdown
+    try {
+        new LiveSearch('searchInput', (id) => window.location.href = `course-detail.html?id=${id}`);
+    } catch(e) { console.warn('LiveSearch init failed:', e); }
 });
