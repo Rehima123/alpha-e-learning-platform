@@ -4,6 +4,171 @@ let currentCourse = null;
 let userEnrollment = null;
 let activeLesson  = null; // { chapterIdx, lessonIdx }
 
+// ── Static course detail data (same as courses.js, with chapters added) ───────
+const STATIC_COURSE_DETAILS = {
+    'course-eng1': {
+        _id: 'course-eng1', title: 'Communicative English I', icon: '📖',
+        description: 'Develop essential English communication skills for academic and everyday contexts. Covers reading, writing, listening and speaking.',
+        level: 'Beginner', category: 'semester1', department: 'Semester 1', duration: '16 weeks',
+        instructorName: 'Dr. Tigist Haile', rating: 4.8, enrolledStudents: 1240, totalLessons: 32,
+        isPremium: false, price: 0, isFreePreview: false,
+        chapters: [
+            { title: 'Unit 1 - Reading Skills', lessons: [
+                { title: 'Introduction to Academic Reading', duration: '45 min', notes: '## Reading Skills\nAcademic reading requires active engagement.\n\n**Key Strategies:**\n- Skimming for main ideas\n- Scanning for details\n- Identifying topic sentences\n- Making inferences' },
+                { title: 'Skimming and Scanning', duration: '40 min', notes: '## Skimming vs Scanning\n**Skimming:** Read quickly for general meaning\n**Scanning:** Search for specific information' },
+                { title: 'Vocabulary in Context', duration: '35 min', notes: '## Context Clues\nUse surrounding words to determine meaning of unfamiliar words.' }
+            ]},
+            { title: 'Unit 2 - Writing Skills', lessons: [
+                { title: 'Paragraph Structure', duration: '50 min', notes: '## Paragraph Structure\nEvery paragraph has:\n- **Topic sentence** – main idea\n- **Supporting sentences** – evidence\n- **Concluding sentence** – wrap up' },
+                { title: 'Essay Writing Basics', duration: '55 min', notes: '## Essay Structure\n- Introduction (hook + thesis)\n- Body paragraphs (3+)\n- Conclusion' }
+            ]},
+            { title: 'Unit 3 - Speaking & Listening', lessons: [
+                { title: 'Effective Communication', duration: '40 min', notes: '## Communication Skills\n- Active listening\n- Clear pronunciation\n- Body language' },
+                { title: 'Academic Presentations', duration: '45 min', notes: '## Presentation Tips\n- Structure: Opening, Body, Closing\n- Speak clearly and confidently\n- Use visual aids' }
+            ]}
+        ]
+    },
+    'course-math1': {
+        _id: 'course-math1', title: 'Mathematics for Natural Science', icon: '📐',
+        description: 'Covers calculus, algebra and analytical geometry. Foundation for engineering, medicine and natural science students.',
+        level: 'Intermediate', category: 'semester1', department: 'Semester 1', duration: '16 weeks',
+        instructorName: 'Prof. Bekele Tadesse', rating: 4.7, enrolledStudents: 980,
+        isPremium: false, price: 0, isFreePreview: false,
+        chapters: [
+            { title: 'Chapter 1 - Functions & Limits', lessons: [
+                { title: 'Introduction to Functions', duration: '50 min', notes: '## Functions\nA function f maps each input x to exactly one output f(x).\n\n**Types:** Linear, Quadratic, Polynomial, Exponential, Logarithmic' },
+                { title: 'Limits and Continuity', duration: '55 min', notes: '## Limits\nlim(x→a) f(x) = L means f(x) approaches L as x approaches a.' }
+            ]},
+            { title: 'Chapter 2 - Differentiation', lessons: [
+                { title: 'Derivative Rules', duration: '60 min', notes: '## Differentiation Rules\n- Power Rule: d/dx(xⁿ) = nxⁿ⁻¹\n- Product Rule\n- Chain Rule' },
+                { title: 'Applications of Derivatives', duration: '55 min', notes: '## Applications\n- Finding maxima/minima\n- Related rates\n- Curve sketching' }
+            ]},
+            { title: 'Chapter 3 - Integration', lessons: [
+                { title: 'Indefinite Integrals', duration: '55 min', notes: '## Integration\nThe reverse of differentiation.\n∫xⁿ dx = xⁿ⁺¹/(n+1) + C' },
+                { title: 'Definite Integrals & Area', duration: '60 min', notes: '## Definite Integral\n∫[a to b] f(x)dx = area under curve from a to b' }
+            ]}
+        ]
+    },
+    'course-logic1': {
+        _id: 'course-logic1', title: 'Critical Thinking & Logic', icon: '🧠',
+        description: 'Master logical reasoning, argument analysis and problem-solving techniques essential for all academic disciplines.',
+        level: 'Beginner', category: 'semester1', department: 'Semester 1', duration: '12 weeks',
+        instructorName: 'Dr. Mekdes Alemu', rating: 4.9, enrolledStudents: 1560,
+        isPremium: false, price: 0, isFreePreview: false,
+        chapters: [
+            { title: 'Unit 1 - Introduction to Logic', lessons: [
+                { title: 'What is Critical Thinking?', duration: '40 min', notes: '## Critical Thinking\nThe ability to analyze facts and form judgments.\n\n**Key Elements:**\n- Analysis\n- Evaluation\n- Inference\n- Explanation' },
+                { title: 'Arguments and Propositions', duration: '45 min', notes: '## Arguments\nAn argument has **premises** (reasons) and a **conclusion**.\n\n> A valid argument: if premises are true, conclusion must be true.' }
+            ]},
+            { title: 'Unit 2 - Logical Fallacies', lessons: [
+                { title: 'Common Logical Fallacies', duration: '50 min', notes: '## Fallacies\n- **Ad Hominem:** Attacking the person\n- **Straw Man:** Misrepresenting argument\n- **False Dilemma:** Only two options presented' }
+            ]}
+        ]
+    },
+    'course-ict': {
+        _id: 'course-ict', title: 'ICT & Computer Applications', icon: '💻',
+        description: 'Practical computer skills including word processing, spreadsheets, presentations, internet and basic programming.',
+        level: 'Beginner', category: 'semester2', department: 'Semester 2', duration: '12 weeks',
+        instructorName: 'Eng. Daniel Tesfaye', rating: 4.8, enrolledStudents: 1450,
+        isPremium: false, price: 0, isFreePreview: false,
+        chapters: [
+            { title: 'Module 1 - Computer Basics', lessons: [
+                { title: 'Introduction to Computers', duration: '40 min', notes: '## Computer Basics\n**Hardware:** Physical components (CPU, RAM, Storage)\n**Software:** Programs and operating systems\n**Input/Output:** Keyboard, mouse, monitor, printer' },
+                { title: 'Operating Systems', duration: '45 min', notes: '## Operating Systems\n- Windows, macOS, Linux\n- File management\n- Settings and customization' }
+            ]},
+            { title: 'Module 2 - MS Office', lessons: [
+                { title: 'Microsoft Word Essentials', duration: '50 min', notes: '## MS Word\n- Creating and formatting documents\n- Styles and headings\n- Tables and images\n- Printing and saving' },
+                { title: 'Microsoft Excel Basics', duration: '55 min', notes: '## Excel\n- Cells, rows, columns\n- Formulas: =SUM(), =AVERAGE()\n- Charts and graphs' },
+                { title: 'PowerPoint Presentations', duration: '45 min', notes: '## PowerPoint\n- Slides and layouts\n- Animations and transitions\n- Presenting effectively' }
+            ]},
+            { title: 'Module 3 - Internet & Programming', lessons: [
+                { title: 'Internet & Email', duration: '40 min', notes: '## Internet Skills\n- Searching effectively (Google)\n- Email etiquette\n- Online safety and privacy' },
+                { title: 'Introduction to Programming', duration: '55 min', notes: '## Programming Basics\n- What is an algorithm?\n- Variables and data types\n- If/else, loops\n- Introduction to Python' }
+            ]}
+        ]
+    },
+    'course-hist': {
+        _id: 'course-hist', title: 'Ethiopian History & Heritage', icon: '📜',
+        description: 'Comprehensive study of Ethiopian history from ancient civilizations to the modern state.',
+        level: 'Beginner', category: 'semester2', department: 'Semester 2', duration: '14 weeks',
+        instructorName: 'Prof. Getachew Yimer', rating: 4.9, enrolledStudents: 1320,
+        isPremium: false, price: 0, isFreePreview: false,
+        chapters: [
+            { title: 'Chapter 1 - Ancient Ethiopia', lessons: [
+                { title: 'Aksum Empire', duration: '55 min', notes: '## Aksum Empire\nOne of the greatest civilizations of the ancient world.\n\n**Achievements:**\n- Unique writing system (Ge\'ez)\n- Obelisks (Stelae)\n- First African nation to adopt Christianity\n- Major trade hub' },
+                { title: 'Medieval Kingdoms', duration: '50 min', notes: '## Medieval Period\n- Zagwe Dynasty (900-1270)\n- Lalibela rock-hewn churches\n- Solomonic Dynasty restoration' }
+            ]},
+            { title: 'Chapter 2 - Modern Ethiopia', lessons: [
+                { title: 'Battle of Adwa', duration: '55 min', notes: '## Battle of Adwa (1896)\nEthiopia\'s historic victory against Italian colonization.\n\n**Significance:**\n- Only African nation to defeat European colonizer\n- Symbol of African independence\n- Emperor Menelik II led the victory' },
+                { title: 'Ethiopia Today', duration: '45 min', notes: '## Modern Ethiopia\n- Federal Democratic Republic\n- Diverse ethnic groups (80+)\n- Capital: Addis Ababa\n- African Union headquarters' }
+            ]}
+        ]
+    },
+    'course-bio1': {
+        _id: 'course-bio1', title: 'General Biology', icon: '🔬',
+        description: 'Cell biology, genetics, evolution, ecology and physiology. Foundation course for Medicine and Natural Science students.',
+        level: 'Intermediate', category: 'natural', department: 'Natural Science', duration: '16 weeks',
+        instructorName: 'Dr. Emebet Tadesse', rating: 4.8, enrolledStudents: 1180,
+        isPremium: true, price: 150, isFreePreview: true,
+        chapters: [
+            { title: 'Chapter 1 - Cell Biology', lessons: [
+                { title: 'Cell Structure & Function', duration: '55 min', notes: '## The Cell\nThe basic unit of life.\n\n**Organelles:**\n- Nucleus – controls cell activities\n- Mitochondria – energy production\n- Ribosome – protein synthesis\n- Cell membrane – controls entry/exit' },
+                { title: 'Cell Division (Mitosis & Meiosis)', duration: '60 min', notes: '## Cell Division\n**Mitosis:** Cell division for growth (2 identical daughter cells)\n**Meiosis:** Division for reproduction (4 cells with half chromosomes)' }
+            ]},
+            { title: 'Chapter 2 - Genetics', lessons: [
+                { title: 'DNA and Genes', duration: '60 min', notes: '## Genetics\nDNA carries genetic information.\n\n**Structure:** Double helix\n**Bases:** A-T, G-C pairs\n**Gene:** Section of DNA coding for a protein' },
+                { title: 'Mendelian Genetics', duration: '55 min', notes: '## Mendel\'s Laws\n- Law of Segregation\n- Law of Independent Assortment\n\n**Dominant vs Recessive traits**' }
+            ]}
+        ]
+    },
+    'course-advmath': {
+        _id: 'course-advmath', title: 'Advanced Mathematics', icon: '📏',
+        description: 'Differential equations, linear algebra, vector calculus and complex analysis for engineering and science majors.',
+        level: 'Advanced', category: 'natural', department: 'Natural Science', duration: '16 weeks',
+        instructorName: 'Prof. Bekele Tadesse', rating: 4.5, enrolledStudents: 640,
+        isPremium: true, price: 200, isFreePreview: true,
+        chapters: [
+            { title: 'Chapter 1 - Linear Algebra', lessons: [
+                { title: 'Matrices and Determinants', duration: '60 min', notes: '## Matrices\nRectangular arrays of numbers.\n\n**Operations:** Addition, Multiplication\n**Determinant:** det(A) for 2×2: ad-bc' },
+                { title: 'Vector Spaces', duration: '65 min', notes: '## Vector Spaces\nA set with addition and scalar multiplication satisfying 8 axioms.' }
+            ]},
+            { title: 'Chapter 2 - Differential Equations', lessons: [
+                { title: 'First Order ODEs', duration: '65 min', notes: '## Ordinary Differential Equations\nEquations involving derivatives.\n\n**Separable:** dy/dx = g(x)h(y)\n**Linear:** dy/dx + P(x)y = Q(x)' }
+            ]}
+        ]
+    },
+    'course-exam-prep': {
+        _id: 'course-exam-prep', title: 'Freshman Exam Preparation', icon: '🎯',
+        description: 'Complete exam preparation with past papers, mock tests and AI-powered practice questions for all freshman subjects.',
+        level: 'Intermediate', category: 'natural', department: 'All Streams', duration: '6 weeks',
+        instructorName: 'Alpha Tutorial Team', rating: 4.9, enrolledStudents: 2100,
+        isPremium: true, price: 250, isFreePreview: true,
+        chapters: [
+            { title: 'Module 1 - Exam Strategy', lessons: [
+                { title: 'How to Study Effectively', duration: '40 min', notes: '## Study Strategies\n- Active recall (testing yourself)\n- Spaced repetition\n- Pomodoro technique (25 min focus / 5 min break)\n- Mind mapping' },
+                { title: 'Time Management in Exams', duration: '35 min', notes: '## Exam Time Management\n- Read all questions first\n- Attempt easy questions first\n- Budget time per question\n- Review before submitting' }
+            ]},
+            { title: 'Module 2 - Subject Reviews', lessons: [
+                { title: 'Math Quick Review', duration: '55 min', notes: '## Key Math Topics\n- Calculus fundamentals\n- Algebra\n- Statistics basics\n- Common formulas' },
+                { title: 'English Quick Review', duration: '45 min', notes: '## English Review\n- Grammar essentials\n- Essay writing\n- Vocabulary\n- Reading comprehension' },
+                { title: 'Science Quick Review', duration: '55 min', notes: '## Science Review\n- Physics laws\n- Chemistry basics\n- Biology key concepts' }
+            ]}
+        ]
+    }
+};
+
+// ── Get static course by ID ───────────────────────────────────────────────────
+function getStaticCourse(id) {
+    // Check detailed version first
+    if (STATIC_COURSE_DETAILS[id]) return STATIC_COURSE_DETAILS[id];
+    // Fallback: find in courses.js STATIC_COURSES if available
+    if (typeof STATIC_COURSES !== 'undefined') {
+        const c = STATIC_COURSES.find(c => c._id === id);
+        if (c) return { ...c, chapters: [], department: c.category };
+    }
+    return null;
+}
+
 // ── Load course ───────────────────────────────────────────────────────────────
 async function loadCourseDetail() {
     if (!courseId) {
@@ -12,63 +177,54 @@ async function loadCourseDetail() {
         return;
     }
 
-    try {
-        const courseResponse = await api.getCourse(courseId);
-        if (!courseResponse.success) throw new Error(courseResponse.message || 'Course not found');
-
-        currentCourse = courseResponse.course;
-
-        // Cache for offline
-        if (typeof offlineDB !== 'undefined') offlineDB.put('courses', currentCourse).catch(() => {});
-
-        // Load enrollment if logged in
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        if (currentUser && api.getAuthToken()) {
-            try {
-                const er = await api.getMyEnrollments();
-                if (er.success) {
-                    userEnrollment = er.enrollments.find(e => (e.course?._id || e.course) === courseId);
-                }
-            } catch {}
-        }
-
-        // Breadcrumb
+    // Show static data immediately if available
+    const staticCourse = getStaticCourse(courseId);
+    if (staticCourse) {
+        currentCourse = staticCourse;
         document.getElementById('bc-dept').textContent   = currentCourse.department || currentCourse.category;
         document.getElementById('bc-course').textContent = currentCourse.title;
         document.title = `${currentCourse.title} — Alpha Freshman Tutorial`;
-
         renderCourseHeader();
         renderChapterSidebar();
+    }
 
-        // Auto-open first lesson if enrolled
-        if (userEnrollment?.status === 'approved' && currentCourse.chapters?.length > 0) {
-            const firstLesson = currentCourse.chapters[0]?.lessons?.[0];
-            if (firstLesson) openLesson(0, 0);
+    // Then try API in background to upgrade with real data
+    try {
+        const courseResponse = await Promise.race([
+            api.getCourse(courseId),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+        ]);
+
+        if (courseResponse && courseResponse.success && courseResponse.course) {
+            currentCourse = courseResponse.course;
+            if (typeof offlineDB !== 'undefined') offlineDB.put('courses', currentCourse).catch(() => {});
+
+            // Load enrollment if logged in
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser && api.getAuthToken()) {
+                try {
+                    const er = await api.getMyEnrollments();
+                    if (er.success) {
+                        userEnrollment = er.enrollments.find(e => (e.course?._id || e.course) === courseId);
+                    }
+                } catch {}
+            }
+
+            document.getElementById('bc-dept').textContent   = currentCourse.department || currentCourse.category;
+            document.getElementById('bc-course').textContent = currentCourse.title;
+            document.title = `${currentCourse.title} — Alpha Freshman Tutorial`;
+            renderCourseHeader();
+            renderChapterSidebar();
         }
-
-    } catch (error) {
-        console.error('Error loading course:', error);
-
-        // Offline fallback
-        if (typeof offlineDB !== 'undefined') {
-            try {
-                const cached = await offlineDB.get('courses', courseId);
-                if (cached) {
-                    currentCourse = cached;
-                    renderCourseHeader();
-                    renderChapterSidebar();
-                    toast?.warning('📡 Offline — showing cached course');
-                    return;
-                }
-            } catch {}
+    } catch (_) {
+        // Static data already showing — no action needed
+        if (!staticCourse) {
+            document.getElementById('courseDetail').innerHTML = `
+                <div style="text-align:center;padding:3rem">
+                    <p style="color:var(--text-secondary);margin-bottom:1rem">⚠️ Course not found.</p>
+                    <a href="courses.html" class="btn">← Back to Courses</a>
+                </div>`;
         }
-
-        document.getElementById('courseDetail').innerHTML = `
-            <div style="text-align:center;padding:3rem">
-                <p style="color:red;margin-bottom:1rem">⚠️ ${error.message}</p>
-                <a href="courses.html" class="btn">← Back to Courses</a>
-                <button class="btn btn-success" onclick="loadCourseDetail()" style="margin-left:10px">🔄 Retry</button>
-            </div>`;
     }
 }
 
