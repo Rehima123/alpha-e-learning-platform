@@ -224,41 +224,32 @@ function showSkeletons(containerId, count = 6) {
 // ── Load courses from API with static fallback ────────────────────────────────
 async function loadCourses() {
     showSkeletons('coursesGrid', 6);
+
+    // Always show static courses immediately, then try to upgrade from API
+    loadStaticCourses();
+
     try {
         const params = {};
         if (currentCategory !== 'all') params.category = currentCategory;
         if (currentSort !== 'newest') params.sort = currentSort;
 
-        // Try backend with a 6-second timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const response = await Promise.race([
+            api.getCourses(params),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+        ]);
 
-        let response;
-        try {
-            response = await api.getCourses(params);
-            clearTimeout(timeoutId);
-        } catch (fetchError) {
-            clearTimeout(timeoutId);
-            throw fetchError;
-        }
-
-        if (response.success && response.courses && response.courses.length > 0) {
+        if (response && response.success && response.courses && response.courses.length > 0) {
             allCourses = response.courses;
-            // Cache for offline use
             if (typeof offlineDB !== 'undefined') {
                 offlineDB.putAll('courses', allCourses).catch(() => {});
             }
             filteredCourses = [...allCourses];
             applySearch();
-        } else {
-            // Backend returned empty or failed — use static data
-            loadStaticCourses();
         }
+        // else: keep the static courses already displayed
     } catch (error) {
-        console.warn('[Courses] Backend unavailable, using static data:', error.message);
-        // Try offline cache first
-        const loaded = await loadCoursesFromCache();
-        if (!loaded) loadStaticCourses();
+        // Static courses are already showing — no action needed
+        console.warn('[Courses] Backend unavailable, static data shown');
     }
 }
 
