@@ -128,7 +128,16 @@
         </div>
     </div>
 
-    <script src="ai-assistant.js"></script>
-    <script src="course-payment.js"></script>
+    <script src="pwa.js"></script>
+    <script>
+        // Redirect to unified payment page
+        const _params = new URLSearchParams(window.location.search);
+        const _id = _params.get('id') || _params.get('courseId');
+        if (_id) {
+            window.location.replace('payment.html?courseId=' + encodeURIComponent(_id));
+        } else {
+            window.location.replace('courses.html');
+        }
+    </script>
 </body>
 </html>
