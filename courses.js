@@ -107,24 +107,24 @@ const STATIC_COURSES = [
         description: 'Microeconomics and macroeconomics fundamentals. Supply, demand, markets, GDP, inflation and monetary policy.',
         level: 'Beginner', category: 'social', duration: '14 weeks',
         instructor: { fullName: 'Dr. Temesgen Alemu' }, instructorName: 'Dr. Temesgen Alemu',
-        rating: 4.7, enrolledStudents: 1010, totalLessons: 26, isPremium: false, price: 0,
-        createdAt: '2024-01-13'
+        rating: 4.7, enrolledStudents: 1010, totalLessons: 26, isPremium: true, price: 120,
+        isFreePreview: true, createdAt: '2024-01-13'
     },
     {
         _id: 'course-bio1', title: 'General Biology', icon: '🔬',
         description: 'Cell biology, genetics, evolution, ecology and physiology. Foundation course for Medicine and Natural Science students.',
         level: 'Intermediate', category: 'natural', duration: '16 weeks',
         instructor: { fullName: 'Dr. Emebet Tadesse' }, instructorName: 'Dr. Emebet Tadesse',
-        rating: 4.8, enrolledStudents: 1180, totalLessons: 32, isPremium: false, price: 0,
-        createdAt: '2024-01-14'
+        rating: 4.8, enrolledStudents: 1180, totalLessons: 32, isPremium: true, price: 150,
+        isFreePreview: true, createdAt: '2024-01-14'
     },
     {
         _id: 'course-chem1', title: 'General Chemistry', icon: '⚗️',
         description: 'Atomic structure, chemical bonding, reactions, stoichiometry and thermochemistry for science stream students.',
         level: 'Intermediate', category: 'natural', duration: '16 weeks',
         instructor: { fullName: 'Prof. Dawit Hailu' }, instructorName: 'Prof. Dawit Hailu',
-        rating: 4.6, enrolledStudents: 890, totalLessons: 30, isPremium: false, price: 0,
-        createdAt: '2024-01-15'
+        rating: 4.6, enrolledStudents: 890, totalLessons: 30, isPremium: true, price: 150,
+        isFreePreview: true, createdAt: '2024-01-15'
     },
     {
         _id: 'course-advmath', title: 'Advanced Mathematics', icon: '📏',
@@ -179,8 +179,8 @@ const STATIC_COURSES = [
         description: 'Fundamentals of Ethiopian legal system, constitutional law, human rights and access to justice for social science students.',
         level: 'Intermediate', category: 'social', duration: '14 weeks',
         instructor: { fullName: 'Adv. Selam Worku' }, instructorName: 'Adv. Selam Worku',
-        rating: 4.7, enrolledStudents: 560, totalLessons: 26, isPremium: false, price: 0,
-        createdAt: '2024-01-22'
+        rating: 4.7, enrolledStudents: 560, totalLessons: 26, isPremium: true, price: 120,
+        isFreePreview: true, createdAt: '2024-01-22'
     }
 ];
 
