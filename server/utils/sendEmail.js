@@ -1,14 +1,32 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-    host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
-    port:   parseInt(process.env.SMTP_PORT || '587'),
-    secure: false,
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
+// ── Transporter: supports Gmail, Resend, or any SMTP ─────────────────────────
+function createTransporter() {
+    // Resend (recommended) — set RESEND_API_KEY in .env
+    if (process.env.RESEND_API_KEY) {
+        return nodemailer.createTransport({
+            host: 'smtp.resend.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'resend',
+                pass: process.env.RESEND_API_KEY
+            }
+        });
     }
-});
+    // Gmail / standard SMTP
+    return nodemailer.createTransport({
+        host:   process.env.SMTP_HOST || 'smtp.gmail.com',
+        port:   parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_PORT === '465',
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+        }
+    });
+}
+
+const transporter = createTransporter();
 
 const templates = {
     enrollmentApproved: (student, course) => ({
@@ -120,14 +138,17 @@ const templates = {
 };
 
 async function sendEmail({ to, subject, html }) {
-    if (!process.env.SMTP_USER) {
-        console.log(`[Email skipped — no SMTP config] To: ${to} | Subject: ${subject}`);
+    const hasConfig = process.env.RESEND_API_KEY || process.env.SMTP_USER;
+    if (!hasConfig) {
+        console.log(`[Email skipped — no SMTP/Resend config] To: ${to} | Subject: ${subject}`);
         return;
     }
+    const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@alpha-freshman-tutorial.com';
     await transporter.sendMail({
-        from: `"Alpha Freshman Tutorial" <${process.env.SMTP_USER}>`,
+        from: `"Alpha Freshman Tutorial" <${fromAddress}>`,
         to, subject, html
     });
+    console.log(`[Email sent] To: ${to} | Subject: ${subject}`);
 }
 
 module.exports = { sendEmail, templates };
