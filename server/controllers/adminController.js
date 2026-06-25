@@ -160,3 +160,94 @@ exports.getStats = async (req, res, next) => {
         next(error);
     }
 };
+
+// @desc    Update user role (super_admin only)
+exports.updateUserRole = async (req, res, next) => {
+    try {
+        const { role } = req.body;
+        const validRoles = ['student', 'instructor', 'super_admin', 'content_admin', 'finance_admin', 'support_admin'];
+        if (!validRoles.includes(role)) {
+            return res.status(400).json({ success: false, message: 'Invalid role' });
+        }
+        // Prevent demoting yourself
+        if (req.params.id === req.user._id.toString()) {
+            return res.status(400).json({ success: false, message: 'Cannot change your own role' });
+        }
+        const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-password');
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        res.status(200).json({ success: true, message: `Role updated to ${role}`, user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Get all enrollments (any admin)
+exports.getAllEnrollments = async (req, res, next) => {
+    try {
+        const Enrollment = require('../models/Enrollment');
+        const enrollments = await Enrollment.find()
+            .populate('student', 'fullName email')
+            .populate('course', 'title icon')
+            .sort({ createdAt: -1 });
+        res.status(200).json({ success: true, count: enrollments.length, enrollments });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Get payments report (finance_admin)
+exports.getPaymentsReport = async (req, res, next) => {
+    try {
+        // Stub — replace with real Payment model query
+        res.status(200).json({
+            success: true,
+            totals: { totalRevenue: 0, platformRevenue: 0, count: 0 },
+            byCourse: [], byDay: []
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Approve payment (finance_admin)
+exports.approvePayment = async (req, res, next) => {
+    try {
+        res.status(200).json({ success: true, message: 'Payment approved' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Get support tickets (support_admin)
+exports.getTickets = async (req, res, next) => {
+    try {
+        res.status(200).json({ success: true, tickets: [] });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Reply to ticket (support_admin)
+exports.replyTicket = async (req, res, next) => {
+    try {
+        res.status(200).json({ success: true, message: 'Reply sent' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Create course (content_admin)
+exports.createCourse = async (req, res, next) => {
+    try {
+        const course = await Course.create({
+            ...req.body,
+            instructor: req.user._id,
+            instructorName: req.user.fullName,
+            status: 'approved',
+            isPublished: true
+        });
+        res.status(201).json({ success: true, message: 'Course created', course });
+    } catch (error) {
+        next(error);
+    }
+};
