@@ -1,45 +1,42 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
-const { protect, authorize } = require('../middleware/auth');
+const {
+    protect,
+    isSuperAdmin,
+    isAnyAdmin,
+    isContentAdmin,
+    isFinanceAdmin,
+    isSupportAdmin
+} = require('../middleware/auth');
 
-// All routes require admin authorization
+// All admin routes require login
 router.use(protect);
-router.use(authorize('admin'));
 
-// @route   GET /api/admin/courses/pending
-// @desc    Get pending courses
-// @access  Private (Admin)
-router.get('/courses/pending', adminController.getPendingCourses);
+// ── Stats (all admins can view) ───────────────────────────────────────────────
+router.get('/stats', isAnyAdmin, adminController.getStats);
 
-// @route   PUT /api/admin/courses/:id/approve
-// @desc    Approve course
-// @access  Private (Admin)
-router.put('/courses/:id/approve', adminController.approveCourse);
+// ── Course management (super_admin + content_admin) ───────────────────────────
+router.get('/courses/pending',       isContentAdmin, adminController.getPendingCourses);
+router.put('/courses/:id/approve',   isContentAdmin, adminController.approveCourse);
+router.put('/courses/:id/reject',    isContentAdmin, adminController.rejectCourse);
+router.post('/courses',              isContentAdmin, adminController.createCourse);
 
-// @route   PUT /api/admin/courses/:id/reject
-// @desc    Reject course
-// @access  Private (Admin)
-router.put('/courses/:id/reject', adminController.rejectCourse);
+// ── User management (super_admin only) ───────────────────────────────────────
+router.get('/users',                 isAnyAdmin,     adminController.getAllUsers);
+router.put('/users/:id/deactivate',  isSuperAdmin,   adminController.deactivateUser);
+router.put('/users/:id/activate',    isSuperAdmin,   adminController.activateUser);
+router.put('/users/:id/role',        isSuperAdmin,   adminController.updateUserRole);
 
-// @route   GET /api/admin/users
-// @desc    Get all users
-// @access  Private (Admin)
-router.get('/users', adminController.getAllUsers);
+// ── Finance (super_admin + finance_admin) ─────────────────────────────────────
+router.get('/payments/report',       isFinanceAdmin, adminController.getPaymentsReport);
+router.put('/payments/:id/approve',  isFinanceAdmin, adminController.approvePayment);
 
-// @route   PUT /api/admin/users/:id/deactivate
-// @desc    Deactivate user
-// @access  Private (Admin)
-router.put('/users/:id/deactivate', adminController.deactivateUser);
+// ── Support (super_admin + support_admin) ─────────────────────────────────────
+router.get('/tickets',               isSupportAdmin, adminController.getTickets);
+router.put('/tickets/:id/reply',     isSupportAdmin, adminController.replyTicket);
 
-// @route   PUT /api/admin/users/:id/activate
-// @desc    Activate user
-// @access  Private (Admin)
-router.put('/users/:id/activate', adminController.activateUser);
-
-// @route   GET /api/admin/stats
-// @desc    Get platform statistics
-// @access  Private (Admin)
-router.get('/stats', adminController.getStats);
+// ── Enrollment management (super_admin + support_admin) ──────────────────────
+router.get('/enrollments',           isAnyAdmin,     adminController.getAllEnrollments);
 
 module.exports = router;

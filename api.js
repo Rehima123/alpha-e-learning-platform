@@ -294,6 +294,7 @@ class APIService {
     async getAllUsers()           { return this.request('/admin/users'); }
     async deactivateUser(id)     { return this.request(`/admin/users/${id}/deactivate`, { method: 'PUT' }); }
     async activateUser(id)       { return this.request(`/admin/users/${id}/activate`,   { method: 'PUT' }); }
+    async updateUserRole(id, role) { return this.request(`/admin/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) }); }
     async getAdminStats()        { return this.request('/admin/stats'); }
 
     // ── Enrollment endpoints ────────────────────────────────────────────────────

@@ -74,7 +74,7 @@
         </div>
 
         <!-- Tabs -->
-        <div class="tab-bar">
+        <div class="tab-bar" id="adminTabBar">
             <button class="tab-btn active" data-tab="enrollments" onclick="showTab('enrollments')">
                 📋 Enrollment Requests <span class="badge-count" id="enrollBadge"></span>
             </button>
@@ -92,6 +92,9 @@
             </button>
             <button class="tab-btn" data-tab="users" onclick="showTab('users')">
                 👥 Users
+            </button>
+            <button class="tab-btn" data-tab="tickets" onclick="showTab('tickets');loadTickets()">
+                🎧 Support Tickets
             </button>
         </div>
 
@@ -172,6 +175,15 @@
                 </select>
             </div>
             <div id="videoChaptersList"></div>
+        </div>
+
+        <!-- Tab: Support Tickets -->
+        <div id="tab-tickets" class="admin-tab-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                <h3 style="color:var(--text-primary)">🎧 Student Support Tickets</h3>
+                <span id="ticketCount" style="font-size:0.85rem;color:var(--text-secondary)"></span>
+            </div>
+            <div id="ticketsList"><p style="color:var(--text-secondary)">Loading...</p></div>
         </div>
     </main>
 
