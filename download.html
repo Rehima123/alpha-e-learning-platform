@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download App — Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="AlphaFT">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <style>
+        .download-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0 3rem;
+            text-align: center;
+        }
+        .download-hero h1 { font-size: 2.2rem; margin-bottom: 0.8rem; }
+        .download-hero p  { font-size: 1.1rem; opacity: 0.9; }
+
+        .install-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2.5rem 0;
+        }
+        .install-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .install-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px var(--shadow); }
+        .install-card .device-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+        .install-card h2 { font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .install-card p  { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem; }
+
+        .steps { text-align: left; margin-bottom: 1.5rem; }
+        .step  {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 10px 0; border-bottom: 1px solid var(--border-color);
+        }
+        .step:last-child { border-bottom: none; }
+        .step-num {
+            width: 28px; height: 28px; background: linear-gradient(135deg,#667eea,#764ba2);
+            color: white; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 0.82rem; flex-shrink: 0;
+        }
+        .step-text { font-size: 0.88rem; color: var(--text-primary); line-height: 1.5; }
+
+        .install-btn {
+            display: inline-block; width: 100%;
+            background: linear-gradient(135deg,#667eea,#764ba2);
+            color: white; border: none; padding: 14px 24px;
+            border-radius: 12px; font-weight: 700; font-size: 1rem;
+            cursor: pointer; text-decoration: none; transition: opacity 0.2s;
+        }
+        .install-btn:hover { opacity: 0.9; }
+        .install-btn.android { background: linear-gradient(135deg,#34a853,#1a7030); }
+        .install-btn.ios     { background: linear-gradient(135deg,#1c1c1e,#3a3a3c); }
+        .install-btn.desktop { background: linear-gradient(135deg,#0078d4,#005a9e); }
+
+        .features-row {
+            display: flex; gap: 1rem; justify-content: center;
+            flex-wrap: wrap; margin: 2rem 0;
+        }
+        .feature-pill {
+            background: rgba(102,126,234,0.1); border: 1px solid rgba(102,126,234,0.3);
+            color: #667eea; padding: 8px 18px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 600;
+        }
+        .qr-section {
+            background: var(--bg-secondary); border-radius: 20px;
+            padding: 2rem; text-align: center; margin: 2rem 0;
+            border: 1px solid var(--border-color);
+        }
+        .qr-code {
+            width: 180px; height: 180px; margin: 1rem auto;
+            background: white; border-radius: 12px; padding: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button></li>
+                <li><a href="auth-login.html" class="btn-nav-login">Login</a></li>
+                <li><a href="auth-register.html" class="btn-nav-register">Sign Up</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="download-hero">
+        <div class="container">
+            <div style="font-size:4rem;margin-bottom:1rem">📲</div>
+            <h1>Download Alpha Freshman Tutorial</h1>
+            <p>Install on any device — works offline, no App Store needed!</p>
+            <div class="features-row">
+                <span class="feature-pill">✅ Free Download</span>
+                <span class="feature-pill">📡 Works Offline</span>
+                <span class="feature-pill">🔄 Auto Updates</span>
+                <span class="feature-pill">📱 All Devices</span>
+                <span class="feature-pill">🚀 Fast & Lightweight</span>
+            </div>
+        </div>
+    </section>
+
+    <main class="container" style="padding-bottom:4rem">
+
+        <!-- Auto-detect & install button -->
+        <div style="text-align:center;margin:2rem 0">
+            <button id="autoInstallBtn" onclick="autoInstall()" class="install-btn"
+                style="width:auto;padding:16px 40px;font-size:1.1rem;display:none">
+                📲 Install Now — Click Here
+            </button>
+            <div id="autoInstallMsg" style="display:none;background:rgba(102,126,234,0.1);
+                border-radius:12px;padding:1rem;margin:0 auto;max-width:500px;
+                border:1px solid rgba(102,126,234,0.3);color:var(--text-primary);font-size:0.9rem">
+            </div>
+        </div>
+
+        <h2 style="text-align:center;color:var(--text-primary);margin-bottom:0.5rem">
+            📖 Step-by-Step Installation Guide
+        </h2>
+        <p style="text-align:center;color:var(--text-secondary);margin-bottom:2rem">
+            Choose your device below
+        </p>
+
+        <div class="install-cards">
+
+            <!-- Android -->
+            <div class="install-card">
+                <div class="device-icon">🤖</div>
+                <h2>Android Phone</h2>
+                <p>Install using Chrome browser — works like a native app</p>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-text">Open <strong>Chrome browser</strong> on your Android phone</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-text">Go to <strong>alpha-freshman-tutorial.vercel.app</strong></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-text">Tap the <strong>⋮ menu</strong> (3 dots) at top right</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">4</div>
+                        <div class="step-text">Tap <strong>"Add to Home Screen"</strong> or <strong>"Install App"</strong></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">5</div>
+                        <div class="step-text">Tap <strong>"Install"</strong> → App icon appears on home screen ✅</div>
+                    </div>
+                </div>
+                <button class="install-btn android" onclick="openSite('android')">
+                    🤖 Open in Chrome (Android)
+                </button>
+            </div>
+
+            <!-- iPhone -->
+            <div class="install-card">
+                <div class="device-icon">🍎</div>
+                <h2>iPhone / iPad</h2>
+                <p>Install using Safari browser — Apple's official method</p>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-text">Open <strong>Safari</strong> (NOT Chrome) on your iPhone</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-text">Go to <strong>alpha-freshman-tutorial.vercel.app</strong></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-text">Tap the <strong>Share button</strong> (□↑) at bottom</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">4</div>
+                        <div class="step-text">Scroll and tap <strong>"Add to Home Screen"</strong></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">5</div>
+                        <div class="step-text">Tap <strong>"Add"</strong> → App icon appears ✅</div>
+                    </div>
+                </div>
+                <button class="install-btn ios" onclick="openSite('ios')">
+                    🍎 Open in Safari (iPhone)
+                </button>
+            </div>
+
+            <!-- Desktop -->
+            <div class="install-card">
+                <div class="device-icon">💻</div>
+                <h2>Windows / Mac / Linux</h2>
+                <p>Install as desktop app using Chrome or Edge</p>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-text">Open <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-text">Go to <strong>alpha-freshman-tutorial.vercel.app</strong></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-text">Look for <strong>⊕ Install icon</strong> in the address bar (right side)</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">4</div>
+                        <div class="step-text">Click it → Click <strong>"Install"</strong> in the dialog</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">5</div>
+                        <div class="step-text">App opens as standalone window ✅</div>
+                    </div>
+                </div>
+                <button class="install-btn desktop" id="desktopInstallBtn" onclick="desktopInstall()">
+                    💻 Install on This Computer
+                </button>
+            </div>
+
+        </div>
+
+        <!-- QR Code section -->
+        <div class="qr-section">
+            <h3 style="color:var(--text-primary);margin-bottom:0.5rem">📱 Scan to Open on Phone</h3>
+            <p style="color:var(--text-secondary);font-size:0.88rem;margin-bottom:1rem">
+                Scan this QR code with your phone camera to open the site directly
+            </p>
+            <div class="qr-code">
+                <!-- QR code using a free API -->
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://alpha-freshman-tutorial.vercel.app/download.html"
+                    alt="QR Code" width="150" height="150" style="border-radius:8px"
+                    onerror="this.parentElement.innerHTML='<p style=\'color:#667eea;font-size:0.8rem\'>QR: alpha-freshman-tutorial.vercel.app</p>'">
+            </div>
+            <p style="color:var(--text-secondary);font-size:0.82rem">
+                Point your phone camera at this QR code
+            </p>
+        </div>
+
+        <!-- Already installed check -->
+        <div id="alreadyInstalled" style="display:none;text-align:center;padding:2rem;
+            background:rgba(39,174,96,0.1);border-radius:16px;border:1px solid rgba(39,174,96,0.3)">
+            <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
+            <h3 style="color:#27ae60">App is Already Installed!</h3>
+            <p style="color:var(--text-secondary)">You're using the installed version. Enjoy offline access!</p>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Alpha Freshman Tutorial. All rights reserved.</p>
+                <p style="margin-top:6px;font-size:0.82rem;opacity:0.6">Developed by <strong>Rehima Ali</strong></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="pwa.js"></script>
+    <script>
+        let _installPrompt = null;
+
+        // Check if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.getElementById('alreadyInstalled').style.display = 'block';
+        }
+
+        // Capture install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            _installPrompt = e;
+            const btn = document.getElementById('autoInstallBtn');
+            btn.style.display = 'inline-block';
+            btn.textContent = '📲 Install App Now — Tap Here!';
+        });
+
+        // Auto-detect device and show appropriate message
+        window.addEventListener('load', () => {
+            const ua = navigator.userAgent.toLowerCase();
+            const isAndroid = /android/.test(ua);
+            const isIOS = /iphone|ipad|ipod/.test(ua);
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+            if (isStandalone) return; // Already installed
+
+            const msg = document.getElementById('autoInstallMsg');
+
+            if (!_installPrompt) {
+                msg.style.display = 'block';
+                if (isAndroid) {
+                    msg.innerHTML = '🤖 <strong>Android:</strong> Tap ⋮ (3 dots) → <strong>Add to Home Screen</strong>';
+                } else if (isIOS) {
+                    msg.innerHTML = '🍎 <strong>iPhone:</strong> Tap Share (□↑) → <strong>Add to Home Screen</strong>';
+                } else {
+                    msg.innerHTML = '💻 <strong>Desktop:</strong> Look for ⊕ icon in Chrome/Edge address bar → Click <strong>Install</strong>';
+                }
+            }
+        });
+
+        async function autoInstall() {
+            if (_installPrompt) {
+                _installPrompt.prompt();
+                const { outcome } = await _installPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('autoInstallBtn').textContent = '✅ Installing...';
+                }
+                _installPrompt = null;
+            }
+        }
+
+        function desktopInstall() {
+            if (_installPrompt) {
+                autoInstall();
+            } else {
+                document.getElementById('autoInstallMsg').style.display = 'block';
+                document.getElementById('autoInstallMsg').innerHTML =
+                    '💻 Look for the <strong>⊕ install icon</strong> in your Chrome/Edge address bar (right side) and click it to install.';
+            }
+        }
+
+        function openSite(device) {
+            // Already on the site — just scroll to instructions
+            if (device === 'android') {
+                document.querySelector('.install-card:nth-child(1)').scrollIntoView({ behavior: 'smooth' });
+            } else if (device === 'ios') {
+                document.querySelector('.install-card:nth-child(2)').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('alreadyInstalled').style.display = 'block';
+            document.getElementById('autoInstallBtn').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

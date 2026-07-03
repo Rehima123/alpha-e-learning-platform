@@ -19,6 +19,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/download", "destination": "/download.html" },
     { "source": "/home", "destination": "/home.html" },
     { "source": "/courses", "destination": "/courses.html" },
     { "source": "/login", "destination": "/auth-login.html" },
