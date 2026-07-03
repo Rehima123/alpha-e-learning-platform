@@ -2,6 +2,10 @@ import { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext()
 
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5000/api'
+    : '/api'
+
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) throw new Error('useAuth must be used within AuthProvider')
@@ -12,64 +16,72 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // On mount: restore user from stored token
   useEffect(() => {
-    const user = localStorage.getItem('currentUser')
-    if (user) {
-      setCurrentUser(JSON.parse(user))
+    const token = localStorage.getItem('authToken')
+    const storedUser = localStorage.getItem('currentUser')
+    if (token && storedUser) {
+      try {
+        setCurrentUser(JSON.parse(storedUser))
+      } catch {
+        localStorage.removeItem('currentUser')
+        localStorage.removeItem('authToken')
+      }
     }
     setLoading(false)
   }, [])
 
-  const login = (email, password) => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    const user = users.find(u => u.email === email && u.password === password)
-    
-    if (user) {
-      setCurrentUser(user)
-      localStorage.setItem('currentUser', JSON.stringify(user))
-      return { success: true, user }
+  const login = async (email, password) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await res.json()
+      if (!res.ok) return { success: false, error: data.message || 'Login failed' }
+
+      localStorage.setItem('authToken', data.token)
+      localStorage.setItem('currentUser', JSON.stringify(data.user))
+      setCurrentUser(data.user)
+      return { success: true, user: data.user }
+    } catch (err) {
+      return { success: false, error: 'Network error. Please try again.' }
     }
-    return { success: false, error: 'Invalid credentials' }
   }
 
-  const register = (userData) => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    
-    if (users.find(u => u.email === userData.email)) {
-      return { success: false, error: 'Email already registered' }
-    }
+  const register = async (userData) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      })
+      const data = await res.json()
+      if (!res.ok) return { success: false, error: data.message || 'Registration failed' }
 
-    const newUser = {
-      id: Date.now(),
-      ...userData,
-      subscription: 'none',
-      registeredAt: new Date().toISOString()
+      localStorage.setItem('authToken', data.token)
+      localStorage.setItem('currentUser', JSON.stringify(data.user))
+      setCurrentUser(data.user)
+      return { success: true, user: data.user }
+    } catch (err) {
+      return { success: false, error: 'Network error. Please try again.' }
     }
-
-    users.push(newUser)
-    localStorage.setItem('users', JSON.stringify(users))
-    setCurrentUser(newUser)
-    localStorage.setItem('currentUser', JSON.stringify(newUser))
-    
-    return { success: true, user: newUser }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem('authToken')
+      if (token) {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      }
+    } catch { /* ignore logout errors */ }
     setCurrentUser(null)
+    localStorage.removeItem('authToken')
     localStorage.removeItem('currentUser')
-  }
-
-  const updateUser = (updates) => {
-    const updatedUser = { ...currentUser, ...updates }
-    setCurrentUser(updatedUser)
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser))
-    
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    const index = users.findIndex(u => u.id === currentUser.id)
-    if (index !== -1) {
-      users[index] = updatedUser
-      localStorage.setItem('users', JSON.stringify(users))
-    }
   }
 
   const value = {
@@ -77,7 +89,6 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    updateUser,
     loading
   }
 
