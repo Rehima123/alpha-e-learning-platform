@@ -1,21 +1,50 @@
 {
     "short_name": "Alpha Freshman",
     "name": "Alpha Freshman Tutorial",
+    "description": "Ethiopian Freshman Year E-Learning Platform — Way to Success",
     "icons": [
+        {
+            "src": "icon.svg",
+            "type": "image/svg+xml",
+            "sizes": "any",
+            "purpose": "any maskable"
+        },
         {
             "src": "icon-192.png",
             "type": "image/png",
-            "sizes": "192x192"
+            "sizes": "192x192",
+            "purpose": "any maskable"
         },
         {
             "src": "icon-512.png",
             "type": "image/png",
-            "sizes": "512x512"
+            "sizes": "512x512",
+            "purpose": "any maskable"
         }
     ],
     "start_url": "/index.html",
+    "scope": "/",
     "background_color": "#ffffff",
     "display": "standalone",
     "theme_color": "#3B82F6",
-    "orientation": "portrait-primary"
+    "orientation": "portrait-primary",
+    "categories": ["education"],
+    "lang": "en",
+    "shortcuts": [
+        {
+            "name": "Browse Courses",
+            "url": "/courses.html",
+            "description": "View all available courses"
+        },
+        {
+            "name": "My Dashboard",
+            "url": "/dashboard.html",
+            "description": "View your learning progress"
+        },
+        {
+            "name": "Download App",
+            "url": "/download.html",
+            "description": "Install the app"
+        }
+    ]
 }
