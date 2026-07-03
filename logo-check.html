@@ -128,5 +128,7 @@
             console.log('Logo path should be:', window.location.href.replace('logo-check.html', 'logo.png'));
         };
     </script>
+    <script>if ('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW Registered', reg)).catch(err => console.warn('SW Failed:', err));});}</script>
 </body>
 </html>
+
