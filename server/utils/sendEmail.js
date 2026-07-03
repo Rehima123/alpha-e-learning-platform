@@ -8,25 +8,62 @@ function createTransporter() {
             host: 'smtp.resend.com',
             port: 465,
             secure: true,
-            auth: {
-                user: 'resend',
-                pass: process.env.RESEND_API_KEY
-            }
+            auth: { user: 'resend', pass: process.env.RESEND_API_KEY }
         });
     }
-    // Gmail / standard SMTP
+    // Gmail SMTP
     return nodemailer.createTransport({
-        host:   process.env.SMTP_HOST || 'smtp.gmail.com',
-        port:   parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_PORT === '465',
+        service: 'gmail',
         auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
+            user: process.env.SMTP_USER || process.env.EMAIL_USER,
+            pass: process.env.SMTP_PASS || process.env.EMAIL_PASS
         }
     });
 }
 
 const transporter = createTransporter();
+const FROM = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@alpha-freshman-tutorial.com';
+
+// ── Login notification (ተማሪው login ሲያደርግ) ──────────────────────────────────
+function sendLoginNotification(studentEmail, studentName) {
+    if (!process.env.SMTP_USER && !process.env.RESEND_API_KEY) return;
+    const mailOptions = {
+        from: `"Alpha Freshman Tutorial" <${FROM}>`,
+        to: studentEmail,
+        subject: 'አዲስ የመግባት (Login) ማሳወቂያ - Alpha Tutorial',
+        html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;
+            border:1px solid #e0e0e0;padding:20px;border-radius:10px">
+            <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:24px;
+                text-align:center;border-radius:8px;margin-bottom:20px">
+                <h2 style="color:white;margin:0">Alpha Freshman Tutorial</h2>
+                <p style="color:rgba(255,255,255,0.85);margin:6px 0 0">Way to Success</p>
+            </div>
+            <h2 style="color:#1e3a8a;text-align:center">እንኳን ደህና መጡ!</h2>
+            <p>ሰላም <strong>${studentName}</strong>,</p>
+            <p>በአልፋ ፍሬሽማን ቲውቶሪያል ድረ-ገጽ ላይ ወደ አካውንትሽ/ህ በተሳካ ሁኔታ ገብተሻል/ሃል።</p>
+            <p style="background-color:#f3f4f6;padding:10px;border-radius:5px;
+                font-size:14px;color:#555">
+                ⚠️ ይህ መግቢያ አንቺ/ህ ካልሆንሽ/ህ፣ እባክሽ/ህ የአካውንትሽ/ህን ደህንነት በፍጥነት አረጋግጪ/ጥ።
+            </p>
+            <div style="text-align:center;margin:20px 0">
+                <a href="${process.env.CLIENT_URL || 'https://alpha-freshman-tutorial.vercel.app'}/courses.html"
+                    style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;
+                    padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold">
+                    Courses ይመልከቱ →
+                </a>
+            </div>
+            <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
+            <p style="font-size:12px;color:#888;text-align:center">
+                © 2026 Alpha Freshman Tutorial. መብቱ በህግ የተጠበቀ ነው።
+            </p>
+        </div>`
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) console.log('ኢሜይል መላክ አልተሳካም:', error.message);
+        else        console.log('ኢሜይል በተሳካ ሁኔታ ተልኳል:', info.response);
+    });
+}
 
 const templates = {
     enrollmentApproved: (student, course) => ({
@@ -151,4 +188,4 @@ async function sendEmail({ to, subject, html }) {
     console.log(`[Email sent] To: ${to} | Subject: ${subject}`);
 }
 
-module.exports = { sendEmail, templates };
+module.exports = { sendEmail, templates, sendLoginNotification };

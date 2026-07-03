@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
-const { sendEmail, templates } = require('../utils/sendEmail');
+const { sendEmail, templates, sendLoginNotification } = require('../utils/sendEmail');
 
 // @desc    Register user
 exports.register = async (req, res, next) => {
@@ -97,6 +97,9 @@ exports.login = async (req, res, next) => {
 
         // Generate token
         const token = user.generateAuthToken();
+
+        // Send login notification email (non-blocking)
+        sendLoginNotification(user.email, user.fullName);
 
         res.status(200).json({
             success: true,
