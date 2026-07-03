@@ -1,8 +1,12 @@
 // ─── Alpha Freshman Tutorial — Service Worker ─────────────────────────────────
-const CACHE_NAME = 'aft-v4';
+const CACHE_NAME = 'alpha-cache-v1';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
+    '/manifest.json',
+    '/icon-192.png',
+    '/icon-512.png',
+    '/icon.svg',
     '/home.html',
     '/courses.html',
     '/course-detail.html',
@@ -15,38 +19,17 @@ const STATIC_ASSETS = [
     '/admin-dashboard.html',
     '/instructor-dashboard.html',
     '/offline.html',
-    '/ai-study.html',
-    '/ai-assistant.html',
-    '/study-hub.html',
-    '/department-guide.html',
+    '/download.html',
     '/elearning.css',
     '/api.js',
     '/main.js',
-    '/notifications.js',
-    '/search.js',
-    '/analytics.js',
     '/theme.js',
     '/courses.js',
     '/course-detail.js',
     '/dashboard.js',
-    '/admin-dashboard.js',
-    '/instructor-dashboard.js',
     '/auth-login.js',
     '/auth-register.js',
-    '/subscription.js',
-    '/payment.js',
-    '/ai-assistant.js',
-    '/ai-engine.js',
-    '/ai-study.js',
-    '/quiz-system.js',
-    '/lesson-download.js',
-    '/study-planner.js',
-    '/bookmarks.js',
-    '/offline-db.js',
-    '/auth-guard.js',
-    '/pwa.js',
-    '/logo.png',
-    '/manifest.json'
+    '/pwa.js'
 ];
 
 // ── Install: cache all static assets ─────────────────────────────────────────
