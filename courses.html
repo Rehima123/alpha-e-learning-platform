@@ -26,6 +26,12 @@
                 <li><a href="study-hub.html">📚 Study Hub</a></li>
                 <li><a href="department-guide.html">🎓 Departments</a></li>
                 <li><button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button></li>
+                <li><button id="installAppBtn" onclick="installApp()" style="
+                    background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;
+                    padding:7px 16px;border-radius:20px;font-weight:700;cursor:pointer;
+                    font-size:0.82rem;white-space:nowrap;display:none">
+                    📲 Install App
+                </button></li>
                 <li><a href="auth-login.html" class="btn-nav-login">Login</a></li>
                 <li><a href="auth-register.html" class="btn-nav-register">Sign Up</a></li>
             </ul>
@@ -74,5 +80,17 @@
     <script src="courses.js"></script>
     <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
     <script src="/pwa.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
+                const btn = document.getElementById('installAppBtn');
+                if (btn) btn.style.display = 'block';
+            }
+        });
+        function installApp() {
+            if (typeof triggerInstall === 'function') triggerInstall();
+            else alert('📲 To install:\n\nAndroid: tap ⋮ → Add to Home Screen\niPhone: Share → Add to Home Screen\nDesktop: ⊕ in address bar');
+        }
+    </script>
 </body>
 </html>

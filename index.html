@@ -23,6 +23,12 @@
                 <li><a href="index.html">Home</a></li>
                 <li><a href="courses.html">Courses</a></li>
                 <li><button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button></li>
+                <li><button id="installAppBtn" onclick="installApp()" style="
+                    background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;
+                    padding:7px 16px;border-radius:20px;font-weight:700;cursor:pointer;
+                    font-size:0.82rem;white-space:nowrap;display:none">
+                    📲 Install App
+                </button></li>
                 <li><a href="auth-login.html" class="btn-nav-login">Login</a></li>
                 <li><a href="auth-register.html" class="btn-nav-register">Sign Up</a></li>
             </ul>
@@ -212,6 +218,26 @@
     <script src="notifications.js"></script>
     <script src="ai-assistant.js"></script>
     <script>
+        // Show install button if not already installed
+        window.addEventListener('load', () => {
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
+                const btn = document.getElementById('installAppBtn');
+                if (btn) btn.style.display = 'block';
+            }
+        });
+
+        function installApp() {
+            // Trigger PWA install from pwa.js
+            if (typeof triggerInstall === 'function') {
+                triggerInstall();
+            } else {
+                alert('📲 Install this app:\n\n' +
+                      '• Android/Chrome: Look for + icon in address bar\n' +
+                      '• iPhone: Share button → Add to Home Screen\n' +
+                      '• Desktop: Click ⊕ icon in address bar');
+            }
+        }
+
         function searchFromHero() {
             const query = document.getElementById('heroSearch').value;
             if (query.trim()) window.location.href = 'courses.html?search=' + encodeURIComponent(query);
