@@ -198,11 +198,49 @@ exports.getAllEnrollments = async (req, res, next) => {
 // @desc    Get payments report (finance_admin)
 exports.getPaymentsReport = async (req, res, next) => {
     try {
-        // Stub — replace with real Payment model query
+        const Payment = require('../models/Payment');
+        const { period = '30' } = req.query;
+        const since = new Date(Date.now() - parseInt(period) * 24 * 60 * 60 * 1000);
+
+        const [totals, byCourse, byDay] = await Promise.all([
+            Payment.aggregate([
+                { $match: { status: 'success', paidAt: { $gte: since } } },
+                { $group: {
+                    _id: null,
+                    totalRevenue:    { $sum: '$total' },
+                    platformRevenue: { $sum: '$platformShare' },
+                    instructorPaid:  { $sum: '$instructorShare' },
+                    totalTax:        { $sum: '$tax' },
+                    totalDiscount:   { $sum: '$discount' },
+                    count:           { $sum: 1 }
+                }}
+            ]),
+            Payment.aggregate([
+                { $match: { status: 'success', type: 'course', paidAt: { $gte: since } } },
+                { $group: { _id: '$course', revenue: { $sum: '$total' }, count: { $sum: 1 } } },
+                { $lookup: { from: 'courses', localField: '_id', foreignField: '_id', as: 'course' } },
+                { $unwind: '$course' },
+                { $project: { title: '$course.title', icon: '$course.icon', revenue: 1, count: 1 } },
+                { $sort: { revenue: -1 } },
+                { $limit: 10 }
+            ]),
+            Payment.aggregate([
+                { $match: { status: 'success', paidAt: { $gte: since } } },
+                { $group: {
+                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$paidAt' } },
+                    revenue: { $sum: '$total' },
+                    count:   { $sum: 1 }
+                }},
+                { $sort: { _id: 1 } }
+            ])
+        ]);
+
         res.status(200).json({
             success: true,
-            totals: { totalRevenue: 0, platformRevenue: 0, count: 0 },
-            byCourse: [], byDay: []
+            period: parseInt(period),
+            totals: totals[0] || { totalRevenue: 0, platformRevenue: 0, instructorPaid: 0, totalTax: 0, totalDiscount: 0, count: 0 },
+            byCourse,
+            byDay
         });
     } catch (error) {
         next(error);

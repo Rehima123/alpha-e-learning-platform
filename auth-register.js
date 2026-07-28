@@ -89,6 +89,9 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
             // Also register in backend (non-blocking)
             api.register({ fullName, email, password, role }).catch(() => {});
 
+            // Send EmailJS notifications (welcome + admin alert) — non-blocking
+            window.emailjsService?.sendRegistrationEmails({ fullName, email, role });
+
             // Show success — don't redirect yet (need email verification)
             if (successDiv) {
                 successDiv.style.display = 'block';
@@ -117,6 +120,14 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         if (response.success) {
             api.setAuthToken(response.token);
             localStorage.setItem('currentUser', JSON.stringify(response.user));
+
+            // Send EmailJS notifications (welcome + admin alert) — non-blocking
+            window.emailjsService?.sendRegistrationEmails({
+                fullName: response.user.fullName,
+                email:    response.user.email,
+                role:     response.user.role
+            });
+
             toast?.success(`Welcome, ${response.user.fullName}! 🎉`);
             setTimeout(() => {
                 window.location.href = response.user.role === 'instructor'

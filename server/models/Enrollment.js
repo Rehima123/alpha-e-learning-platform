@@ -13,8 +13,8 @@ const enrollmentSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending_payment', 'receipt_submitted', 'approved', 'rejected'],
-        default: 'pending_payment'
+        enum: ['pending', 'pending_payment', 'receipt_submitted', 'approved', 'rejected'],
+        default: 'pending'
     },
     // Payment receipt
     receipt: {

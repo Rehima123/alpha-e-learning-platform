@@ -101,6 +101,39 @@ exports.login = async (req, res, next) => {
         // Send login notification email (non-blocking)
         sendLoginNotification(user.email, user.fullName);
 
+        // Notify owner/admin that a student logged in (non-blocking)
+        const ownerEmail = process.env.OWNER_EMAIL || process.env.SMTP_USER || process.env.EMAIL_FROM;
+        if (ownerEmail && ownerEmail !== user.email) {
+            sendEmail({
+                to: ownerEmail,
+                subject: `👤 New Login — ${user.fullName}`,
+                html: `
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+                    <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:24px;text-align:center;border-radius:8px 8px 0 0">
+                        <h2 style="color:white;margin:0">Alpha Freshman Tutorial</h2>
+                        <p style="color:rgba(255,255,255,0.85);margin:4px 0 0">Admin Notification</p>
+                    </div>
+                    <div style="background:white;padding:24px;border:1px solid #eee">
+                        <h3 style="color:#667eea">👤 Student Login Alert</h3>
+                        <table style="width:100%;border-collapse:collapse">
+                            <tr><td style="padding:6px 0;color:#666;width:40%">Name</td><td style="font-weight:600">${user.fullName}</td></tr>
+                            <tr><td style="padding:6px 0;color:#666">Email</td><td>${user.email}</td></tr>
+                            <tr><td style="padding:6px 0;color:#666">Role</td><td>${user.role}</td></tr>
+                            <tr><td style="padding:6px 0;color:#666">Time</td><td>${new Date().toLocaleString('en-ET', { timeZone: 'Africa/Addis_Ababa' })} (Addis Ababa)</td></tr>
+                        </table>
+                        <a href="${process.env.CLIENT_URL || 'https://alpha-freshman-tutorial.vercel.app'}/admin-dashboard.html"
+                            style="display:inline-block;margin-top:16px;background:#667eea;color:white;
+                            padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600">
+                            View Admin Dashboard →
+                        </a>
+                    </div>
+                    <div style="background:#f9f9f9;padding:12px;text-align:center;font-size:0.78rem;color:#888;border-radius:0 0 8px 8px">
+                        © 2026 Alpha Freshman Tutorial
+                    </div>
+                </div>`
+            }).catch(() => {});
+        }
+
         res.status(200).json({
             success: true,
             message: 'Login successful',

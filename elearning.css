@@ -1962,3 +1962,189 @@ body { animation: fadeIn 0.3s ease; }
     transition: background 0.15s;
 }
 .font-btn:hover { background: rgba(102,126,234,0.1); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE MOBILE NAVIGATION — Hamburger Menu
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hamburger button — hidden on desktop, shown on mobile */
+.nav-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.nav-hamburger:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+/* The 3 lines */
+.nav-hamburger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
+    transform-origin: center;
+}
+
+/* Animate to X when open */
+.nav-hamburger.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.nav-hamburger.open span:nth-child(2) {
+    opacity: 0;
+    width: 0;
+}
+.nav-hamburger.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Mobile breakpoint ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Show hamburger button on mobile */
+    .nav-hamburger {
+        display: flex;
+    }
+
+    /* Navbar container: logo left, hamburger right */
+    .navbar .container {
+        position: relative;
+    }
+
+    /* Hide nav-links by default on mobile */
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-navbar);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        padding: 0.5rem 0 1rem;
+        z-index: 999;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        animation: navSlideDown 0.22s ease;
+    }
+
+    @keyframes navSlideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Show nav-links when open */
+    .nav-links.nav-open {
+        display: flex;
+    }
+
+    /* Each nav item full-width */
+    .nav-links li {
+        width: 100%;
+    }
+
+    .nav-links a,
+    .nav-links .btn-nav-login,
+    .nav-links .btn-nav-register,
+    .nav-links .btn-nav-logout {
+        display: block;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0;
+        font-size: 0.95rem;
+        color: var(--text-light) !important;
+        background: transparent !important;
+        text-decoration: none;
+        transition: background 0.15s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .nav-links a:hover,
+    .nav-links .btn-nav-login:hover,
+    .nav-links .btn-nav-register:hover,
+    .nav-links .btn-nav-logout:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        opacity: 1 !important;
+    }
+
+    /* Login button styling in mobile */
+    .nav-links .btn-nav-login {
+        border-left: 3px solid rgba(255, 255, 255, 0.4);
+    }
+
+    /* Register / Sign Up button styling in mobile */
+    .nav-links .btn-nav-register {
+        border-left: 3px solid #27ae60;
+    }
+
+    /* Logout button */
+    .nav-links .btn-nav-logout {
+        border-left: 3px solid #e74c3c;
+        color: #ff7675 !important;
+    }
+
+    /* Theme toggle and icon buttons inside nav on mobile */
+    .nav-links li button.theme-toggle {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 0.75rem 1.25rem;
+        background: transparent;
+        border: none;
+        color: var(--text-light);
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    /* Install App / Get App buttons inside nav on mobile */
+    .nav-links li a[href="download.html"],
+    .nav-links li button[id="installAppBtn"] {
+        margin: 0.3rem 1rem;
+        width: calc(100% - 2rem);
+        border-radius: 8px !important;
+        text-align: center;
+        padding: 0.6rem 1rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Separator line before Login/Sign Up */
+    .nav-links li:has(.btn-nav-login) {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 0.25rem;
+        padding-top: 0.25rem;
+    }
+}
+
+/* ── Desktop: always show nav-links, never show hamburger ──────────────────── */
+@media (min-width: 769px) {
+    .nav-hamburger {
+        display: none !important;
+    }
+
+    .nav-links {
+        display: flex !important;
+        flex-direction: row;
+        position: static;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+        border-top: none;
+        animation: none;
+    }
+}

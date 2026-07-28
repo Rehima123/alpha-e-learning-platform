@@ -97,6 +97,24 @@
     <script src="firebase-config.js"></script>
     <script src="notifications.js"></script>
     <script src="ai-assistant.js"></script>
+
+    <!-- ── EmailJS Configuration ──────────────────────────────────────────
+         Get your keys from https://www.emailjs.com
+         1. Create a Service  → paste SERVICE_ID below
+         2. Create 2 Templates (welcome + admin alert) → paste template IDs
+         3. Copy Public Key from Account → API Keys
+    ─────────────────────────────────────────────────────────────────────── -->
+    <script>
+        window.EMAILJS_CONFIG = {
+            PUBLIC_KEY:       'YOUR_PUBLIC_KEY',       // e.g. "aBcDeFgHiJkLmNoP"
+            SERVICE_ID:       'YOUR_SERVICE_ID',       // e.g. "service_xxxxxxx"
+            WELCOME_TEMPLATE: 'YOUR_WELCOME_TEMPLATE_ID', // e.g. "template_xxxxxxx"
+            ADMIN_TEMPLATE:   'YOUR_ADMIN_TEMPLATE_ID',   // e.g. "template_yyyyyyy"
+            ADMIN_EMAIL:      'supportalphafreshman@gmail.com'
+        };
+    </script>
+    <script src="emailjs-service.js"></script>
+
     <script src="auth-register.js"></script>
     <script src="pwa.js"></script>
 </body>

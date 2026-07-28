@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
+import { sendRegistrationEmails } from '../../emailjs-service'
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -39,6 +40,13 @@ export default function Register() {
     })
 
     if (result.success) {
+      // Send welcome + admin alert emails — non-blocking, won't delay navigation
+      sendRegistrationEmails({
+        fullName: result.user.fullName,
+        email:    result.user.email,
+        role:     result.user.role
+      })
+
       if (formData.role === 'instructor') {
         navigate('/instructor')
       } else {

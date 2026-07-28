@@ -314,7 +314,7 @@ class APIService {
 
     // ── Payment endpoints ───────────────────────────────────────────────────────
     async createPaymentIntent(data) {
-        return this.request('/payments/create-intent', { method: 'POST', body: JSON.stringify(data) });
+        return this.request('/payments/initiate', { method: 'POST', body: JSON.stringify(data) });
     }
     async confirmPayment(id) {
         return this.request(`/payments/${id}/confirm`, { method: 'POST' });
