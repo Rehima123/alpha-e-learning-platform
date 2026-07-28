@@ -26,6 +26,7 @@ initTheme();
 
 // ── Responsive Hamburger Menu ─────────────────────────────────────────────────
 // Injected into every page automatically — no HTML changes needed.
+// Uses document-level event delegation so it survives dynamic navbar rebuilds.
 document.addEventListener('DOMContentLoaded', () => {
     // Theme toggle
     const themeToggle = document.getElementById('themeToggle');
@@ -35,8 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Find the navbar container
     const navbarContainer = document.querySelector('.navbar .container');
-    const navLinks = document.querySelector('.navbar .nav-links');
-    if (!navbarContainer || !navLinks) return;
+    if (!navbarContainer) return;
+
+    // Prevent double-inject (some pages may load theme.js twice)
+    if (navbarContainer.querySelector('.nav-hamburger')) return;
 
     // Create hamburger button
     const hamburger = document.createElement('button');
@@ -44,42 +47,60 @@ document.addEventListener('DOMContentLoaded', () => {
     hamburger.setAttribute('aria-label', 'Toggle navigation menu');
     hamburger.setAttribute('aria-expanded', 'false');
     hamburger.innerHTML = '<span></span><span></span><span></span>';
-
-    // Insert hamburger as last child of navbar container
     navbarContainer.appendChild(hamburger);
 
-    // Toggle menu open/close
-    hamburger.addEventListener('click', () => {
-        const isOpen = navLinks.classList.toggle('nav-open');
-        hamburger.classList.toggle('open', isOpen);
-        hamburger.setAttribute('aria-expanded', String(isOpen));
+    function getNavLinks() {
+        return document.querySelector('.navbar .nav-links');
+    }
+
+    function closeMenu() {
+        const nl = getNavLinks();
+        if (nl) nl.classList.remove('nav-open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+    }
+
+    function openMenu() {
+        const nl = getNavLinks();
+        if (nl) nl.classList.add('nav-open');
+        hamburger.classList.add('open');
+        hamburger.setAttribute('aria-expanded', 'true');
+    }
+
+    // Toggle on hamburger click
+    hamburger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const nl = getNavLinks();
+        if (!nl) return;
+        const isOpen = nl.classList.contains('nav-open');
+        isOpen ? closeMenu() : openMenu();
     });
 
-    // Close menu when a nav link is clicked (navigate away or anchor)
-    navLinks.addEventListener('click', (e) => {
-        const target = e.target.closest('a, button:not(.theme-toggle)');
-        if (target && !target.classList.contains('theme-toggle')) {
-            navLinks.classList.remove('nav-open');
-            hamburger.classList.remove('open');
-            hamburger.setAttribute('aria-expanded', 'false');
-        }
-    });
-
-    // Close menu when clicking outside the navbar
+    // Close when any nav link or button (except theme toggle) is clicked
+    // Using document delegation so it works after dynamic navbar rebuilds
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.navbar')) {
-            navLinks.classList.remove('nav-open');
-            hamburger.classList.remove('open');
-            hamburger.setAttribute('aria-expanded', 'false');
+        const inNavbar = e.target.closest('.navbar');
+        if (!inNavbar) {
+            // Clicked outside navbar — close
+            closeMenu();
+            return;
+        }
+        // Clicked inside navbar
+        const isHamburger = e.target.closest('.nav-hamburger');
+        if (isHamburger) return; // handled by hamburger listener above
+
+        const isTheme = e.target.closest('.theme-toggle') || e.target.id === 'themeToggle';
+        if (isTheme) return; // don't close on theme toggle
+
+        const isLink = e.target.closest('a') || e.target.closest('button');
+        if (isLink) {
+            // Small delay so navigation starts before menu hides
+            setTimeout(closeMenu, 80);
         }
     });
 
-    // Close menu on window resize back to desktop
+    // Close on resize to desktop
     window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) {
-            navLinks.classList.remove('nav-open');
-            hamburger.classList.remove('open');
-            hamburger.setAttribute('aria-expanded', 'false');
-        }
+        if (window.innerWidth > 768) closeMenu();
     });
 });

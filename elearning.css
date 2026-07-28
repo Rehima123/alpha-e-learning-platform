@@ -2160,8 +2160,10 @@ body { animation: fadeIn 0.3s ease; }
 
 @media (max-width: 768px) {
 
-    /* ── General container padding ── */
+    /* ── General container padding ──
+       IMPORTANT: navbar .container keeps position:relative for dropdown */
     .container { padding: 0 14px; }
+    .navbar .container { position: relative; padding: 0 14px; }
 
     /* ── Hero section ── */
     .hero-home { padding: 2.5rem 0 2rem; }
