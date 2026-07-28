@@ -521,6 +521,11 @@ function openLesson(chapterIdx, lessonIdx) {
                     style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none">
                     🧠 Start Quiz
                 </button>
+                <button id="downloadLessonBtn" class="btn"
+                    style="background:rgba(102,126,234,0.1);color:#667eea;border-color:#667eea"
+                    onclick="lessonDownloader?.downloadLesson('${courseId}', ${chapterIdx}, ${lessonIdx})">
+                    💾 Save Offline
+                </button>
                 ${hasNext ? `<button class="btn btn-success" onclick="nextLesson()">Next →</button>` : ''}
             </div>
         </div>

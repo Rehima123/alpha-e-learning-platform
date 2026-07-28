@@ -2153,3 +2153,127 @@ body { animation: fadeIn 0.3s ease; }
         width: auto !important;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE IMPROVEMENTS — ሞባይል ላይ ጥሩ እይታ
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+    /* ── General container padding ── */
+    .container { padding: 0 14px; }
+
+    /* ── Hero section ── */
+    .hero-home { padding: 2.5rem 0 2rem; }
+    .hero-home h1 { font-size: 1.8rem; }
+    .hero-search { flex-direction: column; gap: 0.6rem; margin: 1.2rem auto; }
+    .hero-search input { font-size: 0.9rem; padding: 0.8rem; }
+    .hero-stats { gap: 1.5rem; flex-wrap: wrap; justify-content: center; margin-top: 1.5rem; }
+    .hero-stats .stat h3 { font-size: 1.5rem; }
+    .hero-stats .stat p { font-size: 0.8rem; }
+
+    /* ── Section headings ── */
+    .features h2, .testimonials h2, .faq-section h2 { font-size: 1.4rem; margin-bottom: 1.5rem; }
+    .hero h2 { font-size: 1.6rem; }
+
+    /* ── Courses grid: 1 column on small screens ── */
+    .courses-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem 0;
+    }
+
+    /* ── Course cards ── */
+    .course-image { height: 120px; font-size: 2.5rem; }
+    .course-content { padding: 1rem; }
+    .course-content h3 { font-size: 1rem; }
+    .course-footer { flex-direction: column; gap: 8px; align-items: flex-start; }
+    .course-footer .btn { width: 100%; text-align: center; }
+
+    /* ── Filters ── */
+    .category-filters { gap: 6px; }
+    .filter-btn { padding: 0.4rem 1rem; font-size: 0.8rem; }
+
+    /* ── Dashboard stats: 2 columns ── */
+    .dashboard-stats { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 1rem 0; }
+    .stat-card { padding: 1rem; }
+    .stat-card h3 { font-size: 1.8rem; }
+
+    /* ── Auth cards ── */
+    .auth-container { padding: 1rem; }
+    .auth-card { padding: 1.5rem; }
+    .auth-card h2 { font-size: 1.4rem; }
+
+    /* ── Payment checkout ── */
+    .checkout-layout { grid-template-columns: 1fr; gap: 1rem; margin: 1rem 0; }
+    .checkout-form-box, .order-box { padding: 1.2rem; }
+    .order-box { position: static !important; }
+    .payment-methods { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .pay-method { padding: 10px 8px; }
+    .pay-method p { font-size: 0.72rem; }
+
+    /* ── Course detail page ── */
+    .lesson-viewer { padding: 1rem; }
+    .lesson-viewer h2 { font-size: 1.1rem; }
+    .lesson-notes { padding: 1rem; font-size: 0.85rem; }
+    .lesson-actions { flex-direction: column; gap: 8px; }
+    .lesson-actions .btn { min-width: unset; width: 100%; }
+    .chapter-header { padding: 12px 14px; }
+    .chapter-info h4 { font-size: 0.88rem; }
+    .lesson-row { padding: 10px 14px; gap: 10px; }
+
+    /* ── Subscription page plan cards ── */
+    .plan-card { padding: 1.5rem; }
+    .plan-price { font-size: 2.2rem; }
+
+    /* ── Admin dashboard table ── */
+    .users-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tab-bar { gap: 6px; }
+    .tab-btn { padding: 7px 12px; font-size: 0.78rem; }
+
+    /* ── Instructor dashboard ── */
+    .dashboard-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+
+    /* ── FAQ ── */
+    .faq-question h3 { font-size: 0.95rem; }
+
+    /* ── Footer ── */
+    .footer-content { grid-template-columns: 1fr; gap: 1.5rem; text-align: center; }
+    .social-links { justify-content: center; }
+    .footer { padding: 2rem 0 1rem; margin-top: 2rem; }
+
+    /* ── Platform name in navbar (shorten on very small screens) ── */
+    .platform-name { font-size: 1rem; }
+
+    /* ── Modals ── */
+    .modal-content { margin: 10% auto; padding: 1.2rem; width: 95%; }
+    .modal-box { padding: 1.2rem; width: 95%; max-height: 85vh; }
+
+    /* ── Study hub feature cards ── */
+    .feature-card { padding: 1.2rem; }
+    .feature-icon { font-size: 2rem; }
+    .feature-card h3 { font-size: 1rem; }
+
+    /* ── Lesson action buttons stack vertically ── */
+    .lesson-actions { gap: 8px; }
+
+    /* ── Home page CTA ── */
+    .cta { padding: 2.5rem 0; }
+    .cta h2 { font-size: 1.4rem; }
+    .btn-large { padding: 0.8rem 1.5rem; font-size: 1rem; }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb { font-size: 0.75rem; gap: 4px; }
+}
+
+/* Extra small screens (< 400px) */
+@media (max-width: 400px) {
+    .hero-home h1 { font-size: 1.5rem; }
+    .platform-name { font-size: 0.9rem; }
+    .dashboard-stats { grid-template-columns: repeat(2, 1fr); }
+    .stat-card h3 { font-size: 1.5rem; }
+    .course-image { height: 100px; font-size: 2rem; }
+    .btn-nav-login, .btn-nav-register { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+    .auth-card { padding: 1.2rem; }
+}
