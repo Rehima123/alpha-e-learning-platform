@@ -163,10 +163,23 @@ async function loadEnrollmentRequests() {
             return;
         }
 
+        // Sort: pending first, then by date descending
+        const sorted = [...response.enrollments].sort((a, b) => {
+            if (a.status === 'pending' && b.status !== 'pending') return -1;
+            if (a.status !== 'pending' && b.status === 'pending') return 1;
+            return new Date(b.requestedAt) - new Date(a.requestedAt);
+        });
+
+        const pendingCount = sorted.filter(e => e.status === 'pending').length;
         const statusColor = { pending: '#f39c12', approved: '#27ae60', rejected: '#e74c3c' };
         const statusIcon  = { pending: '⏳', approved: '✅', rejected: '❌' };
 
         container.innerHTML = `
+            ${pendingCount > 0 ? `
+            <div style="background:rgba(243,156,18,0.08);border:1px solid rgba(243,156,18,0.3);
+                border-radius:10px;padding:10px 16px;margin-bottom:1rem;font-size:0.88rem;color:#b7770d">
+                ⏳ <strong>${pendingCount}</strong> enrollment${pendingCount !== 1 ? 's' : ''} waiting for approval
+            </div>` : ''}
             <table class="users-table">
                 <thead>
                     <tr>
@@ -178,8 +191,8 @@ async function loadEnrollmentRequests() {
                     </tr>
                 </thead>
                 <tbody>
-                    ${response.enrollments.map(e => `
-                        <tr>
+                    ${sorted.map(e => `
+                        <tr style="${e.status === 'pending' ? 'background:rgba(243,156,18,0.04)' : ''}">
                             <td>
                                 <strong>${e.student?.fullName || 'Unknown'}</strong><br>
                                 <small style="color:var(--text-secondary)">${e.student?.email || ''}</small>
@@ -202,6 +215,11 @@ async function loadEnrollmentRequests() {
                 </tbody>
             </table>
         `;
+
+        // Update badge
+        const badge = document.getElementById('enrollBadge');
+        if (badge) badge.textContent = pendingCount > 0 ? pendingCount : '';
+
     } catch (error) {
         container.innerHTML = '<p style="color:red">Failed to load enrollment requests</p>';
     }

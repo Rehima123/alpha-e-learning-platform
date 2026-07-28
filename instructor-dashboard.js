@@ -90,7 +90,7 @@ async function loadInstructorCourses() {
                                 <span>👥 ${course.enrolledStudents || 0} students</span>
                             </div>
                             <div class="course-footer">
-                                <span class="course-price">$${course.price}</span>
+                                <span class="course-price">${course.price === 0 ? 'Free' : `${Math.round((course.price || 0) * 56).toLocaleString()} ETB`}</span>
                                 ${course.status === 'approved' ? 
                                     `<a href="course-detail.html?id=${course._id}" class="btn">View</a>` :
                                     course.status === 'pending' ?

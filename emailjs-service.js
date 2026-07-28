@@ -6,10 +6,10 @@
  *  2. Admin alert    → supportalphafreshman@gmail.com
  *
  * Setup (EmailJS dashboard → https://www.emailjs.com):
- *  • Create a Service   → copy SERVICE_ID
- *  • Create Template 1  → WELCOME_TEMPLATE_ID   (to_email, to_name, role, date)
- *  • Create Template 2  → ADMIN_TEMPLATE_ID     (user_name, user_email, user_role, reg_time)
- *  • Copy your PUBLIC_KEY from Account → API Keys
+ *  • Create a Service   → copy SERVICE_ID           → service_b17ciqo ✅
+ *  • Create Template 1  → WELCOME_TEMPLATE_ID       → t41x1ab ✅
+ *  • Create Template 2  → ADMIN_TEMPLATE_ID          → 76pbo61 ✅
+ *  • Copy your PUBLIC_KEY from Account → API Keys   → (paste below)
  *
  * Set these values in window.EMAILJS_CONFIG (or a <script> block before this file):
  *

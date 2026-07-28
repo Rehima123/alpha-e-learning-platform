@@ -30,7 +30,8 @@ async function requireAdmin() {
     const user = await requireAuth();
     if (!user) return null;
 
-    if (user.role !== 'admin') {
+    const adminRoles = ['admin', 'super_admin', 'content_admin', 'finance_admin', 'support_admin'];
+    if (!adminRoles.includes(user.role)) {
         alert('Access denied. Admin account required.');
         window.location.href = 'home.html';
         return null;
