@@ -319,6 +319,31 @@
             const query = document.getElementById('heroSearch').value;
             if (query.trim()) window.location.href = `courses.html?search=${encodeURIComponent(query)}`;
         }
+
+        // ── Load live stats from API ──────────────────────────────────────────
+        async function loadLiveStats() {
+            try {
+                const res = await api.getAdminStats();
+                if (res.success && res.stats) {
+                    const s = res.stats;
+                    const u = document.getElementById('stat-users');
+                    const c = document.getElementById('stat-courses');
+                    const i = document.getElementById('stat-instructors');
+                    if (u) u.textContent = (s.totalStudents || 0).toLocaleString();
+                    if (c) c.textContent = (s.totalCourses || 22).toLocaleString();
+                    if (i) i.textContent = (s.totalInstructors || 0).toLocaleString();
+                    return;
+                }
+            } catch {}
+            // Fallback static numbers
+            const u = document.getElementById('stat-users');
+            const c = document.getElementById('stat-courses');
+            const i = document.getElementById('stat-instructors');
+            if (u) u.textContent = '1,200+';
+            if (c) c.textContent = '22';
+            if (i) i.textContent = '15+';
+        }
+        }
     </script>
     <script src="/pwa.js"></script>
     <script>

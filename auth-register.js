@@ -1,3 +1,6 @@
+// ─── Firebase Auth Registration ───────────────────────────────────────────────
+// Uses Firebase for email verification, falls back to backend-only if no Firebase
+
 // ── Password strength ─────────────────────────────────────────────────────────
 document.getElementById('password')?.addEventListener('input', (e) => {
     const val = e.target.value;
@@ -22,6 +25,28 @@ document.getElementById('password')?.addEventListener('input', (e) => {
     txt.style.color = colors[strength];
 });
 
+// ── Firebase (loaded from CDN if config is set) ───────────────────────────────
+let firebaseAuth = null;
+
+async function initFirebase() {
+    try {
+        // Only load Firebase if config exists
+        const cfg = window.FIREBASE_CONFIG;
+        if (!cfg || cfg.apiKey === 'YOUR_API_KEY') return null;
+
+        const { initializeApp }             = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { getAuth, createUserWithEmailAndPassword, sendEmailVerification } =
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+
+        const app = initializeApp(cfg);
+        firebaseAuth = getAuth(app);
+        return { firebaseAuth, createUserWithEmailAndPassword, sendEmailVerification };
+    } catch (e) {
+        console.warn('Firebase not configured:', e.message);
+        return null;
+    }
+}
+
 // ── Register form ─────────────────────────────────────────────────────────────
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -30,44 +55,84 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     const email           = document.getElementById('email').value.trim();
     const password        = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
-    const role            = document.getElementById('role').value;
+    const role            = document.getElementById('role')?.value || 'student';
     const errorDiv        = document.getElementById('errorMessage');
+    const successDiv      = document.getElementById('successMessage');
     const submitBtn       = e.target.querySelector('button[type="submit"]');
 
     errorDiv.style.display = 'none';
+    if (successDiv) successDiv.style.display = 'none';
 
     if (password !== confirmPassword) {
         errorDiv.textContent = 'Passwords do not match';
-        errorDiv.style.display = 'block';
-        return;
+        errorDiv.style.display = 'block'; return;
     }
     if (password.length < 6) {
         errorDiv.textContent = 'Password must be at least 6 characters';
-        errorDiv.style.display = 'block';
-        return;
+        errorDiv.style.display = 'block'; return;
     }
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Creating account...';
 
     try {
-        const response = await api.register({ fullName, email, password, role: role || 'student' });
+        // Try Firebase first (if configured)
+        const fb = await initFirebase();
+        if (fb) {
+            const { firebaseAuth, createUserWithEmailAndPassword, sendEmailVerification } = fb;
+            const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+            const user = userCredential.user;
 
+            // Send verification email
+            await sendEmailVerification(user);
+
+            // Also register in backend (non-blocking)
+            api.register({ fullName, email, password, role }).catch(() => {});
+
+            // Show success — don't redirect yet (need email verification)
+            if (successDiv) {
+                successDiv.style.display = 'block';
+                successDiv.innerHTML = `
+                    <div style="background:rgba(39,174,96,0.1);border:1px solid #27ae60;border-radius:12px;padding:1.2rem;text-align:center">
+                        <div style="font-size:2.5rem;margin-bottom:0.5rem">📧</div>
+                        <h3 style="color:#27ae60;margin-bottom:0.5rem">ምዝገባዎ ተሳክቷል!</h3>
+                        <p style="color:var(--text-secondary);font-size:0.9rem">
+                            ወደ <strong>${email}</strong> የማረጋገጫ ኢሜይል ተልኳል።<br>
+                            ኢሜይሉን ክፍተው ሊንኩን ተጭነው አካውንትዎን ያረጋግጡ።
+                        </p>
+                        <a href="auth-login.html" class="btn btn-success" style="margin-top:1rem;display:inline-block">
+                            ወደ Login ሂዱ →
+                        </a>
+                    </div>
+                `;
+            } else {
+                alert('ምዝገባዎ ተሳክቷል! 🎉\n\nወደ ' + email + ' የማረጋገጫ ኢሜይል ተልኳል።\nኢሜይሉን ክፍተው ሊንኩን ተጭኑ።');
+                window.location.href = 'auth-login.html';
+            }
+            return;
+        }
+
+        // Fallback: backend-only registration (no email verification)
+        const response = await api.register({ fullName, email, password, role });
         if (response.success) {
             api.setAuthToken(response.token);
             localStorage.setItem('currentUser', JSON.stringify(response.user));
             toast?.success(`Welcome, ${response.user.fullName}! 🎉`);
-
             setTimeout(() => {
-                if (response.user.role === 'instructor') {
-                    window.location.href = 'instructor-dashboard.html';
-                } else {
-                    window.location.href = 'courses.html';
-                }
+                window.location.href = response.user.role === 'instructor'
+                    ? 'instructor-dashboard.html' : 'courses.html';
             }, 800);
+        } else {
+            throw new Error(response.message || 'Registration failed');
         }
+
     } catch (error) {
-        errorDiv.textContent = error.message || 'Registration failed. Please try again.';
+        const fbErrors = {
+            'auth/email-already-in-use': 'ይህ ኢሜይል ቀደም ሲል ተመዝግቧል።',
+            'auth/weak-password':        'የይለፍ ቃሉ ቢያንስ 6 ቁምፊ መሆን አለበት።',
+            'auth/invalid-email':        'ትክክለኛ ኢሜይል ያስፈልጋል።'
+        };
+        errorDiv.textContent = fbErrors[error.code] || error.message || 'Registration failed.';
         errorDiv.style.display = 'block';
     } finally {
         submitBtn.disabled = false;

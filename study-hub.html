@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study Hub — Alpha Freshman Tutorial</title>
     <link rel="stylesheet" href="elearning.css">
-    <meta name="theme-color" content="#3B82F6">
     <link rel="icon" href="icon.svg" type="image/svg+xml">
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3B82F6">
 </head>
 <body>
     <nav class="navbar">
@@ -19,227 +19,320 @@
                 <li><a href="home.html">Home</a></li>
                 <li><a href="courses.html">Courses</a></li>
                 <li><a href="dashboard.html">My Learning</a></li>
-                <li><a href="ai-study.html">🤖 AI</a></li>
-                <li><a href="#" id="logoutBtn">Logout</a></li>
+                <li><a href="study-hub.html" style="color:#f39c12;font-weight:700">📚 Study Hub</a></li>
+                <li><a href="department-guide.html">🎓 Departments</a></li>
+                <li><button id="themeToggle" class="theme-toggle">🌙</button></li>
+                <li><a href="auth-login.html" class="btn-nav-login">Login</a></li>
             </ul>
         </div>
     </nav>
 
-    <main class="container" style="max-width:900px;padding:1.5rem 20px 4rem">
-        <h2 style="color:var(--text-primary);margin-bottom:0.3rem">📚 Study Hub</h2>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1.5rem">
-            Your personal learning command center
-        </p>
-
-        <!-- Quick stats bar -->
-        <div id="quickStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-            gap:10px;margin-bottom:1.5rem"></div>
-
-        <!-- Tabs -->
-        <div class="study-tabs" style="margin-bottom:1.5rem">
-            <button class="study-tab active" onclick="switchHubTab('planner')">📅 Planner</button>
-            <button class="study-tab" onclick="switchHubTab('bookmarks')">📌 Bookmarks</button>
-            <button class="study-tab" onclick="switchHubTab('downloads')">💾 Downloads</button>
-            <button class="study-tab" onclick="switchHubTab('leaderboard')">🏆 Leaderboard</button>
-            <button class="study-tab" onclick="switchHubTab('search')">🔍 Search</button>
+    <main class="container" style="padding-bottom:4rem">
+        <div style="text-align:center;padding:3rem 0 2rem">
+            <h1 style="font-size:2rem;color:var(--text-primary)">📚 Study Hub</h1>
+            <p style="color:var(--text-secondary);font-size:1.05rem">Your complete learning toolkit — notes, quizzes, schedules, and study resources</p>
         </div>
 
-        <div id="hub-planner"><div id="plannerContainer"></div></div>
-        <div id="hub-bookmarks" style="display:none"><div id="bookmarksContainer"></div></div>
-        <div id="hub-downloads" style="display:none"><div id="downloadsContainer"></div></div>
-        <div id="hub-leaderboard" style="display:none"><div id="leaderboardContainer"></div></div>
-        <div id="hub-search" style="display:none">
-            <div style="margin-bottom:1rem">
-                <input type="search" id="lessonSearchInput" placeholder="🔍 Search lessons, topics, chapters..."
-                    class="input" oninput="searchLessons(this.value)">
+        <!-- Quick Tools Grid -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-bottom:3rem">
+
+            <div class="feature-card" style="cursor:pointer" onclick="window.location.href='ai-study.html'">
+                <div class="feature-icon">🤖</div>
+                <h3>AI Study Tools</h3>
+                <p>Generate quizzes, study notes, and flashcards powered by AI for any course</p>
+                <a href="ai-study.html" class="btn" style="margin-top:1rem;display:inline-block">Open AI Tools →</a>
             </div>
-            <div id="searchResults"></div>
+
+            <div class="feature-card" style="cursor:pointer" onclick="showSection('planner')">
+                <div class="feature-icon">📅</div>
+                <h3>Study Planner</h3>
+                <p>Create a personalized weekly study schedule for your freshman courses</p>
+                <button class="btn" onclick="showSection('planner')" style="margin-top:1rem">Create Schedule →</button>
+            </div>
+
+            <div class="feature-card" style="cursor:pointer" onclick="showSection('notes')">
+                <div class="feature-icon">📝</div>
+                <h3>Quick Notes</h3>
+                <p>Take and save notes for each subject — synced to your device</p>
+                <button class="btn" onclick="showSection('notes')" style="margin-top:1rem">Open Notes →</button>
+            </div>
+
+            <div class="feature-card" style="cursor:pointer" onclick="showSection('pomodoro')">
+                <div class="feature-icon">⏱️</div>
+                <h3>Pomodoro Timer</h3>
+                <p>Focus timer: 25 min study + 5 min break for maximum productivity</p>
+                <button class="btn" onclick="showSection('pomodoro')" style="margin-top:1rem">Start Timer →</button>
+            </div>
+
+            <div class="feature-card" style="cursor:pointer" onclick="showSection('tips')">
+                <div class="feature-icon">💡</div>
+                <h3>Study Tips</h3>
+                <p>Evidence-based study strategies for Ethiopian freshman success</p>
+                <button class="btn" onclick="showSection('tips')" style="margin-top:1rem">View Tips →</button>
+            </div>
+
+            <div class="feature-card" style="cursor:pointer" onclick="window.location.href='department-guide.html'">
+                <div class="feature-icon">🎓</div>
+                <h3>Department Guide</h3>
+                <p>Explore career paths, departments, and what GPA you need</p>
+                <a href="department-guide.html" class="btn" style="margin-top:1rem;display:inline-block">Explore →</a>
+            </div>
+        </div>
+
+        <!-- Planner Section -->
+        <div id="section-planner" class="hub-section" style="display:none">
+            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">📅 Weekly Study Planner</h2>
+            <div style="background:var(--bg-secondary);border-radius:16px;padding:1.5rem;border:1px solid var(--border-color)">
+                <div id="plannerGrid"></div>
+                <button class="btn btn-success" onclick="generatePlanner()" style="margin-top:1rem">🔄 Generate My Schedule</button>
+            </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div id="section-notes" class="hub-section" style="display:none">
+            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">📝 My Study Notes</h2>
+            <div style="background:var(--bg-secondary);border-radius:16px;padding:1.5rem;border:1px solid var(--border-color)">
+                <div style="margin-bottom:1rem">
+                    <select id="noteSubject" class="form-select" style="margin-bottom:0.5rem">
+                        <option>Communicative English I</option>
+                        <option>Critical Thinking</option>
+                        <option>Mathematics</option>
+                        <option>Geography</option>
+                        <option>General Psychology</option>
+                        <option>General Physics</option>
+                        <option>History of Ethiopia</option>
+                        <option>ICT & Emerging Technologies</option>
+                        <option>Economics</option>
+                        <option>Other</option>
+                    </select>
+                    <textarea id="noteContent" rows="8" placeholder="Write your notes here..."
+                        style="width:100%;padding:12px;border:1px solid var(--border-color);border-radius:10px;
+                        background:var(--bg-primary);color:var(--text-primary);resize:vertical;font-size:0.9rem"></textarea>
+                </div>
+                <div style="display:flex;gap:10px">
+                    <button class="btn btn-success" onclick="saveNote()">💾 Save Note</button>
+                    <button class="btn" onclick="loadNotes()">📂 Load Saved Notes</button>
+                </div>
+                <div id="savedNotesList" style="margin-top:1.5rem"></div>
+            </div>
+        </div>
+
+        <!-- Pomodoro Section -->
+        <div id="section-pomodoro" class="hub-section" style="display:none">
+            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">⏱️ Pomodoro Study Timer</h2>
+            <div style="background:var(--bg-secondary);border-radius:16px;padding:2rem;text-align:center;border:1px solid var(--border-color);max-width:400px;margin:0 auto">
+                <div id="timerDisplay" style="font-size:4rem;font-weight:700;color:var(--text-primary);margin-bottom:1rem;font-family:monospace">25:00</div>
+                <div id="timerLabel" style="color:var(--text-secondary);margin-bottom:2rem;font-size:1rem">🎯 Focus Time</div>
+                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+                    <button id="startBtn" class="btn btn-success" onclick="startTimer()">▶ Start</button>
+                    <button class="btn" onclick="pauseTimer()">⏸ Pause</button>
+                    <button class="btn" onclick="resetTimer()">🔄 Reset</button>
+                </div>
+                <div style="margin-top:1.5rem;display:flex;gap:8px;justify-content:center">
+                    <button class="btn btn-sm" onclick="setTimer(25,'🎯 Focus Time')">25 min</button>
+                    <button class="btn btn-sm" onclick="setTimer(5,'☕ Short Break')">5 min</button>
+                    <button class="btn btn-sm" onclick="setTimer(15,'🌿 Long Break')">15 min</button>
+                </div>
+                <div id="pomodoroCount" style="margin-top:1rem;color:var(--text-secondary);font-size:0.85rem"></div>
+            </div>
+        </div>
+
+        <!-- Study Tips Section -->
+        <div id="section-tips" class="hub-section" style="display:none">
+            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">💡 Proven Study Strategies</h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
+                ${[
+                    ['🧠','Active Recall','Test yourself instead of re-reading. Close your notes and try to recall key points. This is the most effective study method.'],
+                    ['📅','Spaced Repetition','Review material at increasing intervals: after 1 day, 3 days, 1 week, 2 weeks. Use flashcards.'],
+                    ['🎯','Pomodoro Technique','Study for 25 minutes, break for 5. After 4 sessions, take a 15-30 min break. Maintains focus.'],
+                    ['✏️','Cornell Notes','Divide your page: notes on right, keywords on left, summary at bottom. Great for lectures.'],
+                    ['👥','Study Groups','Explaining concepts to others deepens your own understanding. Form groups of 3-5 students.'],
+                    ['😴','Sleep & Memory','Your brain consolidates memories during sleep. 7-8 hours is essential for learning.'],
+                    ['🏃','Exercise','30 min of exercise before studying boosts brain function and memory retention.'],
+                    ['📵','Eliminate Distractions','Put your phone in another room. Even having it nearby reduces cognitive capacity.']
+                ].map(([icon,title,tip]) => `
+                    <div style="background:var(--bg-secondary);border-radius:12px;padding:1.2rem;border:1px solid var(--border-color)">
+                        <div style="font-size:1.8rem;margin-bottom:0.5rem">${icon}</div>
+                        <h4 style="color:var(--text-primary);margin-bottom:0.5rem">${title}</h4>
+                        <p style="color:var(--text-secondary);font-size:0.88rem;line-height:1.5">${tip}</p>
+                    </div>
+                `).join('')}
+            </div>
         </div>
     </main>
 
-    <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Alpha Freshman Tutorial · Way to Success</p>
+                <p style="margin-top:6px;font-size:0.82rem;opacity:0.6">Developed by <strong>Rehima Ali</strong></p>
+            </div>
+        </div>
+    </footer>
 
     <script src="theme.js"></script>
     <script src="api.js"></script>
-    <script src="offline-db.js"></script>
-    <script src="notifications.js"></script>
-    <script src="analytics.js"></script>
-    <script src="study-planner.js"></script>
-    <script src="bookmarks.js"></script>
-    <script src="lesson-download.js"></script>
+    <script src="ai-assistant.js"></script>
+    <script src="pwa.js"></script>
     <script>
-    let allCourses = [];
-
-    async function init() {
-        // Load courses for search
-        try {
-            const res = await api.getCourses();
-            if (res.success) allCourses = res.courses || [];
-            else if (typeof offlineDB !== 'undefined') allCourses = await offlineDB.getAll('courses').catch(() => []);
-        } catch {
-            if (typeof offlineDB !== 'undefined') allCourses = await offlineDB.getAll('courses').catch(() => []);
-        }
-
-        renderQuickStats();
-        studyPlanner.render('plannerContainer');
-    }
-
-    function renderQuickStats() {
-        const pts   = parseInt(localStorage.getItem('totalPoints') || '0');
-        const level = typeof QuizSystem !== 'undefined' ? QuizSystem.getLevel(pts) : { icon:'🌱', name:'Beginner' };
-        const streak = JSON.parse(localStorage.getItem('studyStreak') || '{"streak":0}').streak;
-        const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]').length;
-        const downloads = JSON.parse(localStorage.getItem('downloadedLessons') || '[]').length;
-
-        document.getElementById('quickStats').innerHTML = [
-            { icon: level.icon, val: level.name, label: 'Level' },
-            { icon: '⚡', val: pts, label: 'Points' },
-            { icon: '🔥', val: streak + ' days', label: 'Streak' },
-            { icon: '📌', val: bookmarks, label: 'Bookmarks' },
-            { icon: '💾', val: downloads, label: 'Downloads' }
-        ].map(s => `
-            <div class="stat-card" style="padding:14px;text-align:center">
-                <div style="font-size:1.4rem">${s.icon}</div>
-                <div style="font-weight:700;color:var(--text-primary);font-size:1rem">${s.val}</div>
-                <div style="font-size:0.72rem;color:var(--text-secondary)">${s.label}</div>
-            </div>
-        `).join('');
-    }
-
-    function switchHubTab(tab) {
-        ['planner','bookmarks','downloads','leaderboard','search'].forEach(t => {
-            document.getElementById(`hub-${t}`).style.display = t === tab ? 'block' : 'none';
-        });
-        document.querySelectorAll('.study-tab').forEach((btn, i) => {
-            btn.classList.toggle('active', ['planner','bookmarks','downloads','leaderboard','search'][i] === tab);
-        });
-
-        if (tab === 'bookmarks')   bookmarkManager.renderList('bookmarksContainer');
-        if (tab === 'downloads')   lessonDownloader.renderDownloadedList('downloadsContainer');
-        if (tab === 'leaderboard') renderLeaderboard('leaderboardContainer');
-    }
-
-    // ── Lesson search ─────────────────────────────────────────────────────────
-    function searchLessons(query) {
-        const q = query.toLowerCase().trim();
-        const container = document.getElementById('searchResults');
-
-        if (q.length < 2) {
-            container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem">Type at least 2 characters to search...</p>';
-            return;
-        }
-
-        const results = [];
-        allCourses.forEach(course => {
-            // Search in chapters
-            (course.chapters || []).forEach((ch, ci) => {
-                (ch.lessons || []).forEach((lesson, li) => {
-                    if (lesson.title.toLowerCase().includes(q) ||
-                        ch.title.toLowerCase().includes(q) ||
-                        course.title.toLowerCase().includes(q)) {
-                        results.push({ course, chapter: ch, lesson, ci, li });
-                    }
-                });
-            });
-            // Search in flat lessons
-            if (!course.chapters?.length) {
-                (course.lessons || []).forEach(lesson => {
-                    if (lesson.title.toLowerCase().includes(q) || course.title.toLowerCase().includes(q)) {
-                        results.push({ course, lesson });
-                    }
-                });
+        // Show/hide sections
+        function showSection(name) {
+            document.querySelectorAll('.hub-section').forEach(s => s.style.display = 'none');
+            const sec = document.getElementById('section-' + name);
+            if (sec) {
+                sec.style.display = 'block';
+                sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-        });
-
-        if (results.length === 0) {
-            container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem">No lessons found for "${query}"</p>`;
-            return;
+            if (name === 'planner') generatePlanner();
+            if (name === 'notes') loadNotes();
         }
 
-        container.innerHTML = `
-            <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:10px">${results.length} result${results.length !== 1 ? 's' : ''}</p>
-            ${results.slice(0, 20).map(r => `
-                <div style="background:var(--bg-secondary);border-radius:12px;padding:14px 16px;
-                    margin-bottom:8px;border:1px solid var(--border-color);
-                    display:flex;align-items:center;gap:12px">
-                    <div style="font-size:1.8rem">${r.course.icon || '📚'}</div>
-                    <div style="flex:1;min-width:0">
-                        <h4 style="margin:0;font-size:0.9rem;color:var(--text-primary)">
-                            ${highlight(r.lesson.title, q)}
-                        </h4>
-                        <p style="margin:2px 0 0;font-size:0.78rem;color:var(--text-secondary)">
-                            ${r.course.title}${r.chapter ? ' › ' + r.chapter.title : ''}
-                        </p>
-                    </div>
-                    <a href="course-detail.html?id=${r.course._id}" class="btn btn-sm" style="font-size:0.75rem;padding:5px 10px;flex-shrink:0">
-                        Open
-                    </a>
-                </div>
-            `).join('')}
-        `;
-    }
-
-    function highlight(text, query) {
-        const re = new RegExp(`(${query})`, 'gi');
-        return text.replace(re, '<mark style="background:#fff3cd;padding:0 2px;border-radius:2px">$1</mark>');
-    }
-
-    // ── Leaderboard ───────────────────────────────────────────────────────────
-    async function renderLeaderboard(containerId) {
-        const el = document.getElementById(containerId);
-        el.innerHTML = '<p style="color:var(--text-secondary);padding:1rem">Loading...</p>';
-        try {
-            const res = await api.request('/users/leaderboard');
-            const users = res.success ? res.users : [];
-            const medals = ['🥇','🥈','🥉'];
-
-            if (users.length === 0) {
-                el.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem">No leaderboard data yet. Complete quizzes to earn points!</p>';
-                return;
-            }
-
-            el.innerHTML = `
-                <div style="display:flex;flex-direction:column;gap:8px">
-                    ${users.map((u, i) => `
-                        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;
-                            background:${i < 3 ? 'linear-gradient(135deg,rgba(102,126,234,0.08),rgba(118,75,162,0.08))' : 'var(--bg-secondary)'};
-                            border-radius:12px;border:1px solid var(--border-color)">
-                            <span style="font-size:1.4rem;min-width:30px;text-align:center">
-                                ${medals[i] || `#${i+1}`}
-                            </span>
-                            <div style="flex:1">
-                                <p style="font-weight:600;color:var(--text-primary);margin:0;font-size:0.9rem">${u.fullName}</p>
-                                <p style="font-size:0.75rem;color:var(--text-secondary);margin:2px 0 0">
-                                    ${u.completedCourses || 0} courses completed
-                                </p>
-                            </div>
-                            <div style="text-align:right">
-                                <p style="font-weight:700;color:#667eea;margin:0">${u.points || 0} pts</p>
-                                <p style="font-size:0.72rem;color:var(--text-secondary);margin:2px 0 0">
-                                    ${typeof QuizSystem !== 'undefined' ? QuizSystem.getLevel(u.points||0).icon : '🌱'}
-                                </p>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
+        // ── Planner ──────────────────────────────────────────────────────────
+        function generatePlanner() {
+            const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+            const subjects = ['English','Critical Thinking','Mathematics','Geography','Psychology','Physics','Review'];
+            const html = `
+                <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+                    <thead>
+                        <tr>${days.map(d => `<th style="padding:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;text-align:center">${d}</th>`).join('')}</tr>
+                    </thead>
+                    <tbody>
+                        <tr>${days.map((_, i) => `
+                            <td style="padding:8px;border:1px solid var(--border-color);text-align:center;background:var(--bg-primary)">
+                                <div style="color:#667eea;font-weight:600;font-size:0.8rem">8:00-9:30</div>
+                                <div style="color:var(--text-primary);font-size:0.82rem">${subjects[i % subjects.length]}</div>
+                            </td>
+                        `).join('')}</tr>
+                        <tr>${days.map((_, i) => `
+                            <td style="padding:8px;border:1px solid var(--border-color);text-align:center;background:var(--bg-secondary)">
+                                <div style="color:#27ae60;font-weight:600;font-size:0.8rem">10:00-11:30</div>
+                                <div style="color:var(--text-primary);font-size:0.82rem">${subjects[(i+2) % subjects.length]}</div>
+                            </td>
+                        `).join('')}</tr>
+                        <tr>${days.map((d, i) => `
+                            <td style="padding:8px;border:1px solid var(--border-color);text-align:center;background:var(--bg-primary)">
+                                <div style="color:#e67e22;font-weight:600;font-size:0.8rem">14:00-15:30</div>
+                                <div style="color:var(--text-primary);font-size:0.82rem">${d === 'Saturday' || d === 'Sunday' ? '🌿 Rest' : subjects[(i+4) % subjects.length]}</div>
+                            </td>
+                        `).join('')}</tr>
+                    </tbody>
+                </table>
             `;
-        } catch {
-            el.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem">Leaderboard coming soon</p>';
+            document.getElementById('plannerGrid').innerHTML = html;
         }
-    }
 
-    document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        try { await api.logout(); } catch {}
-        api.removeAuthToken();
-        localStorage.removeItem('currentUser');
-        window.location.href = 'home.html';
-    });
+        // ── Notes ─────────────────────────────────────────────────────────────
+        function saveNote() {
+            const subject = document.getElementById('noteSubject').value;
+            const content = document.getElementById('noteContent').value.trim();
+            if (!content) { alert('Please write something first!'); return; }
+            const notes = JSON.parse(localStorage.getItem('studyNotes') || '[]');
+            notes.unshift({ subject, content, date: new Date().toLocaleDateString() });
+            localStorage.setItem('studyNotes', JSON.stringify(notes.slice(0, 50)));
+            document.getElementById('noteContent').value = '';
+            loadNotes();
+            alert('Note saved! ✅');
+        }
 
-    init();
+        function loadNotes() {
+            const notes = JSON.parse(localStorage.getItem('studyNotes') || '[]');
+            const container = document.getElementById('savedNotesList');
+            if (notes.length === 0) { container.innerHTML = '<p style="color:var(--text-secondary)">No saved notes yet.</p>'; return; }
+            container.innerHTML = '<h4 style="color:var(--text-primary);margin-bottom:1rem">Saved Notes:</h4>' +
+                notes.map((n, i) => `
+                    <div style="background:var(--bg-primary);border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid var(--border-color)">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                            <strong style="color:#667eea">${n.subject}</strong>
+                            <span style="font-size:0.78rem;color:var(--text-secondary)">${n.date}</span>
+                        </div>
+                        <p style="color:var(--text-primary);font-size:0.88rem;white-space:pre-wrap">${n.content.substring(0,200)}${n.content.length > 200 ? '...' : ''}</p>
+                        <button onclick="deleteNote(${i})" class="btn btn-sm" style="margin-top:6px;font-size:0.75rem">🗑 Delete</button>
+                    </div>
+                `).join('');
+        }
+
+        function deleteNote(i) {
+            const notes = JSON.parse(localStorage.getItem('studyNotes') || '[]');
+            notes.splice(i, 1);
+            localStorage.setItem('studyNotes', JSON.stringify(notes));
+            loadNotes();
+        }
+
+        // ── Pomodoro Timer ────────────────────────────────────────────────────
+        let timerInterval = null, timeLeft = 25 * 60, pomodorosDone = 0;
+
+        function setTimer(mins, label) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timeLeft = mins * 60;
+            document.getElementById('timerDisplay').textContent = formatTime(timeLeft);
+            document.getElementById('timerLabel').textContent = label;
+            document.getElementById('startBtn').textContent = '▶ Start';
+        }
+
+        function startTimer() {
+            if (timerInterval) return;
+            document.getElementById('startBtn').textContent = '⏳ Running';
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timerDisplay').textContent = formatTime(timeLeft);
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    pomodorosDone++;
+                    document.getElementById('pomodoroCount').textContent = `🍅 Completed: ${pomodorosDone} sessions`;
+                    document.getElementById('startBtn').textContent = '▶ Start';
+                    if (Notification.permission === 'granted') {
+                        new Notification('⏰ Timer Done!', { body: 'Take a break or start next session.' });
+                    }
+                    alert('⏰ Time is up! Great work! 🎉');
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            document.getElementById('startBtn').textContent = '▶ Resume';
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timeLeft = 25 * 60;
+            document.getElementById('timerDisplay').textContent = '25:00';
+            document.getElementById('timerLabel').textContent = '🎯 Focus Time';
+            document.getElementById('startBtn').textContent = '▶ Start';
+        }
+
+        function formatTime(s) {
+            return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+        }
+
+        // Request notification permission
+        if (Notification.permission === 'default') Notification.requestPermission();
+
+        // Study tips inline render
+        document.getElementById('section-tips').innerHTML = `
+            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">💡 Proven Study Strategies</h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
+                ${[
+                    ['🧠','Active Recall','Test yourself instead of re-reading. Close your notes and try to recall key points. This is the most effective study method.'],
+                    ['📅','Spaced Repetition','Review material at increasing intervals: after 1 day, 3 days, 1 week, 2 weeks. Use flashcards.'],
+                    ['🎯','Pomodoro Technique','Study for 25 minutes, break for 5. After 4 sessions, take a 15-30 min break.'],
+                    ['✏️','Cornell Notes','Divide your page: notes on right, keywords on left, summary at bottom.'],
+                    ['👥','Study Groups','Explaining concepts to others deepens your own understanding. Form groups of 3-5.'],
+                    ['😴','Sleep & Memory','Your brain consolidates memories during sleep. 7-8 hours is essential.'],
+                    ['🏃','Exercise','30 min of exercise before studying boosts brain function and memory retention.'],
+                    ['📵','Eliminate Distractions','Put your phone in another room. Even having it nearby reduces focus by 20%.']
+                ].map(([icon,title,tip]) => `
+                    <div style="background:var(--bg-secondary);border-radius:12px;padding:1.2rem;border:1px solid var(--border-color)">
+                        <div style="font-size:1.8rem;margin-bottom:0.5rem">${icon}</div>
+                        <h4 style="color:var(--text-primary);margin-bottom:0.5rem">${title}</h4>
+                        <p style="color:var(--text-secondary);font-size:0.88rem;line-height:1.5">${tip}</p>
+                    </div>
+                `).join('')}
+            </div>`;
     </script>
-    <script src="/pwa.js"></script>
 </body>
 </html>
-
-
