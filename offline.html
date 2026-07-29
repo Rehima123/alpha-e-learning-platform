@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline — Alpha Freshman Tutorial</title>
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <title>Offline � Alpha Freshman Tutorial</title>
+    <link rel="icon" href="logo.png" type="image/png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3B82F6">
     <style>
@@ -67,20 +67,20 @@
 </head>
 <body>
     <div class="card">
-        <div class="icon">📡</div>
+        <div class="icon">??</div>
         <h1>You're Offline</h1>
         <p>No internet connection detected. You can still access cached courses and your learning progress.</p>
 
-        <button class="btn" onclick="window.location.reload()">🔄 Try Again</button>
-        <a href="/courses.html" class="btn">📚 Cached Courses</a>
-        <a href="/dashboard.html" class="btn">📊 My Progress</a>
+        <button class="btn" onclick="window.location.reload()">?? Try Again</button>
+        <a href="/courses.html" class="btn">?? Cached Courses</a>
+        <a href="/dashboard.html" class="btn">?? My Progress</a>
 
         <div class="cached-section">
-            <h3>📂 Available Offline:</h3>
-            <a href="/home.html" class="cached-link">🏠 Home Page</a>
-            <a href="/courses.html" class="cached-link">📚 Course Catalog</a>
-            <a href="/dashboard.html" class="cached-link">📊 My Learning Dashboard</a>
-            <a href="/auth-login.html" class="cached-link">🔐 Login</a>
+            <h3>?? Available Offline:</h3>
+            <a href="/home.html" class="cached-link">?? Home Page</a>
+            <a href="/courses.html" class="cached-link">?? Course Catalog</a>
+            <a href="/dashboard.html" class="cached-link">?? My Learning Dashboard</a>
+            <a href="/auth-login.html" class="cached-link">?? Login</a>
         </div>
 
         <div id="status">Checking connection...</div>
@@ -90,15 +90,15 @@
     <script>
         // Auto-redirect when back online
         window.addEventListener('online', () => {
-            document.getElementById('status').textContent = '✅ Back online! Redirecting...';
+            document.getElementById('status').textContent = '? Back online! Redirecting...';
             setTimeout(() => window.history.back(), 1500);
         });
 
         if (navigator.onLine) {
-            document.getElementById('status').textContent = '✅ Connection restored';
+            document.getElementById('status').textContent = '? Connection restored';
             setTimeout(() => window.history.back(), 1000);
         } else {
-            document.getElementById('status').textContent = '❌ No internet connection';
+            document.getElementById('status').textContent = '? No internet connection';
         }
     </script>
 </body>

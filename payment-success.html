@@ -1,12 +1,12 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful â€” Alpha Freshman Tutorial</title>
+    <title>Payment Successful — Alpha Freshman Tutorial</title>
     <link rel="stylesheet" href="elearning.css">
     <meta name="theme-color" content="#3B82F6">
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="icon" href="logo.png" type="image/png">
 </head>
 <body>
     <nav class="navbar">
@@ -24,31 +24,31 @@
 
     <main class="container" style="max-width:600px;margin:4rem auto;text-align:center">
         <div style="background:var(--bg-secondary);border-radius:20px;padding:3rem;box-shadow:0 4px 24px var(--shadow)">
-            <div style="font-size:4rem;margin-bottom:1rem">ðŸŽ‰</div>
+            <div style="font-size:4rem;margin-bottom:1rem">??</div>
             <h2 style="color:#27ae60;margin-bottom:0.5rem">Payment Successful!</h2>
             <p style="color:var(--text-secondary);margin-bottom:2rem">Your payment has been processed successfully.</p>
 
             <div id="invoiceBox" style="background:var(--bg-primary);border-radius:12px;padding:1.5rem;margin-bottom:2rem;text-align:left">
                 <div style="display:flex;justify-content:space-between;margin-bottom:8px">
                     <span style="color:var(--text-secondary)">Invoice #</span>
-                    <strong id="invoiceNum" style="color:var(--text-primary)">â€”</strong>
+                    <strong id="invoiceNum" style="color:var(--text-primary)">—</strong>
                 </div>
                 <div style="display:flex;justify-content:space-between;margin-bottom:8px">
                     <span style="color:var(--text-secondary)">Item</span>
-                    <strong id="invoiceItem" style="color:var(--text-primary)">â€”</strong>
+                    <strong id="invoiceItem" style="color:var(--text-primary)">—</strong>
                 </div>
                 <div style="display:flex;justify-content:space-between;margin-bottom:8px">
                     <span style="color:var(--text-secondary)">Amount Paid</span>
-                    <strong id="invoiceAmount" style="color:#667eea">â€”</strong>
+                    <strong id="invoiceAmount" style="color:#667eea">—</strong>
                 </div>
                 <div style="display:flex;justify-content:space-between">
                     <span style="color:var(--text-secondary)">Date</span>
-                    <span id="invoiceDate" style="color:var(--text-primary)">â€”</span>
+                    <span id="invoiceDate" style="color:var(--text-primary)">—</span>
                 </div>
             </div>
 
             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-                <button onclick="downloadInvoice()" class="btn btn-success">ðŸ“„ Download Invoice</button>
+                <button onclick="downloadInvoice()" class="btn btn-success">?? Download Invoice</button>
                 <a href="courses.html" class="btn">Browse Courses</a>
                 <a href="dashboard.html" class="btn">My Dashboard</a>
             </div>
@@ -80,7 +80,7 @@
         }
 
         function showInvoice(p) {
-            document.getElementById('invoiceNum').textContent    = p.invoiceNumber || 'â€”';
+            document.getElementById('invoiceNum').textContent    = p.invoiceNumber || '—';
             document.getElementById('invoiceItem').textContent   = p.course?.title || (p.plan + ' Subscription');
             document.getElementById('invoiceAmount').textContent = `${p.total?.toLocaleString()} ETB`;
             document.getElementById('invoiceDate').textContent   = new Date(p.paidAt || p.createdAt).toLocaleDateString();
@@ -97,7 +97,7 @@
                 .total{font-weight:bold;font-size:1.1rem;color:#667eea}</style></head>
                 <body>
                 <h1>Alpha Freshman Tutorial</h1>
-                <p>Invoice #${p.invoiceNumber} Â· ${new Date(p.paidAt).toLocaleDateString()}</p>
+                <p>Invoice #${p.invoiceNumber} · ${new Date(p.paidAt).toLocaleDateString()}</p>
                 <div class="row"><span>Item</span><span>${p.course?.title || p.plan + ' Subscription'}</span></div>
                 <div class="row"><span>Subtotal</span><span>${p.subtotal?.toLocaleString()} ETB</span></div>
                 ${p.discount > 0 ? `<div class="row"><span>Discount</span><span>-${p.discount?.toLocaleString()} ETB</span></div>` : ''}

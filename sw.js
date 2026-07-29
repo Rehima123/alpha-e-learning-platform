@@ -1,12 +1,10 @@
 // ─── Alpha Freshman Tutorial — Service Worker ─────────────────────────────────
-const CACHE_NAME = 'alpha-cache-v1';
+const CACHE_NAME = 'alpha-cache-v3';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/manifest.json',
-    '/icon-192.png',
-    '/icon-512.png',
-    '/icon.svg',
+    '/logo.png',
     '/home.html',
     '/courses.html',
     '/course-detail.html',

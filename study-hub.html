@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Hub — Alpha Freshman Tutorial</title>
+    <title>Study Hub � Alpha Freshman Tutorial</title>
     <link rel="stylesheet" href="elearning.css">
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="icon" href="logo.png" type="image/png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3B82F6">
 </head>
@@ -19,9 +19,9 @@
                 <li><a href="home.html">Home</a></li>
                 <li><a href="courses.html">Courses</a></li>
                 <li><a href="dashboard.html">My Learning</a></li>
-                <li><a href="study-hub.html" style="color:#f39c12;font-weight:700">📚 Study Hub</a></li>
-                <li><a href="department-guide.html">🎓 Departments</a></li>
-                <li><button id="themeToggle" class="theme-toggle">🌙</button></li>
+                <li><a href="study-hub.html" style="color:#f39c12;font-weight:700">?? Study Hub</a></li>
+                <li><a href="department-guide.html">?? Departments</a></li>
+                <li><button id="themeToggle" class="theme-toggle">??</button></li>
                 <li><a href="auth-login.html" class="btn-nav-login">Login</a></li>
             </ul>
         </div>
@@ -29,68 +29,68 @@
 
     <main class="container" style="padding-bottom:4rem">
         <div style="text-align:center;padding:3rem 0 2rem">
-            <h1 style="font-size:2rem;color:var(--text-primary)">📚 Study Hub</h1>
-            <p style="color:var(--text-secondary);font-size:1.05rem">Your complete learning toolkit — notes, quizzes, schedules, and study resources</p>
+            <h1 style="font-size:2rem;color:var(--text-primary)">?? Study Hub</h1>
+            <p style="color:var(--text-secondary);font-size:1.05rem">Your complete learning toolkit � notes, quizzes, schedules, and study resources</p>
         </div>
 
         <!-- Quick Tools Grid -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-bottom:3rem">
 
             <div class="feature-card" style="cursor:pointer" onclick="window.location.href='ai-study.html'">
-                <div class="feature-icon">🤖</div>
+                <div class="feature-icon">??</div>
                 <h3>AI Study Tools</h3>
                 <p>Generate quizzes, study notes, and flashcards powered by AI for any course</p>
-                <a href="ai-study.html" class="btn" style="margin-top:1rem;display:inline-block">Open AI Tools →</a>
+                <a href="ai-study.html" class="btn" style="margin-top:1rem;display:inline-block">Open AI Tools ?</a>
             </div>
 
             <div class="feature-card" style="cursor:pointer" onclick="showSection('planner')">
-                <div class="feature-icon">📅</div>
+                <div class="feature-icon">??</div>
                 <h3>Study Planner</h3>
                 <p>Create a personalized weekly study schedule for your freshman courses</p>
-                <button class="btn" onclick="showSection('planner')" style="margin-top:1rem">Create Schedule →</button>
+                <button class="btn" onclick="showSection('planner')" style="margin-top:1rem">Create Schedule ?</button>
             </div>
 
             <div class="feature-card" style="cursor:pointer" onclick="showSection('notes')">
-                <div class="feature-icon">📝</div>
+                <div class="feature-icon">??</div>
                 <h3>Quick Notes</h3>
-                <p>Take and save notes for each subject — synced to your device</p>
-                <button class="btn" onclick="showSection('notes')" style="margin-top:1rem">Open Notes →</button>
+                <p>Take and save notes for each subject � synced to your device</p>
+                <button class="btn" onclick="showSection('notes')" style="margin-top:1rem">Open Notes ?</button>
             </div>
 
             <div class="feature-card" style="cursor:pointer" onclick="showSection('pomodoro')">
-                <div class="feature-icon">⏱️</div>
+                <div class="feature-icon">??</div>
                 <h3>Pomodoro Timer</h3>
                 <p>Focus timer: 25 min study + 5 min break for maximum productivity</p>
-                <button class="btn" onclick="showSection('pomodoro')" style="margin-top:1rem">Start Timer →</button>
+                <button class="btn" onclick="showSection('pomodoro')" style="margin-top:1rem">Start Timer ?</button>
             </div>
 
             <div class="feature-card" style="cursor:pointer" onclick="showSection('tips')">
-                <div class="feature-icon">💡</div>
+                <div class="feature-icon">??</div>
                 <h3>Study Tips</h3>
                 <p>Evidence-based study strategies for Ethiopian freshman success</p>
-                <button class="btn" onclick="showSection('tips')" style="margin-top:1rem">View Tips →</button>
+                <button class="btn" onclick="showSection('tips')" style="margin-top:1rem">View Tips ?</button>
             </div>
 
             <div class="feature-card" style="cursor:pointer" onclick="window.location.href='department-guide.html'">
-                <div class="feature-icon">🎓</div>
+                <div class="feature-icon">??</div>
                 <h3>Department Guide</h3>
                 <p>Explore career paths, departments, and what GPA you need</p>
-                <a href="department-guide.html" class="btn" style="margin-top:1rem;display:inline-block">Explore →</a>
+                <a href="department-guide.html" class="btn" style="margin-top:1rem;display:inline-block">Explore ?</a>
             </div>
         </div>
 
         <!-- Planner Section -->
         <div id="section-planner" class="hub-section" style="display:none">
-            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">📅 Weekly Study Planner</h2>
+            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">?? Weekly Study Planner</h2>
             <div style="background:var(--bg-secondary);border-radius:16px;padding:1.5rem;border:1px solid var(--border-color)">
                 <div id="plannerGrid"></div>
-                <button class="btn btn-success" onclick="generatePlanner()" style="margin-top:1rem">🔄 Generate My Schedule</button>
+                <button class="btn btn-success" onclick="generatePlanner()" style="margin-top:1rem">?? Generate My Schedule</button>
             </div>
         </div>
 
         <!-- Notes Section -->
         <div id="section-notes" class="hub-section" style="display:none">
-            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">📝 My Study Notes</h2>
+            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">?? My Study Notes</h2>
             <div style="background:var(--bg-secondary);border-radius:16px;padding:1.5rem;border:1px solid var(--border-color)">
                 <div style="margin-bottom:1rem">
                     <select id="noteSubject" class="form-select" style="margin-bottom:0.5rem">
@@ -110,8 +110,8 @@
                         background:var(--bg-primary);color:var(--text-primary);resize:vertical;font-size:0.9rem"></textarea>
                 </div>
                 <div style="display:flex;gap:10px">
-                    <button class="btn btn-success" onclick="saveNote()">💾 Save Note</button>
-                    <button class="btn" onclick="loadNotes()">📂 Load Saved Notes</button>
+                    <button class="btn btn-success" onclick="saveNote()">?? Save Note</button>
+                    <button class="btn" onclick="loadNotes()">?? Load Saved Notes</button>
                 </div>
                 <div id="savedNotesList" style="margin-top:1.5rem"></div>
             </div>
@@ -119,19 +119,19 @@
 
         <!-- Pomodoro Section -->
         <div id="section-pomodoro" class="hub-section" style="display:none">
-            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">⏱️ Pomodoro Study Timer</h2>
+            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">?? Pomodoro Study Timer</h2>
             <div style="background:var(--bg-secondary);border-radius:16px;padding:2rem;text-align:center;border:1px solid var(--border-color);max-width:400px;margin:0 auto">
                 <div id="timerDisplay" style="font-size:4rem;font-weight:700;color:var(--text-primary);margin-bottom:1rem;font-family:monospace">25:00</div>
-                <div id="timerLabel" style="color:var(--text-secondary);margin-bottom:2rem;font-size:1rem">🎯 Focus Time</div>
+                <div id="timerLabel" style="color:var(--text-secondary);margin-bottom:2rem;font-size:1rem">?? Focus Time</div>
                 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-                    <button id="startBtn" class="btn btn-success" onclick="startTimer()">▶ Start</button>
-                    <button class="btn" onclick="pauseTimer()">⏸ Pause</button>
-                    <button class="btn" onclick="resetTimer()">🔄 Reset</button>
+                    <button id="startBtn" class="btn btn-success" onclick="startTimer()">? Start</button>
+                    <button class="btn" onclick="pauseTimer()">? Pause</button>
+                    <button class="btn" onclick="resetTimer()">?? Reset</button>
                 </div>
                 <div style="margin-top:1.5rem;display:flex;gap:8px;justify-content:center">
-                    <button class="btn btn-sm" onclick="setTimer(25,'🎯 Focus Time')">25 min</button>
-                    <button class="btn btn-sm" onclick="setTimer(5,'☕ Short Break')">5 min</button>
-                    <button class="btn btn-sm" onclick="setTimer(15,'🌿 Long Break')">15 min</button>
+                    <button class="btn btn-sm" onclick="setTimer(25,'?? Focus Time')">25 min</button>
+                    <button class="btn btn-sm" onclick="setTimer(5,'? Short Break')">5 min</button>
+                    <button class="btn btn-sm" onclick="setTimer(15,'?? Long Break')">15 min</button>
                 </div>
                 <div id="pomodoroCount" style="margin-top:1rem;color:var(--text-secondary);font-size:0.85rem"></div>
             </div>
@@ -139,17 +139,17 @@
 
         <!-- Study Tips Section -->
         <div id="section-tips" class="hub-section" style="display:none">
-            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">💡 Proven Study Strategies</h2>
+            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">?? Proven Study Strategies</h2>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
                 ${[
-                    ['🧠','Active Recall','Test yourself instead of re-reading. Close your notes and try to recall key points. This is the most effective study method.'],
-                    ['📅','Spaced Repetition','Review material at increasing intervals: after 1 day, 3 days, 1 week, 2 weeks. Use flashcards.'],
-                    ['🎯','Pomodoro Technique','Study for 25 minutes, break for 5. After 4 sessions, take a 15-30 min break. Maintains focus.'],
-                    ['✏️','Cornell Notes','Divide your page: notes on right, keywords on left, summary at bottom. Great for lectures.'],
-                    ['👥','Study Groups','Explaining concepts to others deepens your own understanding. Form groups of 3-5 students.'],
-                    ['😴','Sleep & Memory','Your brain consolidates memories during sleep. 7-8 hours is essential for learning.'],
-                    ['🏃','Exercise','30 min of exercise before studying boosts brain function and memory retention.'],
-                    ['📵','Eliminate Distractions','Put your phone in another room. Even having it nearby reduces cognitive capacity.']
+                    ['??','Active Recall','Test yourself instead of re-reading. Close your notes and try to recall key points. This is the most effective study method.'],
+                    ['??','Spaced Repetition','Review material at increasing intervals: after 1 day, 3 days, 1 week, 2 weeks. Use flashcards.'],
+                    ['??','Pomodoro Technique','Study for 25 minutes, break for 5. After 4 sessions, take a 15-30 min break. Maintains focus.'],
+                    ['??','Cornell Notes','Divide your page: notes on right, keywords on left, summary at bottom. Great for lectures.'],
+                    ['??','Study Groups','Explaining concepts to others deepens your own understanding. Form groups of 3-5 students.'],
+                    ['??','Sleep & Memory','Your brain consolidates memories during sleep. 7-8 hours is essential for learning.'],
+                    ['??','Exercise','30 min of exercise before studying boosts brain function and memory retention.'],
+                    ['??','Eliminate Distractions','Put your phone in another room. Even having it nearby reduces cognitive capacity.']
                 ].map(([icon,title,tip]) => `
                     <div style="background:var(--bg-secondary);border-radius:12px;padding:1.2rem;border:1px solid var(--border-color)">
                         <div style="font-size:1.8rem;margin-bottom:0.5rem">${icon}</div>
@@ -164,7 +164,7 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-bottom">
-                <p>&copy; 2026 Alpha Freshman Tutorial · Way to Success</p>
+                <p>&copy; 2026 Alpha Freshman Tutorial � Way to Success</p>
                 <p style="margin-top:6px;font-size:0.82rem;opacity:0.6">Developed by <strong>Rehima Ali</strong></p>
             </div>
         </div>
@@ -187,7 +187,7 @@
             if (name === 'notes') loadNotes();
         }
 
-        // ── Planner ──────────────────────────────────────────────────────────
+        // -- Planner ----------------------------------------------------------
         function generatePlanner() {
             const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
             const subjects = ['English','Critical Thinking','Mathematics','Geography','Psychology','Physics','Review'];
@@ -212,7 +212,7 @@
                         <tr>${days.map((d, i) => `
                             <td style="padding:8px;border:1px solid var(--border-color);text-align:center;background:var(--bg-primary)">
                                 <div style="color:#e67e22;font-weight:600;font-size:0.8rem">14:00-15:30</div>
-                                <div style="color:var(--text-primary);font-size:0.82rem">${d === 'Saturday' || d === 'Sunday' ? '🌿 Rest' : subjects[(i+4) % subjects.length]}</div>
+                                <div style="color:var(--text-primary);font-size:0.82rem">${d === 'Saturday' || d === 'Sunday' ? '?? Rest' : subjects[(i+4) % subjects.length]}</div>
                             </td>
                         `).join('')}</tr>
                     </tbody>
@@ -221,7 +221,7 @@
             document.getElementById('plannerGrid').innerHTML = html;
         }
 
-        // ── Notes ─────────────────────────────────────────────────────────────
+        // -- Notes -------------------------------------------------------------
         function saveNote() {
             const subject = document.getElementById('noteSubject').value;
             const content = document.getElementById('noteContent').value.trim();
@@ -231,7 +231,7 @@
             localStorage.setItem('studyNotes', JSON.stringify(notes.slice(0, 50)));
             document.getElementById('noteContent').value = '';
             loadNotes();
-            alert('Note saved! ✅');
+            alert('Note saved! ?');
         }
 
         function loadNotes() {
@@ -246,7 +246,7 @@
                             <span style="font-size:0.78rem;color:var(--text-secondary)">${n.date}</span>
                         </div>
                         <p style="color:var(--text-primary);font-size:0.88rem;white-space:pre-wrap">${n.content.substring(0,200)}${n.content.length > 200 ? '...' : ''}</p>
-                        <button onclick="deleteNote(${i})" class="btn btn-sm" style="margin-top:6px;font-size:0.75rem">🗑 Delete</button>
+                        <button onclick="deleteNote(${i})" class="btn btn-sm" style="margin-top:6px;font-size:0.75rem">?? Delete</button>
                     </div>
                 `).join('');
         }
@@ -258,7 +258,7 @@
             loadNotes();
         }
 
-        // ── Pomodoro Timer ────────────────────────────────────────────────────
+        // -- Pomodoro Timer ----------------------------------------------------
         let timerInterval = null, timeLeft = 25 * 60, pomodorosDone = 0;
 
         function setTimer(mins, label) {
@@ -267,12 +267,12 @@
             timeLeft = mins * 60;
             document.getElementById('timerDisplay').textContent = formatTime(timeLeft);
             document.getElementById('timerLabel').textContent = label;
-            document.getElementById('startBtn').textContent = '▶ Start';
+            document.getElementById('startBtn').textContent = '? Start';
         }
 
         function startTimer() {
             if (timerInterval) return;
-            document.getElementById('startBtn').textContent = '⏳ Running';
+            document.getElementById('startBtn').textContent = '? Running';
             timerInterval = setInterval(() => {
                 timeLeft--;
                 document.getElementById('timerDisplay').textContent = formatTime(timeLeft);
@@ -280,12 +280,12 @@
                     clearInterval(timerInterval);
                     timerInterval = null;
                     pomodorosDone++;
-                    document.getElementById('pomodoroCount').textContent = `🍅 Completed: ${pomodorosDone} sessions`;
-                    document.getElementById('startBtn').textContent = '▶ Start';
+                    document.getElementById('pomodoroCount').textContent = `?? Completed: ${pomodorosDone} sessions`;
+                    document.getElementById('startBtn').textContent = '? Start';
                     if (Notification.permission === 'granted') {
-                        new Notification('⏰ Timer Done!', { body: 'Take a break or start next session.' });
+                        new Notification('? Timer Done!', { body: 'Take a break or start next session.' });
                     }
-                    alert('⏰ Time is up! Great work! 🎉');
+                    alert('? Time is up! Great work! ??');
                 }
             }, 1000);
         }
@@ -293,7 +293,7 @@
         function pauseTimer() {
             clearInterval(timerInterval);
             timerInterval = null;
-            document.getElementById('startBtn').textContent = '▶ Resume';
+            document.getElementById('startBtn').textContent = '? Resume';
         }
 
         function resetTimer() {
@@ -301,8 +301,8 @@
             timerInterval = null;
             timeLeft = 25 * 60;
             document.getElementById('timerDisplay').textContent = '25:00';
-            document.getElementById('timerLabel').textContent = '🎯 Focus Time';
-            document.getElementById('startBtn').textContent = '▶ Start';
+            document.getElementById('timerLabel').textContent = '?? Focus Time';
+            document.getElementById('startBtn').textContent = '? Start';
         }
 
         function formatTime(s) {
@@ -314,17 +314,17 @@
 
         // Study tips inline render
         document.getElementById('section-tips').innerHTML = `
-            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">💡 Proven Study Strategies</h2>
+            <h2 style="color:var(--text-primary);margin-bottom:1.5rem">?? Proven Study Strategies</h2>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
                 ${[
-                    ['🧠','Active Recall','Test yourself instead of re-reading. Close your notes and try to recall key points. This is the most effective study method.'],
-                    ['📅','Spaced Repetition','Review material at increasing intervals: after 1 day, 3 days, 1 week, 2 weeks. Use flashcards.'],
-                    ['🎯','Pomodoro Technique','Study for 25 minutes, break for 5. After 4 sessions, take a 15-30 min break.'],
-                    ['✏️','Cornell Notes','Divide your page: notes on right, keywords on left, summary at bottom.'],
-                    ['👥','Study Groups','Explaining concepts to others deepens your own understanding. Form groups of 3-5.'],
-                    ['😴','Sleep & Memory','Your brain consolidates memories during sleep. 7-8 hours is essential.'],
-                    ['🏃','Exercise','30 min of exercise before studying boosts brain function and memory retention.'],
-                    ['📵','Eliminate Distractions','Put your phone in another room. Even having it nearby reduces focus by 20%.']
+                    ['??','Active Recall','Test yourself instead of re-reading. Close your notes and try to recall key points. This is the most effective study method.'],
+                    ['??','Spaced Repetition','Review material at increasing intervals: after 1 day, 3 days, 1 week, 2 weeks. Use flashcards.'],
+                    ['??','Pomodoro Technique','Study for 25 minutes, break for 5. After 4 sessions, take a 15-30 min break.'],
+                    ['??','Cornell Notes','Divide your page: notes on right, keywords on left, summary at bottom.'],
+                    ['??','Study Groups','Explaining concepts to others deepens your own understanding. Form groups of 3-5.'],
+                    ['??','Sleep & Memory','Your brain consolidates memories during sleep. 7-8 hours is essential.'],
+                    ['??','Exercise','30 min of exercise before studying boosts brain function and memory retention.'],
+                    ['??','Eliminate Distractions','Put your phone in another room. Even having it nearby reduces focus by 20%.']
                 ].map(([icon,title,tip]) => `
                     <div style="background:var(--bg-secondary);border-radius:12px;padding:1.2rem;border:1px solid var(--border-color)">
                         <div style="font-size:1.8rem;margin-bottom:0.5rem">${icon}</div>

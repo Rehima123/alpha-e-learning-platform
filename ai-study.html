@@ -1,15 +1,20 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Study Tools — Alpha Freshman Tutorial</title>
+    <title>AI Study Tools � Alpha Freshman Tutorial</title>
     <link rel="stylesheet" href="elearning.css">
     <meta name="theme-color" content="#3B82F6">
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="AlphaFT">
+    <link rel="icon" href="logo.png" type="image/png">
     <link rel="manifest" href="manifest.json">
-    <style>
-        .study-tabs { display:flex; gap:8px; margin-bottom:1.5rem; }
+    <link rel="apple-touch-icon" sizes="180x180" href="logo.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="logo.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="logo.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="logo.png"> { display:flex; gap:8px; margin-bottom:1.5rem; }
         .study-tab { padding:10px 22px; border:2px solid var(--border-color); border-radius:24px;
             background:var(--bg-secondary); color:var(--text-primary); cursor:pointer;
             font-size:0.9rem; font-weight:600; transition:all 0.2s; }
@@ -63,8 +68,8 @@
             <ul class="nav-links">
                 <li><a href="courses.html">Courses</a></li>
                 <li><a href="dashboard.html">My Learning</a></li>
-                <li><a href="study-hub.html">📚 Study Hub</a></li>
-                <li><a href="department-guide.html">🎓 Departments</a></li>
+                <li><a href="study-hub.html">?? Study Hub</a></li>
+                <li><a href="department-guide.html">?? Departments</a></li>
                 <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </div>
@@ -73,10 +78,10 @@
     <main class="container" style="max-width:800px;padding:2rem 20px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px">
             <div>
-                <h2 style="color:var(--text-primary);margin:0">🤖 AI Study Tools</h2>
-                <p style="color:var(--text-secondary);font-size:0.9rem;margin:4px 0 0">Generate quizzes & notes from any course — works offline</p>
+                <h2 style="color:var(--text-primary);margin:0">?? AI Study Tools</h2>
+                <p style="color:var(--text-secondary);font-size:0.9rem;margin:4px 0 0">Generate quizzes & notes from any course � works offline</p>
             </div>
-            <span id="connectionBadge" class="offline-badge online">🟢 Online</span>
+            <span id="connectionBadge" class="offline-badge online">?? Online</span>
         </div>
 
         <!-- Course selector -->
@@ -98,19 +103,19 @@
 
         <!-- Tabs -->
         <div class="study-tabs">
-            <button class="study-tab active" onclick="switchTab('quiz')">🧠 Quiz</button>
-            <button class="study-tab" onclick="switchTab('notes')">📝 Notes</button>
-            <button class="study-tab" onclick="switchTab('summary')">📋 Summary</button>
-            <button class="study-tab" onclick="switchTab('mindmap')">🗺️ Mind Map</button>
+            <button class="study-tab active" onclick="switchTab('quiz')">?? Quiz</button>
+            <button class="study-tab" onclick="switchTab('notes')">?? Notes</button>
+            <button class="study-tab" onclick="switchTab('summary')">?? Summary</button>
+            <button class="study-tab" onclick="switchTab('mindmap')">??? Mind Map</button>
         </div>
 
         <!-- Quiz tab -->
         <div id="tab-quiz">
             <div style="display:flex;gap:10px;margin-bottom:1.5rem">
                 <button class="btn btn-large btn-success" onclick="startQuiz()" id="generateQuizBtn" style="flex:1">
-                    🎯 Generate Quiz
+                    ?? Generate Quiz
                 </button>
-                <button class="btn" onclick="resetQuiz()" id="resetBtn" style="display:none">🔄 New Quiz</button>
+                <button class="btn" onclick="resetQuiz()" id="resetBtn" style="display:none">?? New Quiz</button>
             </div>
             <div id="quizContainer"></div>
             <div id="quizResult" style="display:none"></div>
@@ -119,7 +124,7 @@
         <!-- Notes tab -->
         <div id="tab-notes" style="display:none">
             <button class="btn btn-large btn-success" onclick="generateNotes('bullet')" style="width:100%;margin-bottom:1rem">
-                📝 Generate Bullet Notes
+                ?? Generate Bullet Notes
             </button>
             <div id="notesContainer"></div>
         </div>
@@ -127,7 +132,7 @@
         <!-- Summary tab -->
         <div id="tab-summary" style="display:none">
             <button class="btn btn-large btn-success" onclick="generateNotes('summary')" style="width:100%;margin-bottom:1rem">
-                📋 Generate Summary
+                ?? Generate Summary
             </button>
             <div id="summaryContainer"></div>
         </div>
@@ -135,12 +140,12 @@
         <!-- Mind map tab -->
         <div id="tab-mindmap" style="display:none">
             <button class="btn btn-large btn-success" onclick="generateNotes('mindmap')" style="width:100%;margin-bottom:1rem">
-                🗺️ Generate Mind Map
+                ??? Generate Mind Map
             </button>
             <div id="mindmapContainer"></div>
         </div>
 
-        <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
+        <div class="dev-credit">� 2026 Alpha Freshman Tutorial � Developed by <strong>Rehima Ali</strong></div>
     </main>
 
     <script src="theme.js"></script>
