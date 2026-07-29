@@ -142,14 +142,14 @@
 
 ## Phase 8: Testing
 
-- [ ] 22. Manual Testing
-  - [ ] 22.1 Test login flow (HTML + React)
-  - [ ] 22.2 Test registration flow
-  - [ ] 22.3 Test JWT token handling
-  - [ ] 22.4 Test course listing
-  - [ ] 22.5 Test enrollment request
-  - [ ] 22.6 Test payment (dev mode)
-  - [ ] 22.7 Test admin operations
-  - [ ] 22.8 Test instructor operations
-  - [ ] 22.9 Verify no password in localStorage
-  - [ ] 22.10 Verify JWT in all API calls
+- [x] 22. Manual Testing
+  - [x] 22.1 Test login flow (HTML + React)
+  - [x] 22.2 Test registration flow
+  - [x] 22.3 Test JWT token handling
+  - [x] 22.4 Test course listing
+  - [x] 22.5 Test enrollment request
+  - [x] 22.6 Test payment (dev mode)
+  - [x] 22.7 Test admin operations
+  - [x] 22.8 Test instructor operations
+  - [x] 22.9 Verify no password in localStorage
+  - [x] 22.10 Verify JWT in all API calls

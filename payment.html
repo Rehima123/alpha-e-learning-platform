@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout � Alpha Freshman Tutorial</title>
+    <title>Checkout — Alpha Freshman Tutorial</title>
     <link rel="stylesheet" href="elearning.css">
     <meta name="theme-color" content="#3B82F6">
     <meta name="mobile-web-app-capable" content="yes">
@@ -42,7 +42,7 @@
     </nav>
 
     <main class="container">
-        <h2 style="margin-top:1.5rem;color:var(--text-primary)">?? Checkout</h2>
+        <h2 style="margin-top:1.5rem;color:var(--text-primary)">🛒 Checkout</h2>
 
         <div class="checkout-layout">
             <!-- Left: Payment form -->
@@ -51,12 +51,12 @@
 
                 <div class="payment-methods">
                     <div class="pay-method selected" id="method-chapa" onclick="selectMethod('chapa')">
-                        <div style="font-size:1.8rem">????</div>
+                        <div style="font-size:1.8rem">🇪🇹</div>
                         <strong style="color:var(--text-primary)">Chapa</strong>
                         <p>Telebirr, CBE, Awash & more</p>
                     </div>
                     <div class="pay-method" id="method-card" onclick="selectMethod('card')">
-                        <div style="font-size:1.8rem">??</div>
+                        <div style="font-size:1.8rem">💳</div>
                         <strong style="color:var(--text-primary)">Card</strong>
                         <p>Visa / Mastercard</p>
                     </div>
@@ -66,7 +66,7 @@
                 <div id="chapa-section">
                     <div style="background:rgba(102,126,234,0.08);border:1px solid #667eea;border-radius:10px;padding:16px;margin:1rem 0">
                         <p style="margin:0;font-size:0.9rem;color:var(--text-primary)">
-                            ?? You'll be redirected to <strong>Chapa</strong> to complete payment securely.<br>
+                            🔒 You'll be redirected to <strong>Chapa</strong> to complete payment securely.<br>
                             Supports: <strong>Telebirr, CBE Birr, Awash Bank, Dashen Bank</strong> and more.
                         </p>
                     </div>
@@ -99,7 +99,7 @@
                 </button>
 
                 <div class="secure-badge">
-                    ?? Secured by Chapa � SSL Encrypted � PCI Compliant
+                    🔒 Secured by Chapa · SSL Encrypted · PCI Compliant
                 </div>
             </div>
 
@@ -107,7 +107,7 @@
             <div class="order-box">
                 <h3 style="margin-bottom:1rem;color:var(--text-primary)">Order Summary</h3>
                 <div id="orderItem" style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-color);margin-bottom:8px">
-                    <span id="orderIcon" style="font-size:2rem">??</span>
+                    <span id="orderIcon" style="font-size:2rem">📚</span>
                     <div>
                         <div id="orderTitle" style="font-weight:600;color:var(--text-primary)">Loading...</div>
                         <div id="orderType" style="font-size:0.8rem;color:var(--text-secondary)"></div>
@@ -121,10 +121,10 @@
                 </div>
                 <div id="couponMsg" style="font-size:0.82rem;margin-bottom:8px"></div>
 
-                <div class="order-row"><span>Subtotal</span><span id="subtotalDisplay">�</span></div>
+                <div class="order-row"><span>Subtotal</span><span id="subtotalDisplay">—</span></div>
                 <div class="order-row discount" id="discountRow" style="display:none"><span>Discount</span><span id="discountDisplay"></span></div>
-                <div class="order-row"><span>Tax (15%)</span><span id="taxDisplay">�</span></div>
-                <div class="order-row total"><span>Total</span><span id="totalDisplay">�</span></div>
+                <div class="order-row"><span>Tax (15%)</span><span id="taxDisplay">—</span></div>
+                <div class="order-row total"><span>Total</span><span id="totalDisplay">—</span></div>
 
                 <p style="font-size:0.78rem;color:#888;margin-top:12px;text-align:center">
                     All prices in Ethiopian Birr (ETB)
