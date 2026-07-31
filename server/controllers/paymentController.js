@@ -3,7 +3,7 @@ const Course  = require('../models/Course');
 const Coupon  = require('../models/Coupon');
 const User    = require('../models/User');
 const Enrollment = require('../models/Enrollment');
-const { sendEmail, templates } = require('../utils/sendEmail');
+const { sendEmail, templates, ownerTemplates, notifyOwner } = require('../utils/sendEmail');
 const axios = require('axios');
 
 const ETB_RATE = parseFloat(process.env.ETB_RATE || '56'); // 1 USD = 56 ETB approx
@@ -197,11 +197,17 @@ async function processSuccessfulPayment(txRef) {
         });
     }
 
-    // Send receipt email
+    // Send receipt email to student
     try {
         const emailData = templates.paymentReceipt(student, payment, course);
         await sendEmail({ to: student.email, ...emailData });
     } catch (e) { console.error('Receipt email failed:', e.message); }
+
+    // Notify owner
+    try {
+        const ownerNotif = ownerTemplates.paymentReceived(student, payment, course);
+        await notifyOwner(ownerNotif);
+    } catch (e) { console.error('Owner notify failed:', e.message); }
 
     return { payment, invoiceNumber: payment.invoiceNumber };
 }

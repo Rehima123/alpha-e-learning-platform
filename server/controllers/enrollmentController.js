@@ -1,6 +1,7 @@
 const Enrollment = require('../models/Enrollment');
 const Course = require('../models/Course');
-const { sendEmail, templates } = require('../utils/sendEmail');
+const User = require('../models/User');
+const { sendEmail, templates, ownerTemplates, notifyOwner } = require('../utils/sendEmail');
 
 // ── Student: request enrollment ───────────────────────────────────────────────
 exports.requestEnrollment = async (req, res, next) => {
@@ -23,6 +24,13 @@ exports.requestEnrollment = async (req, res, next) => {
         }
 
         const enrollment = await Enrollment.create({ student: req.user._id, course: courseId });
+
+        // Notify owner of new enrollment request
+        try {
+            const student = await User.findById(req.user._id).select('fullName email');
+            const ownerNotif = ownerTemplates.enrollmentRequest(student, course);
+            await notifyOwner(ownerNotif);
+        } catch (e) { console.error('Owner enrollment notify failed:', e.message); }
 
         res.status(201).json({
             success: true,

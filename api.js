@@ -1,13 +1,7 @@
 
 // API Configuration and Service Layer
-// ─── SET YOUR BACKEND URL HERE ────────────────────────────────────────────────
-// After deploying backend to Render, replace the URL below:
-const BACKEND_URL = 'https://alpha-freshman-api.onrender.com';
-// ─────────────────────────────────────────────────────────────────────────────
-
-const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:5000/api'
-    : `${BACKEND_URL}/api`;
+// ─── Backend runs on same Vercel deployment ───────────────────────────────────
+const API_BASE_URL = '/api';  // Same origin — no CORS issues!
 
 class APIService {
     constructor() {

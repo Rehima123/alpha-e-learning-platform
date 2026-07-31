@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
-const { sendEmail, templates, sendLoginNotification } = require('../utils/sendEmail');
+const { sendEmail, templates, ownerTemplates, notifyOwner, sendLoginNotification } = require('../utils/sendEmail');
 
 // @desc    Register user
 exports.register = async (req, res, next) => {
@@ -38,6 +38,9 @@ exports.register = async (req, res, next) => {
 
         // Send welcome email (non-blocking)
         sendEmail({ to: user.email, ...templates.welcome(user) }).catch(() => {});
+
+        // Notify owner of new registration (non-blocking)
+        notifyOwner(ownerTemplates.newUserRegistered(user)).catch(() => {});
 
         res.status(201).json({
             success: true,

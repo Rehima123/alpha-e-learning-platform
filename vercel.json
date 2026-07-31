@@ -1,41 +1,68 @@
 {
-  "buildCommand": "echo 'No build needed'",
-  "outputDirectory": ".",
-  "headers": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/sw.js",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" },
-        { "key": "Service-Worker-Allowed", "value": "/" }
-      ]
+      "src": "api/index.js",
+      "use": "@vercel/node"
     },
     {
-      "source": "/manifest.json",
-      "headers": [
-        { "key": "Content-Type", "value": "application/manifest+json" },
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
-      ]
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.js",
+      "use": "@vercel/static",
+      "config": { "exclude": ["api/**", "server/**"] }
+    },
+    {
+      "src": "*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.png",
+      "use": "@vercel/static"
     }
   ],
-  "rewrites": [
-    { "source": "/download", "destination": "/download.html" },
-    { "source": "/home", "destination": "/home.html" },
-    { "source": "/courses", "destination": "/courses.html" },
-    { "source": "/login", "destination": "/auth-login.html" },
-    { "source": "/register", "destination": "/auth-register.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/course-detail", "destination": "/course-detail.html" },
-    { "source": "/course-payment", "destination": "/course-payment.html" },
-    { "source": "/payment", "destination": "/payment.html" },
-    { "source": "/payment-success", "destination": "/payment-success.html" },
-    { "source": "/subscription", "destination": "/subscription.html" },
-    { "source": "/admin", "destination": "/admin-dashboard.html" },
-    { "source": "/instructor", "destination": "/instructor-dashboard.html" },
-    { "source": "/ai-assistant", "destination": "/ai-assistant.html" },
-    { "source": "/ai-study", "destination": "/ai-study.html" },
-    { "source": "/study-hub", "destination": "/study-hub.html" },
-    { "source": "/department-guide", "destination": "/department-guide.html" },
-    { "source": "/offline", "destination": "/offline.html" }
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/sw.js",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Content-Type": "application/javascript; charset=utf-8",
+        "Service-Worker-Allowed": "/"
+      },
+      "dest": "/sw.js"
+    },
+    {
+      "src": "/manifest.json",
+      "headers": {
+        "Content-Type": "application/manifest+json",
+        "Cache-Control": "public, max-age=3600"
+      },
+      "dest": "/manifest.json"
+    },
+    { "src": "/download",        "dest": "/download.html" },
+    { "src": "/home",            "dest": "/home.html" },
+    { "src": "/courses",         "dest": "/courses.html" },
+    { "src": "/login",           "dest": "/auth-login.html" },
+    { "src": "/register",        "dest": "/auth-register.html" },
+    { "src": "/dashboard",       "dest": "/dashboard.html" },
+    { "src": "/course-detail",   "dest": "/course-detail.html" },
+    { "src": "/course-payment",  "dest": "/course-payment.html" },
+    { "src": "/payment",         "dest": "/payment.html" },
+    { "src": "/payment-success", "dest": "/payment-success.html" },
+    { "src": "/subscription",    "dest": "/subscription.html" },
+    { "src": "/admin",           "dest": "/admin-dashboard.html" },
+    { "src": "/instructor",      "dest": "/instructor-dashboard.html" },
+    { "src": "/ai-assistant",    "dest": "/ai-assistant.html" },
+    { "src": "/ai-study",        "dest": "/ai-study.html" },
+    { "src": "/study-hub",       "dest": "/study-hub.html" },
+    { "src": "/department-guide","dest": "/department-guide.html" },
+    { "src": "/offline",         "dest": "/offline.html" },
+    { "src": "/(.*)",            "dest": "/$1" }
   ]
 }
