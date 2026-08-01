@@ -59,6 +59,10 @@ const userSchema = new mongoose.Schema({
     isEmailVerified: { type: Boolean, default: false },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    // ── Single-device session enforcement ────────────────────────────────────
+    currentSessionToken: { type: String, default: null, select: false },
+    lastLoginAt:  { type: Date, default: null },
+    lastLoginIP:  { type: String, default: null },
     createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
@@ -75,10 +79,11 @@ userSchema.methods.comparePassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// ── Generate JWT ──────────────────────────────────────────────────────────────
-userSchema.methods.generateAuthToken = function() {
+// ── Generate JWT with unique session ID ──────────────────────────────────────
+userSchema.methods.generateAuthToken = function(sessionId) {
+    const sid = sessionId || require('crypto').randomBytes(16).toString('hex');
     return jwt.sign(
-        { id: this._id, role: this.role },
+        { id: this._id, role: this.role, sid },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRE }
     );

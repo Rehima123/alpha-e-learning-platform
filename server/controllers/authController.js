@@ -98,8 +98,17 @@ exports.login = async (req, res, next) => {
             });
         }
 
-        // Generate token
-        const token = user.generateAuthToken();
+        // Generate token with unique session ID (single-device enforcement)
+        const crypto = require('crypto');
+        const sessionId = crypto.randomBytes(16).toString('hex');
+        const token = user.generateAuthToken(sessionId);
+
+        // Overwrite previous session in DB — invalidates all other devices
+        await User.findByIdAndUpdate(user._id, {
+            currentSessionToken: sessionId,
+            lastLoginAt: new Date(),
+            lastLoginIP: req.ip || req.headers['x-forwarded-for'] || 'unknown'
+        });
 
         // Send login notification email (non-blocking)
         sendLoginNotification(user.email, user.fullName);

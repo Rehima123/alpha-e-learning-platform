@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// ── Protect routes — verify JWT ───────────────────────────────────────────────
+// ── Protect routes — verify JWT + single-device session enforcement ──────────
 exports.protect = async (req, res, next) => {
     try {
         let token;
@@ -11,10 +11,24 @@ exports.protect = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({ success: false, message: 'Not authorized — no token' });
         }
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id).select('-password');
-        if (!req.user)       return res.status(401).json({ success: false, message: 'User not found' });
-        if (!req.user.isActive) return res.status(401).json({ success: false, message: 'Account deactivated' });
+
+        // Fetch user including currentSessionToken
+        const user = await User.findById(decoded.id).select('+currentSessionToken');
+        if (!user)         return res.status(401).json({ success: false, message: 'User not found' });
+        if (!user.isActive) return res.status(401).json({ success: false, message: 'Account deactivated' });
+
+        // ── Single-device check: sid in JWT must match DB ─────────────────────
+        if (decoded.sid && user.currentSessionToken && decoded.sid !== user.currentSessionToken) {
+            return res.status(401).json({
+                success: false,
+                code: 'SESSION_DISPLACED',
+                message: 'Your account was logged in from another device. Please log in again.'
+            });
+        }
+
+        req.user = user;
         next();
     } catch (error) {
         return res.status(401).json({ success: false, message: 'Invalid or expired token' });

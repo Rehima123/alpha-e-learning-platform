@@ -72,6 +72,10 @@ app.use('/api/coupons',     couponRoutes);
 app.use('/api/ai',          aiRoutes);
 app.use('/api/videos',      videoRoutes);
 
+// ── Feature 3: Secure video token endpoint (hides YouTube URLs) ───────────────
+const videoTokenHandler = require('./video-token');
+app.get('/api/courses/video-token/:lessonId', videoTokenHandler);
+
 // ── Per-user course access check ──────────────────────────────────────────────
 app.get('/api/courses/:courseId/access', async (req, res) => {
     try {

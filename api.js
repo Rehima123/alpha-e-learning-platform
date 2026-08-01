@@ -40,6 +40,17 @@ class APIService {
             const data = await response.json();
 
             if (!response.ok) {
+                // ── Single-device session displaced ───────────────────────────
+                if (response.status === 401 && data.code === 'SESSION_DISPLACED') {
+                    this.removeAuthToken();
+                    if (typeof toast !== 'undefined') {
+                        toast.error('⚠️ Your account was logged in from another device.');
+                    } else {
+                        alert('⚠️ Your account was logged in from another device. Please log in again.');
+                    }
+                    setTimeout(() => window.location.href = 'auth-login.html', 1500);
+                    throw new Error(data.message);
+                }
                 throw new Error(data.message || 'API request failed');
             }
 

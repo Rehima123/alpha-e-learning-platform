@@ -500,9 +500,22 @@ function openLesson(chapterIdx, lessonIdx) {
 
             <!-- Video (if available) -->
             ${lesson.videoUrl ? `
-                <div style="aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
-                    <iframe src="${getYouTubeEmbed(lesson.videoUrl) || lesson.videoUrl}" style="width:100%;height:100%;border:none"
-                        allowfullscreen title="${lesson.title}"></iframe>
+                <div id="videoWrapper" style="position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;margin-bottom:1.5rem"
+                    oncontextmenu="return false;">
+                    <!-- YouTube iframe with protection params -->
+                    <iframe id="lessonIframe"
+                        src="${getYouTubeEmbed(lesson.videoUrl)}?rel=0&modestbranding=1&disablekb=1&iv_load_policy=3&fs=0&playsinline=1&color=white"
+                        style="width:100%;height:100%;border:none;pointer-events:none"
+                        allowfullscreen title="${lesson.title}"
+                        sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
+                    <!-- Click interceptor: blocks title bar click-through to YouTube -->
+                    <div id="ytClickBlocker" style="position:absolute;top:0;left:0;width:100%;height:40px;z-index:10;cursor:default"></div>
+                    <!-- Dynamic watermark overlay -->
+                    <div id="videoWatermark" style="
+                        position:absolute;top:0;left:0;width:100%;height:100%;
+                        pointer-events:none;z-index:20;user-select:none;
+                        -webkit-user-select:none;overflow:hidden">
+                    </div>
                 </div>
             ` : `
                 <div style="aspect-ratio:16/9;background:linear-gradient(135deg,rgba(102,126,234,0.1),rgba(118,75,162,0.1));
