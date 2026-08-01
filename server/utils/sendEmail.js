@@ -174,17 +174,16 @@ const templates = {
     })
 };
 
-async function sendEmail({ to, subject, html }) {
+async function sendEmail({ to, subject, html, attachments }) {
     const hasConfig = process.env.RESEND_API_KEY || process.env.SMTP_USER;
     if (!hasConfig) {
         console.log(`[Email skipped — no SMTP/Resend config] To: ${to} | Subject: ${subject}`);
         return;
     }
     const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@alpha-freshman-tutorial.com';
-    await transporter.sendMail({
-        from: `"Alpha Freshman Tutorial" <${fromAddress}>`,
-        to, subject, html
-    });
+    const mailOpts = { from: `"Alpha Freshman Tutorial" <${fromAddress}>`, to, subject, html };
+    if (attachments && attachments.length > 0) mailOpts.attachments = attachments;
+    await transporter.sendMail(mailOpts);
     console.log(`[Email sent] To: ${to} | Subject: ${subject}`);
 }
 

@@ -46,13 +46,14 @@ function applyRoleBasedUI() {
 
     // Hide/show tabs based on role
     const tabRules = {
-        'enrollments': ['*','enrollments'],
-        'courses':     ['*','courses'],
-        'revenue':     ['*','revenue','payments'],
-        'coupons':     ['*','coupons','payments'],
-        'videos':      ['*','videos','courses'],
-        'users':       ['*','users.view'],
-        'tickets':     ['*','tickets']
+        'enrollments':     ['*','enrollments'],
+        'courses':         ['*','courses'],
+        'revenue':         ['*','revenue','payments'],
+        'coupons':         ['*','coupons','payments'],
+        'videos':          ['*','videos','courses'],
+        'users':           ['*','users.view'],
+        'tickets':         ['*','tickets'],
+        'manual-payments': ['*','payments','revenue']
     };
 
     Object.entries(tabRules).forEach(([tab, allowedPerms]) => {
@@ -98,7 +99,8 @@ async function loadAdminData() {
         await Promise.all([
             loadPendingCourses(),
             loadEnrollmentRequests(),
-            loadUsers()
+            loadUsers(),
+            loadManualPaymentBadge()
         ]);
     } catch (error) {
         console.error('Error loading admin data:', error);
@@ -693,6 +695,183 @@ async function closeTicket(ticketId) {
         toast?.success('Ticket closed'); await loadTickets();
     } catch { toast?.error('Failed'); }
 }
+
+// ── Manual Payment Receipts ───────────────────────────────────────────────────
+async function loadManualPaymentBadge() {
+    try {
+        const res = await api.request('/payments/manual-pending?status=pending_verification');
+        if (res.success) {
+            const badge = document.getElementById('manualPayBadge');
+            if (badge) badge.textContent = res.count > 0 ? res.count : '';
+        }
+    } catch { /* silent */ }
+}
+
+async function loadManualPayments() {
+    const container = document.getElementById('manualPaymentsList');
+    const filter    = document.getElementById('manualPayFilter')?.value || 'all';
+    container.innerHTML = '<p style="color:var(--text-secondary)">Loading...</p>';
+
+    try {
+        const res = await api.request(`/payments/manual-pending?status=${filter}`);
+        if (!res.success) throw new Error(res.message);
+
+        const payments = res.payments || [];
+
+        // Update badge (pending count)
+        const pendingCount = payments.filter(p => p.status === 'pending_verification').length;
+        const badge = document.getElementById('manualPayBadge');
+        if (badge) badge.textContent = pendingCount > 0 ? pendingCount : '';
+
+        if (payments.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:3rem;color:var(--text-secondary)">
+                    <div style="font-size:3rem;margin-bottom:1rem">📭</div>
+                    <p>No manual payment receipts found for this filter.</p>
+                </div>`;
+            return;
+        }
+
+        const statusColor = {
+            pending_verification: '#f39c12',
+            approved:  '#27ae60',
+            rejected:  '#e74c3c'
+        };
+        const statusLabel = {
+            pending_verification: '⏳ Pending Review',
+            approved:  '✅ Approved',
+            rejected:  '❌ Rejected'
+        };
+
+        container.innerHTML = payments.map(p => {
+            const studentName  = p.student?.fullName || 'Unknown';
+            const studentEmail = p.student?.email    || '';
+            const courseName   = p.course
+                ? `${p.course.icon || '📚'} ${p.course.title}`
+                : `${p.plan || '—'} Subscription`;
+            const date = new Date(p.submittedAt).toLocaleString();
+            const isImage = p.receiptImage && !p.receiptImage.includes('application/pdf') &&
+                            (p.receiptImage.startsWith('data:image') || p.receiptFileName?.match(/\.(jpg|jpeg|png|gif)$/i));
+
+            return `
+            <div style="background:var(--bg-secondary);border-radius:14px;padding:1.2rem 1.4rem;
+                margin-bottom:1rem;border:1px solid var(--border-color);
+                border-left:4px solid ${statusColor[p.status] || '#888'}">
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;
+                    flex-wrap:wrap;gap:10px;margin-bottom:10px">
+                    <div>
+                        <strong style="color:var(--text-primary);font-size:1rem">${studentName}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-secondary);margin-left:8px">${studentEmail}</span>
+                        <div style="margin-top:4px;font-size:0.88rem;color:var(--text-secondary)">
+                            📚 ${courseName} &nbsp;·&nbsp;
+                            💵 <strong style="color:#27ae60">${(p.amount || 0).toLocaleString()} ETB</strong> &nbsp;·&nbsp;
+                            🕒 ${date}
+                        </div>
+                    </div>
+                    <span style="color:${statusColor[p.status]};font-weight:700;font-size:0.85rem;white-space:nowrap">
+                        ${statusLabel[p.status] || p.status}
+                    </span>
+                </div>
+
+                <!-- Receipt thumbnail -->
+                ${isImage ? `
+                <div style="margin-bottom:12px">
+                    <img src="${p.receiptImage}" alt="Receipt"
+                        onclick="openReceiptLightbox('${p.receiptImage.replace(/'/g, "\\'")}')"
+                        style="max-height:100px;max-width:160px;border-radius:6px;cursor:zoom-in;
+                            border:1px solid var(--border-color);object-fit:cover">
+                    <p style="font-size:0.75rem;color:var(--text-secondary);margin:3px 0">
+                        Click to view full size
+                    </p>
+                </div>` : p.receiptImage ? `
+                <div style="margin-bottom:12px">
+                    <a href="${p.receiptImage}" target="_blank"
+                        style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;
+                        border:1px solid var(--border-color);border-radius:8px;text-decoration:none;
+                        color:var(--text-primary);font-size:0.85rem">
+                        📄 View PDF Receipt
+                    </a>
+                </div>` : '<p style="font-size:0.82rem;color:#aaa;margin-bottom:10px">No receipt image</p>'}
+
+                ${p.adminNote ? `
+                <div style="background:rgba(231,76,60,0.06);border-radius:6px;padding:8px 12px;
+                    margin-bottom:10px;font-size:0.82rem;color:var(--text-secondary)">
+                    <strong>Admin note:</strong> ${p.adminNote}
+                </div>` : ''}
+
+                ${p.status === 'pending_verification' ? `
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                    <input type="text" id="note-${p._id}" placeholder="Admin note (optional)"
+                        style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border-color);
+                        border-radius:8px;background:var(--bg-primary);color:var(--text-primary);font-size:0.85rem">
+                    <button class="btn btn-success btn-sm"
+                        onclick="approveManualPayment('${p._id}')">✅ Approve</button>
+                    <button class="btn btn-danger btn-sm"
+                        onclick="rejectManualPayment('${p._id}')">❌ Reject</button>
+                </div>` : `
+                <div style="font-size:0.82rem;color:var(--text-secondary)">
+                    Reviewed ${p.reviewedAt ? 'on ' + new Date(p.reviewedAt).toLocaleDateString() : ''}
+                    ${p.reviewedBy?.fullName ? 'by ' + p.reviewedBy.fullName : ''}
+                </div>`}
+            </div>`;
+        }).join('');
+    } catch (err) {
+        console.error('[loadManualPayments]', err);
+        container.innerHTML = '<p style="color:red">Failed to load manual payments</p>';
+    }
+}
+
+async function approveManualPayment(id) {
+    const noteEl = document.getElementById(`note-${id}`);
+    const adminNote = noteEl?.value.trim() || '';
+    if (!confirm('Approve this payment and unlock the course for the student?')) return;
+
+    try {
+        const res = await api.request(`/payments/manual-receipt/${id}/approve`, {
+            method: 'PUT',
+            body: JSON.stringify({ adminNote })
+        });
+        if (res.success) {
+            toast?.success('Payment approved! Course unlocked for student.');
+            await loadManualPayments();
+        }
+    } catch (e) {
+        toast?.error(e.message || 'Failed to approve payment');
+    }
+}
+
+async function rejectManualPayment(id) {
+    const noteEl = document.getElementById(`note-${id}`);
+    const reason = noteEl?.value.trim() || prompt('Reason for rejection:') || '';
+    if (!confirm('Reject this payment receipt?')) return;
+
+    try {
+        const res = await api.request(`/payments/manual-receipt/${id}/reject`, {
+            method: 'PUT',
+            body: JSON.stringify({ reason })
+        });
+        if (res.success) {
+            toast?.warning('Payment receipt rejected.');
+            await loadManualPayments();
+        }
+    } catch (e) {
+        toast?.error(e.message || 'Failed to reject payment');
+    }
+}
+
+function openReceiptLightbox(src) {
+    const lb  = document.getElementById('receiptLightbox');
+    const img = document.getElementById('receiptLightboxImg');
+    if (!lb || !img) return;
+    img.src = src;
+    lb.style.display = 'flex';
+}
+
+function closeReceiptLightbox() {
+    const lb = document.getElementById('receiptLightbox');
+    if (lb) { lb.style.display = 'none'; }
+}
 document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
     e.preventDefault();
     try { await api.logout(); } catch {}
@@ -717,4 +896,16 @@ document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
     currentUser = user;
     applyRoleBasedUI();
     loadAdminData();
+
+    // Auto-open tab from URL param (e.g. ?tab=manual-payments from email link)
+    const urlTab = new URLSearchParams(window.location.search).get('tab');
+    if (urlTab) {
+        const tabEl = document.getElementById(`tab-${urlTab}`);
+        if (tabEl) {
+            setTimeout(() => {
+                showTab(urlTab);
+                if (urlTab === 'manual-payments') loadManualPayments();
+            }, 800);
+        }
+    }
 })();

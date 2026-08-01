@@ -79,7 +79,14 @@ function selectMethod(method) {
     document.getElementById(`method-${method}`).classList.add('selected');
     document.getElementById('chapa-section').style.display = method === 'chapa' ? 'block' : 'none';
     document.getElementById('card-section').style.display  = method === 'card'  ? 'block' : 'none';
-    document.getElementById('payBtn').textContent = method === 'chapa' ? 'Pay with Chapa' : 'Pay with Card';
+    document.getElementById('manual-section').style.display = method === 'manual' ? 'block' : 'none';
+
+    const payBtn = document.getElementById('payBtn');
+    if (method === 'chapa')  { payBtn.textContent = 'Pay with Chapa';  payBtn.style.display = 'block'; }
+    else if (method === 'card') { payBtn.textContent = 'Pay with Card'; payBtn.style.display = 'block'; }
+    else {
+        payBtn.style.display = 'none'; // Manual: submit button is inside the section
+    }
 }
 
 async function processPayment() {
@@ -130,5 +137,124 @@ document.getElementById('expiry')?.addEventListener('input', e => {
     if (v.length >= 2) v = v.slice(0,2) + '/' + v.slice(2,4);
     e.target.value = v;
 });
+
+// ── Manual Payment helpers ────────────────────────────────────────────────────
+let receiptBase64 = null;
+let receiptFileName = '';
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        btn.style.color = '#27ae60';
+        setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+    }).catch(() => {
+        toast?.info('Account number: ' + text);
+    });
+}
+
+function handleReceiptFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    processReceiptFile(file);
+}
+
+function handleReceiptDrop(event) {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if (!file) return;
+    processReceiptFile(file);
+}
+
+function processReceiptFile(file) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+        toast?.error('Only JPG, PNG, GIF or PDF files are allowed');
+        return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+        toast?.error('File size must be under 5MB');
+        return;
+    }
+
+    receiptFileName = file.name;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        receiptBase64 = e.target.result; // full data URI
+
+        const uploadArea = document.getElementById('uploadArea');
+        const preview    = document.getElementById('receiptPreview');
+        const previewImg = document.getElementById('receiptPreviewImg');
+        const previewName= document.getElementById('receiptPreviewName');
+
+        uploadArea.classList.add('has-file');
+        previewName.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+
+        if (file.type !== 'application/pdf') {
+            previewImg.src = receiptBase64;
+            previewImg.style.display = 'block';
+        } else {
+            previewImg.style.display = 'none';
+        }
+        preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+function clearReceipt() {
+    receiptBase64   = null;
+    receiptFileName = '';
+    document.getElementById('receiptFile').value = '';
+    document.getElementById('receiptPreview').style.display = 'none';
+    document.getElementById('receiptPreviewImg').src = '';
+    document.getElementById('uploadArea').classList.remove('has-file');
+}
+
+async function submitManualPayment() {
+    const submitBtn = document.getElementById('manualSubmitBtn');
+    if (!receiptBase64) {
+        toast?.error('Please upload your payment receipt first');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const afterDiscount = subtotal - discount;
+    const tax   = Math.round(afterDiscount * TAX_RATE);
+    const total = afterDiscount + tax;
+
+    try {
+        const body = {
+            receiptImage:    receiptBase64,
+            receiptFileName: receiptFileName,
+            amount:          total,
+            studentName:     currentUser?.fullName,
+            studentEmail:    currentUser?.email
+        };
+        if (courseId) body.courseId = courseId;
+        else body.plan = plan;
+
+        const res = await api.request('/payments/manual-receipt', {
+            method: 'POST',
+            body: JSON.stringify(body)
+        });
+
+        if (res.success) {
+            // Show success state
+            document.getElementById('manualSuccessBanner').style.display = 'block';
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('receiptPreview').style.display = 'none';
+            submitBtn.style.display = 'none';
+            document.querySelectorAll('.bank-detail-box, label[for]').forEach(el => el.style.opacity = '0.5');
+        }
+    } catch (e) {
+        toast?.error(e.message || 'Failed to submit receipt. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '📤 Send Receipt for Verification';
+    }
+}
 
 init();

@@ -10,15 +10,16 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config({ path: './server/.env' });
 
 // Import routes
-const authRoutes       = require('../server/routes/auth');
-const courseRoutes     = require('../server/routes/courses');
-const userRoutes       = require('../server/routes/users');
-const enrollmentRoutes = require('../server/routes/enrollments');
-const paymentRoutes    = require('../server/routes/payments');
-const adminRoutes      = require('../server/routes/admin');
-const couponRoutes     = require('../server/routes/coupons');
-const aiRoutes         = require('../server/routes/ai');
-const videoRoutes      = require('../server/routes/videos');
+const authRoutes          = require('../server/routes/auth');
+const courseRoutes        = require('../server/routes/courses');
+const userRoutes          = require('../server/routes/users');
+const enrollmentRoutes    = require('../server/routes/enrollments');
+const paymentRoutes       = require('../server/routes/payments');
+const adminRoutes         = require('../server/routes/admin');
+const couponRoutes        = require('../server/routes/coupons');
+const aiRoutes            = require('../server/routes/ai');
+const videoRoutes         = require('../server/routes/videos');
+const manualPaymentRoutes = require('../server/routes/manualPayments');
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use('/api/auth',        authRoutes);
 app.use('/api/courses',     courseRoutes);
 app.use('/api/users',       userRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
+app.use('/api/payments',    manualPaymentRoutes);  // manual receipt routes first
 app.use('/api/payments',    paymentRoutes);
 app.use('/api/admin',       adminRoutes);
 app.use('/api/coupons',     couponRoutes);
