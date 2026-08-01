@@ -4,9 +4,10 @@ const TAX_RATE = 0.15;
 const params = new URLSearchParams(window.location.search);
 const courseId = params.get('courseId');
 const plan     = params.get('plan');
+const method   = params.get('method'); // 'manual' auto-selects bank transfer tab
 
 let subtotal = 0, discount = 0, couponData = null;
-let selectedMethod = 'chapa';
+let selectedMethod = method === 'manual' ? 'manual' : 'chapa';
 
 const planInfo = { monthly: { name: 'Monthly Subscription', etb: 1650 }, annual: { name: 'Annual Subscription', etb: 11300 } };
 
@@ -34,6 +35,11 @@ async function init() {
     }
 
     updateTotals();
+
+    // ── Auto-select payment method from URL param ─────────────────────────────
+    if (method === 'manual') {
+        selectMethod('manual');
+    }
 }
 
 function updateTotals() {

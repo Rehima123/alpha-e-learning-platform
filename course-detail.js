@@ -271,8 +271,8 @@ function renderCourseHeader() {
     const lockedBanner = (!canAccess && c.isPremium) ? `
         <div style="background:rgba(231,76,60,0.1);border:1px solid #e74c3c;border-radius:12px;
             padding:16px;margin:12px 0;text-align:center">
-            🔒 This is a premium course. Enroll or pay to access all lessons.
-            <br><a href="payment.html?courseId=${c._id}" class="btn btn-success" style="margin-top:8px">💳 Pay to Unlock</a>
+            🔒 This is a premium course. Pay to access all lessons.
+            <br><a href="payment.html?courseId=${c._id}&method=manual" class="btn btn-success" style="margin-top:8px">💳 Pay to Unlock</a>
         </div>` : '';
 
     document.getElementById('courseDetail').innerHTML = `
@@ -320,9 +320,9 @@ function renderCourseHeader() {
                             </div>
                         ` : `
                             <button class="btn btn-large" id="enrollBtn">
-                                ${isFree ? '🎓 Enroll Free' : '📋 Request Enrollment'}
+                                ${isFree ? '🎓 Enroll Free' : '� Pay to Enroll'}
                             </button>
-                            ${!isFree ? `<a href="subscription.html" class="btn btn-large btn-success">⭐ Get Premium</a>` : ''}
+                            ${!isFree ? `<a href="payment.html?courseId=${c._id}&method=manual" class="btn btn-large btn-success">🏦 Pay via Bank Transfer</a>` : ''}
                         `}
                         <a href="ai-study.html?courseId=${courseId}" class="btn" style="font-size:0.85rem">🤖 AI Study Tools</a>
                     </div>
@@ -739,6 +739,19 @@ function renderFlatLessons() {
 // ── Enroll ────────────────────────────────────────────────────────────────────
 async function enrollCourse() {
     const btn = document.getElementById('enrollBtn');
+    const c   = currentCourse;
+
+    if (!c) return;
+
+    const isFree = !c.isPremium || c.price === 0;
+
+    // ── Premium course → redirect to payment page (Manual Transfer tab) ───────
+    if (!isFree) {
+        window.location.href = `payment.html?courseId=${courseId}&method=manual`;
+        return;
+    }
+
+    // ── Free course → request enrollment directly ─────────────────────────────
     if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
     try {
         const res = await api.requestEnrollment(courseId);
