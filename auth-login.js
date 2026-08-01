@@ -134,3 +134,82 @@ async function resendVerification(email, password) {
         alert('ስህተት: ' + e.message);
     }
 }
+
+// ── Google Sign-In ────────────────────────────────────────────────────────────
+document.querySelector('.btn-google')?.addEventListener('click', async () => {
+    const btn = document.querySelector('.btn-google');
+    btn.disabled = true;
+    btn.textContent = '⏳ Connecting to Google...';
+
+    try {
+        const cfg = window.FIREBASE_CONFIG;
+        if (!cfg || cfg.apiKey === 'YOUR_API_KEY') {
+            alert('Google login is not configured yet.');
+            return;
+        }
+
+        const { initializeApp }   = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { getAuth, signInWithPopup, GoogleAuthProvider } =
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+
+        let app;
+        try { app = initializeApp(cfg, 'google-login'); }
+        catch { app = (await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js")).getApp('google-login'); }
+
+        const auth     = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
+
+        const result = await signInWithPopup(auth, provider);
+        const user   = result.user;
+
+        // Register/login in backend
+        try {
+            // Try login first
+            let backendRes = await api.login({ email: user.email, password: 'google-oauth-' + user.uid });
+            if (!backendRes.success) {
+                // New user — auto-register
+                backendRes = await api.register({
+                    fullName: user.displayName || user.email.split('@')[0],
+                    email:    user.email,
+                    password: 'google-oauth-' + user.uid,
+                    role:     'student'
+                });
+            }
+            if (backendRes.success) {
+                api.setAuthToken(backendRes.token);
+                localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
+                redirectByRole(backendRes.user);
+                return;
+            }
+        } catch (_) {}
+
+        // Fallback: use Firebase user
+        const fbUser = {
+            id: user.uid,
+            fullName: user.displayName || user.email.split('@')[0],
+            email: user.email,
+            role: 'student',
+            avatar: user.photoURL
+        };
+        api.setAuthToken('firebase-' + user.uid);
+        localStorage.setItem('currentUser', JSON.stringify(fbUser));
+        window.location.href = 'courses.html';
+
+    } catch (error) {
+        const msg = {
+            'auth/popup-closed-by-user': 'Google login cancelled.',
+            'auth/popup-blocked':        'Popup was blocked. Please allow popups for this site.',
+            'auth/cancelled-popup-request': 'Google login cancelled.'
+        };
+        const errorDiv = document.getElementById('errorMessage');
+        if (errorDiv) {
+            errorDiv.textContent = msg[error.code] || 'Google login failed: ' + error.message;
+            errorDiv.style.display = 'block';
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🔍 Continue with Google';
+    }
+});

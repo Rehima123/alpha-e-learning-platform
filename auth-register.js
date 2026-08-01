@@ -150,3 +150,101 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         submitBtn.textContent = 'Create Account';
     }
 });
+
+// ── Google Sign-Up ────────────────────────────────────────────────────────────
+document.querySelector('.btn-google')?.addEventListener('click', async () => {
+    const btn = document.querySelector('.btn-google');
+    btn.disabled = true;
+    btn.textContent = '⏳ Connecting to Google...';
+
+    try {
+        const cfg = window.FIREBASE_CONFIG;
+        if (!cfg || cfg.apiKey === 'YOUR_API_KEY') {
+            alert('Google login is not configured yet.');
+            return;
+        }
+
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { getAuth, signInWithPopup, GoogleAuthProvider } =
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+
+        let app;
+        try { app = initializeApp(cfg, 'google-register'); }
+        catch { app = (await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js")).getApp('google-register'); }
+
+        const auth     = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
+
+        const result = await signInWithPopup(auth, provider);
+        const user   = result.user;
+
+        const errorDiv   = document.getElementById('errorMessage');
+        const successDiv = document.getElementById('successMessage');
+
+        // Register in backend
+        try {
+            let backendRes;
+            // Try register first
+            try {
+                backendRes = await api.register({
+                    fullName: user.displayName || user.email.split('@')[0],
+                    email:    user.email,
+                    password: 'google-oauth-' + user.uid,
+                    role:     'student'
+                });
+            } catch (_) {
+                // Already registered — login instead
+                backendRes = await api.login({
+                    email:    user.email,
+                    password: 'google-oauth-' + user.uid
+                });
+            }
+
+            if (backendRes?.success) {
+                api.setAuthToken(backendRes.token);
+                localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
+
+                if (successDiv) {
+                    successDiv.style.display = 'block';
+                    successDiv.innerHTML = `
+                        <div style="background:rgba(39,174,96,0.1);border:1px solid #27ae60;border-radius:12px;padding:1rem;text-align:center">
+                            <div style="font-size:2rem;margin-bottom:0.5rem">🎉</div>
+                            <h3 style="color:#27ae60;margin-bottom:0.3rem">Welcome, ${backendRes.user.fullName}!</h3>
+                            <p style="font-size:0.85rem;color:var(--text-secondary)">Account created with Google</p>
+                        </div>`;
+                }
+                setTimeout(() => window.location.href = 'courses.html', 1500);
+                return;
+            }
+        } catch (_) {}
+
+        // Fallback: Firebase-only
+        const fbUser = {
+            id: user.uid,
+            fullName: user.displayName || user.email.split('@')[0],
+            email: user.email,
+            role: 'student',
+            avatar: user.photoURL
+        };
+        api.setAuthToken('firebase-' + user.uid);
+        localStorage.setItem('currentUser', JSON.stringify(fbUser));
+        window.location.href = 'courses.html';
+
+    } catch (error) {
+        const msg = {
+            'auth/popup-closed-by-user':    'Google sign-up cancelled.',
+            'auth/popup-blocked':           'Popup blocked. Please allow popups for this site.',
+            'auth/cancelled-popup-request': 'Google sign-up cancelled.'
+        };
+        const errorDiv = document.getElementById('errorMessage');
+        if (errorDiv) {
+            errorDiv.textContent = msg[error.code] || 'Google sign-up failed: ' + error.message;
+            errorDiv.style.display = 'block';
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🔍 Sign up with Google';
+    }
+});
