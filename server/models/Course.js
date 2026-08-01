@@ -126,6 +126,10 @@ const courseSchema = new mongoose.Schema({
         type: Boolean,
         default: true   // premium by default; set false for free courses
     },
+    isLocked: {
+        type: Boolean,
+        default: true   // true = content restricted; requires enrollment/payment
+    },
     isFreePreview: {
         type: Boolean,
         default: false  // first 2 lessons accessible on free trial

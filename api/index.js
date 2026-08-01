@@ -72,6 +72,134 @@ app.use('/api/coupons',     couponRoutes);
 app.use('/api/ai',          aiRoutes);
 app.use('/api/videos',      videoRoutes);
 
+// ── Per-user course access check ──────────────────────────────────────────────
+app.get('/api/courses/:courseId/access', async (req, res) => {
+    try {
+        const Course      = require('../server/models/Course');
+        const Enrollment  = require('../server/models/Enrollment');
+        const jwt         = require('jsonwebtoken');
+
+        const { courseId } = req.params;
+
+        // Authenticate user (optional — unauthenticated gets false for locked)
+        let userId = null;
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            try {
+                const token = authHeader.split(' ')[1];
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+                userId = decoded.id;
+            } catch (_) { /* invalid token — treat as unauthenticated */ }
+        }
+
+        const course = await Course.findById(courseId).select('isPremium isLocked price');
+        if (!course) {
+            return res.status(404).json({ success: false, message: 'Course not found' });
+        }
+
+        // Free course — always accessible
+        if (!course.isPremium || course.price === 0 || course.isLocked === false) {
+            return res.json({ success: true, hasAccess: true, reason: 'free' });
+        }
+
+        // User not logged in — no access to locked course
+        if (!userId) {
+            return res.json({ success: true, hasAccess: false, reason: 'login_required' });
+        }
+
+        // Check approved enrollment
+        const enrollment = await Enrollment.findOne({ student: userId, course: courseId });
+        if (enrollment && enrollment.status === 'approved') {
+            return res.json({ success: true, hasAccess: true, reason: 'enrolled' });
+        }
+
+        // Check active subscription on user object
+        const User = require('../server/models/User');
+        const user = await User.findById(userId).select('subscription');
+        if (user && ['monthly', 'annual'].includes(user.subscription?.plan)) {
+            return res.json({ success: true, hasAccess: true, reason: 'subscription' });
+        }
+
+        return res.json({
+            success: true,
+            hasAccess: false,
+            reason: enrollment ? enrollment.status : 'not_enrolled'
+        });
+    } catch (err) {
+        console.error('Access check error:', err.message);
+        res.status(500).json({ success: false, message: 'Failed to check access' });
+    }
+});
+
+// ── Admin: toggle course lock status ─────────────────────────────────────────
+app.put('/api/admin/courses/:courseId/toggle-lock', async (req, res) => {
+    try {
+        const jwt    = require('jsonwebtoken');
+        const Course = require('../server/models/Course');
+
+        // Auth
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ success: false, message: 'Unauthorized' });
+        const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET || 'fallback_secret');
+        if (!['admin','super_admin','content_admin'].includes(decoded.role)) {
+            return res.status(403).json({ success: false, message: 'Forbidden' });
+        }
+
+        const course = await Course.findById(req.params.courseId);
+        if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+
+        course.isLocked = !course.isLocked;
+        await course.save();
+
+        res.json({ success: true, isLocked: course.isLocked, message: `Course ${course.isLocked ? 'locked' : 'unlocked'}` });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ── Admin: get all courses (for course management tab) ────────────────────────
+app.get('/api/admin/all-courses', async (req, res) => {
+    try {
+        const jwt    = require('jsonwebtoken');
+        const Course = require('../server/models/Course');
+
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ success: false, message: 'Unauthorized' });
+        const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET || 'fallback_secret');
+        if (!['admin','super_admin','content_admin'].includes(decoded.role)) {
+            return res.status(403).json({ success: false, message: 'Forbidden' });
+        }
+
+        const courses = await Course.find({}).sort({ createdAt: -1 });
+        res.json({ success: true, courses });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ── Admin: get enrolled students for a course ─────────────────────────────────
+app.get('/api/admin/courses/:courseId/students', async (req, res) => {
+    try {
+        const jwt        = require('jsonwebtoken');
+        const Enrollment = require('../server/models/Enrollment');
+
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ success: false, message: 'Unauthorized' });
+        const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET || 'fallback_secret');
+        if (!['admin','super_admin','content_admin','support_admin'].includes(decoded.role)) {
+            return res.status(403).json({ success: false, message: 'Forbidden' });
+        }
+
+        const enrollments = await Enrollment.find({ course: req.params.courseId })
+            .populate('student', 'fullName email')
+            .sort({ requestedAt: -1 });
+
+        res.json({ success: true, enrollments });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use('/api/', (req, res) => {
     res.status(404).json({ success: false, message: 'API route not found' });

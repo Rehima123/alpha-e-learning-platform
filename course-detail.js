@@ -1,8 +1,16 @@
+// ── Convert YouTube URL to embed ──────────────────────────────────────────────
+function getYouTubeEmbed(url) {
+    if (!url) return null;
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+}
+
 const urlParams   = new URLSearchParams(window.location.search);
 const courseId    = urlParams.get('id');
 let currentCourse = null;
 let userEnrollment = null;
 let activeLesson  = null; // { chapterIdx, lessonIdx }
+let canAccessCourse = false; // set by access API check
 
 // ── Static course detail data (same as courses.js, with chapters added) ───────
 const STATIC_COURSE_DETAILS = {
@@ -210,6 +218,22 @@ async function loadCourseDetail() {
                 } catch {}
             }
 
+            // Check per-user course access via API
+            try {
+                const accessRes = await fetch(`/api/courses/${courseId}/access`, {
+                    headers: api.getAuthToken() ? { Authorization: `Bearer ${api.getAuthToken()}` } : {}
+                });
+                const accessData = await accessRes.json();
+                canAccessCourse = accessData.hasAccess === true;
+            } catch {
+                // Fallback: compute locally
+                const isFree = !currentCourse.isPremium || currentCourse.price === 0;
+                const isEnrolled = userEnrollment?.status === 'approved';
+                const user = JSON.parse(localStorage.getItem('currentUser'));
+                const hasSub = ['monthly','annual'].includes(user?.subscription?.plan);
+                canAccessCourse = isFree || isEnrolled || hasSub;
+            }
+
             document.getElementById('bc-dept').textContent   = currentCourse.department || currentCourse.category;
             document.getElementById('bc-course').textContent = currentCourse.title;
             document.title = `${currentCourse.title} — Alpha Freshman Tutorial`;
@@ -237,15 +261,24 @@ function renderCourseHeader() {
     const isFree     = !c.isPremium || c.price === 0;
     const hasActiveSub = JSON.parse(localStorage.getItem('currentUser'))?.subscription?.plan === 'monthly'
                       || JSON.parse(localStorage.getItem('currentUser'))?.subscription?.plan === 'annual';
-    const canAccess  = isFree || isEnrolled || hasActiveSub;
+    const canAccess  = canAccessCourse || isFree || isEnrolled || hasActiveSub;
     const progress   = userEnrollment?.progress || 0;
     const totalLessons = c.chapters?.reduce((s, ch) => s + (ch.lessons?.length || 0), 0)
                       || c.totalLessons || c.lessons?.length || 0;
     const totalChapters = c.chapters?.length || 0;
 
+    // Locked premium banner
+    const lockedBanner = (!canAccess && c.isPremium) ? `
+        <div style="background:rgba(231,76,60,0.1);border:1px solid #e74c3c;border-radius:12px;
+            padding:16px;margin:12px 0;text-align:center">
+            🔒 This is a premium course. Enroll or pay to access all lessons.
+            <br><a href="payment.html?courseId=${c._id}" class="btn btn-success" style="margin-top:8px">💳 Pay to Unlock</a>
+        </div>` : '';
+
     document.getElementById('courseDetail').innerHTML = `
         <div style="background:var(--bg-secondary);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;
             box-shadow:0 2px 12px var(--shadow)">
+            ${lockedBanner}
             <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
                 <div style="font-size:3.5rem;line-height:1">${c.icon || '📚'}</div>
                 <div style="flex:1;min-width:200px">
@@ -307,7 +340,7 @@ function renderChapterSidebar() {
     const chapters = c.chapters || [];
     const isEnrolled = userEnrollment?.status === 'approved';
     const isFree     = !c.isPremium || c.price === 0;
-    const canAccess  = isFree || isEnrolled;
+    const canAccess  = canAccessCourse || isFree || isEnrolled;
 
     if (chapters.length === 0) {
         // Fallback: render flat lessons
@@ -468,7 +501,7 @@ function openLesson(chapterIdx, lessonIdx) {
             <!-- Video (if available) -->
             ${lesson.videoUrl ? `
                 <div style="aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
-                    <iframe src="${lesson.videoUrl}" style="width:100%;height:100%;border:none"
+                    <iframe src="${getYouTubeEmbed(lesson.videoUrl) || lesson.videoUrl}" style="width:100%;height:100%;border:none"
                         allowfullscreen title="${lesson.title}"></iframe>
                 </div>
             ` : `
@@ -493,6 +526,20 @@ function openLesson(chapterIdx, lessonIdx) {
                     ${renderNotes(lesson.notes || lesson.description || 'No notes available for this lesson.')}
                 </div>
             </div>
+
+            <!-- Materials download -->
+            ${lesson.materials && lesson.materials.length > 0 ? `
+            <div style="margin-bottom:1.5rem">
+                <h3 style="color:var(--text-primary);margin:0 0 8px;font-size:1rem">📎 Materials</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    ${lesson.materials.map(m => `
+                        <a href="${m.url}" download="${m.title}" class="btn btn-sm"
+                            style="display:inline-flex;align-items:center;gap:4px">
+                            📥 ${m.title}
+                        </a>
+                    `).join('')}
+                </div>
+            </div>` : ''}
 
             <!-- My Notes (personal) -->
             <div style="margin-bottom:1.5rem">
@@ -648,7 +695,7 @@ function renderFlatLessons() {
     const c = currentCourse;
     const isEnrolled = userEnrollment?.status === 'approved';
     const isFree     = !c.isPremium || c.price === 0;
-    const canAccess  = isFree || isEnrolled;
+    const canAccess  = canAccessCourse || isFree || isEnrolled;
     const completedLessons = userEnrollment?.completedLessons || [];
 
     document.getElementById('courseLayout').style.display = '';

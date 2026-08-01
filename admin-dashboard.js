@@ -258,8 +258,110 @@ function closeCreateCourseModal() {
     document.getElementById('createCourseModal').style.display = 'none';
 }
 
+// ── Chapter/Lesson builder (create form) ──────────────────────────────────────
+let courseChapters = [];
+
+function updateLockDefault() {
+    const isPremium = document.getElementById('newIsPremium').value === 'true';
+    const lockSel   = document.getElementById('newIsLocked');
+    if (lockSel) lockSel.value = isPremium ? 'true' : 'false';
+}
+
+function addChapter() {
+    courseChapters.push({ title: '', lessons: [] });
+    renderChapterBuilder();
+}
+
+function removeChapter(idx) {
+    courseChapters.splice(idx, 1);
+    renderChapterBuilder();
+}
+
+function addLesson(chapterIdx) {
+    courseChapters[chapterIdx].lessons.push({ title: '', duration: '', videoUrl: '', notes: '' });
+    renderChapterBuilder();
+}
+
+function removeLesson(chapterIdx, lessonIdx) {
+    courseChapters[chapterIdx].lessons.splice(lessonIdx, 1);
+    renderChapterBuilder();
+}
+
+function syncChapterData() {
+    // Sync current input values back into courseChapters before re-render
+    courseChapters.forEach((ch, ci) => {
+        const titleEl = document.getElementById(`ch-title-${ci}`);
+        if (titleEl) ch.title = titleEl.value;
+        ch.lessons.forEach((l, li) => {
+            const lt = document.getElementById(`l-title-${ci}-${li}`);
+            const ld = document.getElementById(`l-dur-${ci}-${li}`);
+            const lv = document.getElementById(`l-vid-${ci}-${li}`);
+            const ln = document.getElementById(`l-notes-${ci}-${li}`);
+            if (lt) l.title    = lt.value;
+            if (ld) l.duration = ld.value;
+            if (lv) l.videoUrl = lv.value;
+            if (ln) l.notes    = ln.value;
+        });
+    });
+}
+
+function renderChapterBuilder() {
+    const container = document.getElementById('chaptersBuilder');
+    if (!container) return;
+    container.innerHTML = courseChapters.map((ch, ci) => `
+        <div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden">
+            <div style="background:rgba(102,126,234,0.08);padding:10px 14px;display:flex;align-items:center;gap:8px">
+                <strong style="color:var(--text-primary);font-size:0.88rem">Chapter ${ci + 1}</strong>
+                <input type="text" id="ch-title-${ci}" value="${ch.title}"
+                    placeholder="Chapter title..." oninput="courseChapters[${ci}].title=this.value"
+                    style="flex:1;padding:6px 10px;border:1px solid var(--border-color);border-radius:8px;
+                        background:var(--bg-primary);color:var(--text-primary);font-size:0.85rem">
+                <button type="button" onclick="syncChapterData();addLesson(${ci})"
+                    class="btn btn-success btn-sm" style="white-space:nowrap;font-size:0.78rem">+ Lesson</button>
+                <button type="button" onclick="syncChapterData();removeChapter(${ci})"
+                    class="btn btn-danger btn-sm" style="font-size:0.78rem">✕</button>
+            </div>
+            <div style="padding:8px 14px 14px;display:flex;flex-direction:column;gap:8px">
+                ${ch.lessons.length === 0 ? '<p style="color:var(--text-secondary);font-size:0.82rem;margin:4px 0">No lessons yet — click + Lesson</p>' : ''}
+                ${ch.lessons.map((l, li) => `
+                    <div style="background:var(--bg-primary);border:1px solid var(--border-color);border-radius:8px;padding:10px 12px">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                            <span style="font-size:0.78rem;color:var(--text-secondary);white-space:nowrap">Lesson ${li+1}</span>
+                            <input type="text" id="l-title-${ci}-${li}" value="${l.title}"
+                                placeholder="Lesson title..." oninput="courseChapters[${ci}].lessons[${li}].title=this.value"
+                                style="flex:1;padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
+                                    background:var(--bg-secondary);color:var(--text-primary);font-size:0.82rem">
+                            <button type="button" onclick="syncChapterData();removeLesson(${ci},${li})"
+                                class="btn btn-danger btn-sm" style="font-size:0.72rem;padding:3px 8px">✕</button>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px;margin-bottom:6px">
+                            <input type="text" id="l-dur-${ci}-${li}" value="${l.duration}"
+                                placeholder="Duration (e.g. 30 min)" oninput="courseChapters[${ci}].lessons[${li}].duration=this.value"
+                                style="padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
+                                    background:var(--bg-secondary);color:var(--text-primary);font-size:0.8rem">
+                            <input type="text" id="l-vid-${ci}-${li}" value="${l.videoUrl}"
+                                placeholder="YouTube URL (optional)" oninput="courseChapters[${ci}].lessons[${li}].videoUrl=this.value"
+                                style="padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
+                                    background:var(--bg-secondary);color:var(--text-primary);font-size:0.8rem">
+                        </div>
+                        <textarea id="l-notes-${ci}-${li}" rows="2"
+                            placeholder="Study notes (markdown supported)..."
+                            oninput="courseChapters[${ci}].lessons[${li}].notes=this.value"
+                            style="width:100%;padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
+                                background:var(--bg-secondary);color:var(--text-primary);font-size:0.8rem;resize:vertical"
+                        >${l.notes}</textarea>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
 document.getElementById('createCourseForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    // Sync any in-progress text field values before reading
+    syncChapterData();
+
     const btn = e.target.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Creating...';
 
@@ -273,16 +375,30 @@ document.getElementById('createCourseForm')?.addEventListener('submit', async (e
             price:       parseFloat(document.getElementById('newPrice').value),
             icon:        document.getElementById('newIcon').value || '📚',
             isPremium:   document.getElementById('newIsPremium').value === 'true',
-            isFreePreview: document.getElementById('newFreePreview').value === 'true'
+            isLocked:    document.getElementById('newIsLocked').value === 'true',
+            isFreePreview: document.getElementById('newFreePreview').value === 'true',
+            chapters: courseChapters.map((ch, ci) => ({
+                title: ch.title,
+                order: ci,
+                lessons: ch.lessons.map((l, li) => ({
+                    title:    l.title,
+                    duration: l.duration,
+                    videoUrl: l.videoUrl,
+                    notes:    l.notes,
+                    order:    li
+                }))
+            }))
         };
 
         const res = await api.createCourse(data);
         if (res.success) {
-            // Auto-approve since admin is creating
-            await api.approveCourse(res.course._id);
-            toast?.success('Course created and published!');
+            const publishNow = document.getElementById('newPublishNow')?.checked;
+            if (publishNow) await api.approveCourse(res.course._id);
+            toast?.success(publishNow ? 'Course created and published!' : 'Course created (pending approval)');
             closeCreateCourseModal();
             e.target.reset();
+            courseChapters = [];
+            renderChapterBuilder();
             await loadAdminData();
         }
     } catch (err) {
@@ -859,6 +975,295 @@ async function rejectManualPayment(id) {
         toast?.error(e.message || 'Failed to reject payment');
     }
 }
+
+// ── Course sub-tab switching ──────────────────────────────────────────────────
+function showCourseSubTab(tab) {
+    document.getElementById('courseSubTab-pending').style.display = tab === 'pending' ? '' : 'none';
+    document.getElementById('courseSubTab-all').style.display    = tab === 'all'     ? '' : 'none';
+    if (tab === 'all') loadAllCourses();
+}
+
+async function loadAllCourses() {
+    const container = document.getElementById('allCoursesList');
+    container.innerHTML = '<p style="color:var(--text-secondary)">Loading...</p>';
+    try {
+        const token = api.getAuthToken?.() || localStorage.getItem('authToken');
+        const res   = await api.request('/admin/all-courses');
+        if (!res.success) throw new Error(res.message);
+
+        if (!res.courses || res.courses.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-secondary)">No courses found</p>';
+            return;
+        }
+
+        container.innerHTML = `
+            <table class="users-table">
+                <thead>
+                    <tr><th>Course</th><th>Category</th><th>Price</th><th>Status</th><th>Lock</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    ${res.courses.map(c => `
+                        <tr>
+                            <td>
+                                <strong>${c.icon || '📚'} ${c.title}</strong><br>
+                                <small style="color:var(--text-secondary)">${c.instructorName || ''}</small>
+                            </td>
+                            <td>${c.category}</td>
+                            <td>${c.price === 0 ? '🆓 Free' : `${c.price} ETB`}</td>
+                            <td>
+                                <span style="color:${c.status==='approved'?'#27ae60':c.status==='rejected'?'#e74c3c':'#f39c12'};font-weight:600">
+                                    ${c.status}
+                                </span>
+                            </td>
+                            <td>
+                                <span style="color:${c.isLocked?'#e74c3c':'#27ae60'};font-weight:600">
+                                    ${c.isLocked ? '🔒 Locked' : '🔓 Open'}
+                                </span>
+                            </td>
+                            <td style="display:flex;gap:6px;flex-wrap:wrap">
+                                <button class="btn btn-sm" onclick="showEditCourseModal('${c._id}')">✏️ Edit</button>
+                                <button class="btn btn-sm" onclick="toggleCourseLock('${c._id}',this)"
+                                    style="background:${c.isLocked?'rgba(39,174,96,0.1)':'rgba(231,76,60,0.1)'}">
+                                    ${c.isLocked ? '🔓 Unlock' : '🔒 Lock'}
+                                </button>
+                                <button class="btn btn-sm btn-success" onclick="viewEnrolledStudents('${c._id}')">👥 Students</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (err) {
+        container.innerHTML = `<p style="color:red">Failed to load courses: ${err.message}</p>`;
+    }
+}
+
+async function toggleCourseLock(courseId, btn) {
+    try {
+        const res = await api.request(`/admin/courses/${courseId}/toggle-lock`, { method: 'PUT' });
+        if (res.success) {
+            toast?.success(res.message);
+            await loadAllCourses();
+        }
+    } catch (e) { toast?.error('Failed to toggle lock'); }
+}
+
+async function viewEnrolledStudents(courseId) {
+    const modal = document.getElementById('enrolledStudentsModal');
+    const list  = document.getElementById('enrolledStudentsList');
+    if (!modal || !list) return;
+    modal.style.display = 'flex';
+    list.innerHTML = '<p style="color:var(--text-secondary)">Loading...</p>';
+    try {
+        const res = await api.request(`/admin/courses/${courseId}/students`);
+        if (!res.success || !res.enrollments || res.enrollments.length === 0) {
+            list.innerHTML = '<p style="color:var(--text-secondary)">No students enrolled yet</p>';
+            return;
+        }
+        list.innerHTML = `
+            <table class="users-table">
+                <thead><tr><th>Student</th><th>Email</th><th>Status</th><th>Requested</th></tr></thead>
+                <tbody>
+                    ${res.enrollments.map(e => `
+                        <tr>
+                            <td>${e.student?.fullName || '—'}</td>
+                            <td style="font-size:0.82rem">${e.student?.email || '—'}</td>
+                            <td style="color:${e.status==='approved'?'#27ae60':e.status==='rejected'?'#e74c3c':'#f39c12'};font-weight:600">${e.status}</td>
+                            <td style="font-size:0.82rem;color:var(--text-secondary)">${new Date(e.requestedAt).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>`;
+    } catch { list.innerHTML = '<p style="color:red">Failed to load students</p>'; }
+}
+
+// ── Edit Course Modal ─────────────────────────────────────────────────────────
+let editCourseChapters = [];
+
+function addEditChapter() {
+    syncEditChapterData();
+    editCourseChapters.push({ title: '', lessons: [] });
+    renderEditChapterBuilder();
+}
+
+function removeEditChapter(idx) {
+    syncEditChapterData();
+    editCourseChapters.splice(idx, 1);
+    renderEditChapterBuilder();
+}
+
+function addEditLesson(chapterIdx) {
+    syncEditChapterData();
+    editCourseChapters[chapterIdx].lessons.push({ title: '', duration: '', videoUrl: '', notes: '' });
+    renderEditChapterBuilder();
+}
+
+function removeEditLesson(chapterIdx, lessonIdx) {
+    syncEditChapterData();
+    editCourseChapters[chapterIdx].lessons.splice(lessonIdx, 1);
+    renderEditChapterBuilder();
+}
+
+function syncEditChapterData() {
+    editCourseChapters.forEach((ch, ci) => {
+        const titleEl = document.getElementById(`ech-title-${ci}`);
+        if (titleEl) ch.title = titleEl.value;
+        ch.lessons.forEach((l, li) => {
+            const lt = document.getElementById(`el-title-${ci}-${li}`);
+            const ld = document.getElementById(`el-dur-${ci}-${li}`);
+            const lv = document.getElementById(`el-vid-${ci}-${li}`);
+            const ln = document.getElementById(`el-notes-${ci}-${li}`);
+            if (lt) l.title    = lt.value;
+            if (ld) l.duration = ld.value;
+            if (lv) l.videoUrl = lv.value;
+            if (ln) l.notes    = ln.value;
+        });
+    });
+}
+
+function renderEditChapterBuilder() {
+    const container = document.getElementById('editChaptersBuilder');
+    if (!container) return;
+    container.innerHTML = editCourseChapters.map((ch, ci) => `
+        <div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden">
+            <div style="background:rgba(102,126,234,0.08);padding:10px 14px;display:flex;align-items:center;gap:8px">
+                <strong style="color:var(--text-primary);font-size:0.88rem">Chapter ${ci + 1}</strong>
+                <input type="text" id="ech-title-${ci}" value="${ch.title.replace(/"/g,'&quot;')}"
+                    placeholder="Chapter title..." oninput="editCourseChapters[${ci}].title=this.value"
+                    style="flex:1;padding:6px 10px;border:1px solid var(--border-color);border-radius:8px;
+                        background:var(--bg-primary);color:var(--text-primary);font-size:0.85rem">
+                <button type="button" onclick="syncEditChapterData();addEditLesson(${ci})"
+                    class="btn btn-success btn-sm" style="white-space:nowrap;font-size:0.78rem">+ Lesson</button>
+                <button type="button" onclick="syncEditChapterData();removeEditChapter(${ci})"
+                    class="btn btn-danger btn-sm" style="font-size:0.78rem">✕</button>
+            </div>
+            <div style="padding:8px 14px 14px;display:flex;flex-direction:column;gap:8px">
+                ${ch.lessons.length === 0 ? '<p style="color:var(--text-secondary);font-size:0.82rem;margin:4px 0">No lessons yet</p>' : ''}
+                ${ch.lessons.map((l, li) => `
+                    <div style="background:var(--bg-primary);border:1px solid var(--border-color);border-radius:8px;padding:10px 12px">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                            <span style="font-size:0.78rem;color:var(--text-secondary);white-space:nowrap">Lesson ${li+1}</span>
+                            <input type="text" id="el-title-${ci}-${li}" value="${(l.title||'').replace(/"/g,'&quot;')}"
+                                placeholder="Lesson title..." oninput="editCourseChapters[${ci}].lessons[${li}].title=this.value"
+                                style="flex:1;padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
+                                    background:var(--bg-secondary);color:var(--text-primary);font-size:0.82rem">
+                            <button type="button" onclick="syncEditChapterData();removeEditLesson(${ci},${li})"
+                                class="btn btn-danger btn-sm" style="font-size:0.72rem;padding:3px 8px">✕</button>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px;margin-bottom:6px">
+                            <input type="text" id="el-dur-${ci}-${li}" value="${(l.duration||'').replace(/"/g,'&quot;')}"
+                                placeholder="Duration" oninput="editCourseChapters[${ci}].lessons[${li}].duration=this.value"
+                                style="padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
+                                    background:var(--bg-secondary);color:var(--text-primary);font-size:0.8rem">
+                            <input type="text" id="el-vid-${ci}-${li}" value="${(l.videoUrl||'').replace(/"/g,'&quot;')}"
+                                placeholder="YouTube URL" oninput="editCourseChapters[${ci}].lessons[${li}].videoUrl=this.value"
+                                style="padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
+                                    background:var(--bg-secondary);color:var(--text-primary);font-size:0.8rem">
+                        </div>
+                        <textarea id="el-notes-${ci}-${li}" rows="2"
+                            placeholder="Study notes..."
+                            oninput="editCourseChapters[${ci}].lessons[${li}].notes=this.value"
+                            style="width:100%;padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
+                                background:var(--bg-secondary);color:var(--text-primary);font-size:0.8rem;resize:vertical"
+                        >${l.notes || ''}</textarea>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+async function showEditCourseModal(courseId) {
+    const modal = document.getElementById('editCourseModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    try {
+        const res = await api.getCourse(courseId);
+        if (!res.success) throw new Error('Failed to load course');
+        const c = res.course;
+
+        document.getElementById('editCourseId').value    = c._id;
+        document.getElementById('editTitle').value       = c.title || '';
+        document.getElementById('editDescription').value = c.description || '';
+        document.getElementById('editCategory').value    = c.category || 'semester1';
+        document.getElementById('editLevel').value       = c.level || 'Freshman';
+        document.getElementById('editDuration').value    = c.duration || '';
+        document.getElementById('editPrice').value       = c.price || 0;
+        document.getElementById('editIcon').value        = c.icon || '📚';
+        document.getElementById('editIsPremium').value   = c.isPremium ? 'true' : 'false';
+        document.getElementById('editIsLocked').value    = (c.isLocked !== false) ? 'true' : 'false';
+        document.getElementById('editFreePreview').value = c.isFreePreview ? 'true' : 'false';
+
+        editCourseChapters = (c.chapters || []).map(ch => ({
+            title:   ch.title || '',
+            lessons: (ch.lessons || []).map(l => ({
+                title:    l.title    || '',
+                duration: l.duration || '',
+                videoUrl: l.videoUrl || '',
+                notes:    l.notes    || ''
+            }))
+        }));
+        renderEditChapterBuilder();
+    } catch (err) {
+        toast?.error('Failed to load course for editing');
+        modal.style.display = 'none';
+    }
+}
+
+function closeEditCourseModal() {
+    const modal = document.getElementById('editCourseModal');
+    if (modal) modal.style.display = 'none';
+    editCourseChapters = [];
+}
+
+document.getElementById('editCourseForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    syncEditChapterData();
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = 'Saving...';
+
+    const courseId = document.getElementById('editCourseId').value;
+    try {
+        const data = {
+            title:         document.getElementById('editTitle').value,
+            description:   document.getElementById('editDescription').value,
+            category:      document.getElementById('editCategory').value,
+            level:         document.getElementById('editLevel').value,
+            duration:      document.getElementById('editDuration').value,
+            price:         parseFloat(document.getElementById('editPrice').value),
+            icon:          document.getElementById('editIcon').value || '📚',
+            isPremium:     document.getElementById('editIsPremium').value === 'true',
+            isLocked:      document.getElementById('editIsLocked').value === 'true',
+            isFreePreview: document.getElementById('editFreePreview').value === 'true',
+            chapters: editCourseChapters.map((ch, ci) => ({
+                title: ch.title,
+                order: ci,
+                lessons: ch.lessons.map((l, li) => ({
+                    title:    l.title,
+                    duration: l.duration,
+                    videoUrl: l.videoUrl,
+                    notes:    l.notes,
+                    order:    li
+                }))
+            }))
+        };
+
+        const res = await api.request(`/courses/${courseId}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+        if (res.success) {
+            toast?.success('Course updated!');
+            closeEditCourseModal();
+            await loadAllCourses();
+        }
+    } catch (err) {
+        toast?.error(err.message || 'Failed to update course');
+    } finally {
+        btn.disabled = false; btn.textContent = 'Save Changes';
+    }
+});
 
 function openReceiptLightbox(src) {
     const lb  = document.getElementById('receiptLightbox');

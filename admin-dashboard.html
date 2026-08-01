@@ -115,9 +115,24 @@
 
         <!-- Tab: Course Approvals -->
         <div id="tab-courses" class="admin-tab-content">
-            <h3 style="margin-bottom:1rem;color:var(--text-primary)">Pending Course Approvals</h3>
-            <div id="pendingCoursesList">
-                <p style="color:var(--text-secondary)">Loading...</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px">
+                <h3 style="color:var(--text-primary)">📚 Course Management</h3>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-sm" onclick="showCourseSubTab('pending')">⏳ Pending Approvals</button>
+                    <button class="btn btn-sm btn-success" onclick="showCourseSubTab('all')">📋 All Courses</button>
+                </div>
+            </div>
+            <!-- Sub-tab: pending -->
+            <div id="courseSubTab-pending">
+                <div id="pendingCoursesList">
+                    <p style="color:var(--text-secondary)">Loading...</p>
+                </div>
+            </div>
+            <!-- Sub-tab: all courses -->
+            <div id="courseSubTab-all" style="display:none">
+                <div id="allCoursesList">
+                    <p style="color:var(--text-secondary)">Loading...</p>
+                </div>
             </div>
         </div>
 
@@ -221,7 +236,7 @@
 
     <!-- Create Course Modal -->
     <div class="modal-overlay" id="createCourseModal">
-        <div class="modal-box">
+        <div class="modal-box" style="max-width:720px">
             <h3>📚 Create New Course</h3>
             <form id="createCourseForm">
                 <div class="form-group">
@@ -258,7 +273,7 @@
                         <input type="text" id="newDuration" required placeholder="e.g. 1 Semester">
                     </div>
                     <div class="form-group">
-                        <label>Price ($)</label>
+                        <label>Price (ETB)</label>
                         <input type="number" id="newPrice" required min="0" step="0.01" placeholder="0 for free">
                     </div>
                 </div>
@@ -269,24 +284,149 @@
                     </div>
                     <div class="form-group">
                         <label>Access Type</label>
-                        <select id="newIsPremium" class="form-select">
-                            <option value="true">Premium</option>
-                            <option value="false">Free</option>
+                        <select id="newIsPremium" class="form-select" onchange="updateLockDefault()">
+                            <option value="true">💎 Premium (paid)</option>
+                            <option value="false">🆓 Free</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>🔒 Lock Status</label>
+                        <select id="newIsLocked" class="form-select">
+                            <option value="true">🔒 Locked (requires enrollment)</option>
+                            <option value="false">🔓 Unlocked (open access)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Free Preview (first 2 lessons free)</label>
+                        <select id="newFreePreview" class="form-select">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Free Preview (first 2 lessons unlocked for trial users)</label>
-                    <select id="newFreePreview" class="form-select">
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
-                    </select>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                        <input type="checkbox" id="newPublishNow" style="width:16px;height:16px">
+                        Publish immediately (auto-approve)
+                    </label>
                 </div>
+
+                <!-- Chapters & Lessons Builder -->
+                <div style="margin-top:1.2rem;border-top:1px solid var(--border-color);padding-top:1.2rem">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
+                        <h4 style="color:var(--text-primary);margin:0">📖 Chapters & Lessons</h4>
+                        <button type="button" class="btn btn-success btn-sm" onclick="addChapter()">+ Add Chapter</button>
+                    </div>
+                    <div id="chaptersBuilder" style="display:flex;flex-direction:column;gap:12px"></div>
+                </div>
+
                 <div style="display:flex;gap:10px;margin-top:1.2rem">
                     <button type="submit" class="btn btn-success" style="flex:1">Create Course</button>
                     <button type="button" class="btn" onclick="closeCreateCourseModal()" style="flex:1">Cancel</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Edit Course Modal -->
+    <div class="modal-overlay" id="editCourseModal">
+        <div class="modal-box" style="max-width:720px">
+            <h3>✏️ Edit Course</h3>
+            <form id="editCourseForm">
+                <input type="hidden" id="editCourseId">
+                <div class="form-group">
+                    <label>Course Title</label>
+                    <input type="text" id="editTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="editDescription" required rows="3" style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);resize:vertical"></textarea>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="editCategory" class="form-select">
+                            <option value="semester1">First Semester</option>
+                            <option value="semester2">Second Semester</option>
+                            <option value="natural">Natural Science</option>
+                            <option value="social">Social Science</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Level</label>
+                        <select id="editLevel" class="form-select">
+                            <option value="Freshman">Freshman</option>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Duration</label>
+                        <input type="text" id="editDuration" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price (ETB)</label>
+                        <input type="number" id="editPrice" required min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Icon (emoji)</label>
+                        <input type="text" id="editIcon" maxlength="4">
+                    </div>
+                    <div class="form-group">
+                        <label>Access Type</label>
+                        <select id="editIsPremium" class="form-select">
+                            <option value="true">💎 Premium</option>
+                            <option value="false">🆓 Free</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>🔒 Lock Status</label>
+                        <select id="editIsLocked" class="form-select">
+                            <option value="true">🔒 Locked</option>
+                            <option value="false">🔓 Unlocked</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Free Preview</label>
+                        <select id="editFreePreview" class="form-select">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Chapters & Lessons Editor -->
+                <div style="margin-top:1.2rem;border-top:1px solid var(--border-color);padding-top:1.2rem">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
+                        <h4 style="color:var(--text-primary);margin:0">📖 Chapters & Lessons</h4>
+                        <button type="button" class="btn btn-success btn-sm" onclick="addEditChapter()">+ Add Chapter</button>
+                    </div>
+                    <div id="editChaptersBuilder" style="display:flex;flex-direction:column;gap:12px"></div>
+                </div>
+
+                <div style="display:flex;gap:10px;margin-top:1.2rem">
+                    <button type="submit" class="btn btn-success" style="flex:1">Save Changes</button>
+                    <button type="button" class="btn" onclick="closeEditCourseModal()" style="flex:1">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enrolled Students Modal -->
+    <div class="modal-overlay" id="enrolledStudentsModal">
+        <div class="modal-box" style="max-width:640px">
+            <h3>👥 Enrolled Students</h3>
+            <div id="enrolledStudentsList"><p style="color:var(--text-secondary)">Loading...</p></div>
+            <button class="btn" style="margin-top:1rem;width:100%" onclick="document.getElementById('enrolledStudentsModal').style.display='none'">Close</button>
         </div>
     </div>
 
