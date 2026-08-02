@@ -320,7 +320,7 @@ function renderCourseHeader() {
                             </div>
                         ` : `
                             <button class="btn btn-large" id="enrollBtn">
-                                ${isFree ? '🎓 Enroll Free' : '� Pay to Enroll'}
+                                ${isFree ? '🎓 Enroll Free' : '💳 Pay to Enroll'}
                             </button>
                             ${!isFree ? `<a href="payment.html?courseId=${c._id}&method=manual" class="btn btn-large btn-success">🏦 Pay via Bank Transfer</a>` : ''}
                         `}
