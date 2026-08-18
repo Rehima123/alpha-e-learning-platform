@@ -42,7 +42,19 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             const userCredential = await signInWithEmailAndPassword(firebaseAuthLogin, email, password);
             const user = userCredential.user;
 
-            // Check email verification
+            // Try backend login first — if backend accepts the credentials, let the user in
+            // regardless of Firebase email verification status
+            try {
+                const backendRes = await api.login({ email, password });
+                if (backendRes.success) {
+                    api.setAuthToken(backendRes.token);
+                    localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
+                    redirectByRole(backendRes.user);
+                    return;
+                }
+            } catch (_) {}
+
+            // Backend failed — check Firebase email verification as a secondary gate
             if (!user.emailVerified) {
                 await signOut(firebaseAuthLogin);
 
@@ -61,18 +73,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 return;
             }
 
-            // Email verified — also login to backend
-            try {
-                const backendRes = await api.login({ email, password });
-                if (backendRes.success) {
-                    api.setAuthToken(backendRes.token);
-                    localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
-                    redirectByRole(backendRes.user);
-                    return;
-                }
-            } catch (_) {}
-
-            // Firebase-only user (no backend)
+            // Firebase verified, use Firebase user as fallback
             const fbUser = {
                 id: user.uid, fullName: user.displayName || email.split('@')[0],
                 email: user.email, role: 'student'
@@ -106,7 +107,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         errorDiv.style.display = 'block';
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign In';
+        submitBtn.textContent = 'Login';
     }
 });
 

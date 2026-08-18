@@ -23,6 +23,7 @@ router.put('/courses/:id/reject',    isContentAdmin, adminController.rejectCours
 router.post('/courses',              isContentAdmin, adminController.createCourse);
 
 // ── User management (super_admin only) ───────────────────────────────────────
+router.post('/users',                isSuperAdmin,   adminController.createUser);
 router.get('/users',                 isAnyAdmin,     adminController.getAllUsers);
 router.put('/users/:id/deactivate',  isSuperAdmin,   adminController.deactivateUser);
 router.put('/users/:id/activate',    isSuperAdmin,   adminController.activateUser);

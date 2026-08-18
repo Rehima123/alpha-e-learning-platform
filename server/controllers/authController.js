@@ -14,21 +14,44 @@ exports.register = async (req, res, next) => {
             });
         }
 
-        const { fullName, email, password, role } = req.body;
+        const { fullName, email, phoneNumber, password, role, educationLevel } = req.body;
 
-        // Check if user exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
+        // Require at least one identifier
+        if (!email && !phoneNumber) {
             return res.status(400).json({
                 success: false,
-                message: 'User already exists with this email'
+                message: 'Email or phone number is required'
             });
+        }
+
+        // Check if user exists by email
+        if (email) {
+            const existingUser = await User.findOne({ email });
+            if (existingUser) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'User already exists with this email'
+                });
+            }
+        }
+
+        // Check if user exists by phone number
+        if (phoneNumber) {
+            const existingByPhone = await User.findOne({ phoneNumber });
+            if (existingByPhone) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'User already exists with this phone number'
+                });
+            }
         }
 
         // Create user
         const user = await User.create({
             fullName,
-            email,
+            email: email || undefined,
+            phoneNumber: phoneNumber || undefined,
+            educationLevel: educationLevel || undefined,
             password,
             role: role || 'student'
         });
@@ -36,10 +59,13 @@ exports.register = async (req, res, next) => {
         // Generate token
         const token = user.generateAuthToken();
 
-        // Send welcome email (non-blocking)
-        sendEmail({ to: user.email, ...templates.welcome(user) }).catch(() => {});
+        // Send welcome email to the new user (non-blocking)
+        if (user.email) {
+            const welcomeTpl = templates.welcome(user);
+            sendEmail({ to: user.email, ...welcomeTpl }).catch(() => {});
+        }
 
-        // Notify owner of new registration (non-blocking)
+        // Notify owner/admin of new registration (non-blocking)
         notifyOwner(ownerTemplates.newUserRegistered(user)).catch(() => {});
 
         res.status(201).json({
@@ -50,6 +76,7 @@ exports.register = async (req, res, next) => {
                 id: user._id,
                 fullName: user.fullName,
                 email: user.email,
+                phoneNumber: user.phoneNumber,
                 role: user.role
             }
         });
@@ -70,10 +97,21 @@ exports.login = async (req, res, next) => {
             });
         }
 
-        const { email, password } = req.body;
+        const { email, phoneNumber, password } = req.body;
+
+        // Require at least one identifier
+        if (!email && !phoneNumber) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email or phone number is required'
+            });
+        }
+
+        // Build lookup query — prefer email, fall back to phoneNumber
+        const query = email ? { email } : { phoneNumber };
 
         // Check if user exists
-        const user = await User.findOne({ email }).select('+password');
+        const user = await User.findOne(query).select('+password');
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -154,6 +192,7 @@ exports.login = async (req, res, next) => {
                 id: user._id,
                 fullName: user.fullName,
                 email: user.email,
+                phoneNumber: user.phoneNumber,
                 role: user.role,
                 avatar: user.avatar
             }

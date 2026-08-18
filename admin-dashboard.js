@@ -430,6 +430,14 @@ async function loadUsers() {
         }[r] || r);
 
         container.innerHTML = `
+            ${isSuperAdmin ? `
+            <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+                <button class="btn btn-primary" onclick="openCreateUserModal()"
+                    style="background:linear-gradient(135deg,#667eea,#764ba2);border:none;
+                    color:white;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600">
+                    ➕ Create User
+                </button>
+            </div>` : ''}
             <table class="users-table">
                 <thead>
                     <tr><th>Name</th><th>Email</th><th>Role</th><th>Subscription</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
@@ -474,6 +482,125 @@ async function loadUsers() {
         `;
     } catch (error) {
         container.innerHTML = '<p style="color:red">Failed to load users</p>';
+    }
+}
+
+// ── Create User Modal ─────────────────────────────────────────────────────────
+function openCreateUserModal() {
+    // Remove existing modal if any
+    const existing = document.getElementById('createUserModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'createUserModal';
+    modal.style.cssText = `
+        position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;
+        display:flex;align-items:center;justify-content:center;padding:20px`;
+    modal.innerHTML = `
+        <div style="background:var(--bg-primary,#fff);border-radius:16px;padding:32px;
+            width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative">
+            <button onclick="document.getElementById('createUserModal').remove()"
+                style="position:absolute;top:14px;right:18px;background:none;border:none;
+                font-size:1.4rem;cursor:pointer;color:var(--text-secondary,#666)">✕</button>
+            <h2 style="margin:0 0 24px;color:var(--text-primary,#1a1a2e)">➕ Create New User</h2>
+            <form id="createUserForm" onsubmit="submitCreateUser(event)">
+                <div style="margin-bottom:14px">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem">
+                        Full Name <span style="color:#e74c3c">*</span>
+                    </label>
+                    <input id="cu_fullName" type="text" placeholder="e.g. Abebe Kebede" required
+                        style="width:100%;padding:10px 14px;border:1px solid var(--border-color,#ddd);
+                        border-radius:8px;font-size:0.95rem;background:var(--bg-secondary,#f8f9fa);
+                        color:var(--text-primary,#1a1a2e);box-sizing:border-box">
+                </div>
+                <div style="margin-bottom:14px">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem">
+                        Email Address <span style="color:#e74c3c">*</span>
+                    </label>
+                    <input id="cu_email" type="email" placeholder="user@example.com" required
+                        style="width:100%;padding:10px 14px;border:1px solid var(--border-color,#ddd);
+                        border-radius:8px;font-size:0.95rem;background:var(--bg-secondary,#f8f9fa);
+                        color:var(--text-primary,#1a1a2e);box-sizing:border-box">
+                </div>
+                <div style="margin-bottom:14px">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem">Phone (optional)</label>
+                    <input id="cu_phone" type="text" placeholder="+251..."
+                        style="width:100%;padding:10px 14px;border:1px solid var(--border-color,#ddd);
+                        border-radius:8px;font-size:0.95rem;background:var(--bg-secondary,#f8f9fa);
+                        color:var(--text-primary,#1a1a2e);box-sizing:border-box">
+                </div>
+                <div style="margin-bottom:14px">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem">
+                        Password <span style="color:#e74c3c">*</span>
+                    </label>
+                    <input id="cu_password" type="password" placeholder="Min 6 characters" required minlength="6"
+                        style="width:100%;padding:10px 14px;border:1px solid var(--border-color,#ddd);
+                        border-radius:8px;font-size:0.95rem;background:var(--bg-secondary,#f8f9fa);
+                        color:var(--text-primary,#1a1a2e);box-sizing:border-box">
+                </div>
+                <div style="margin-bottom:24px">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem">Role</label>
+                    <select id="cu_role"
+                        style="width:100%;padding:10px 14px;border:1px solid var(--border-color,#ddd);
+                        border-radius:8px;font-size:0.95rem;background:var(--bg-secondary,#f8f9fa);
+                        color:var(--text-primary,#1a1a2e);box-sizing:border-box;cursor:pointer">
+                        <option value="student">📚 Student</option>
+                        <option value="instructor">🎓 Instructor</option>
+                        <option value="support_admin">🎧 Support Admin</option>
+                        <option value="content_admin">📝 Content Admin</option>
+                        <option value="finance_admin">💰 Finance Admin</option>
+                        <option value="super_admin">⚡ Super Admin</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:12px;justify-content:flex-end">
+                    <button type="button" onclick="document.getElementById('createUserModal').remove()"
+                        style="padding:10px 22px;border-radius:8px;border:1px solid var(--border-color,#ddd);
+                        background:none;cursor:pointer;color:var(--text-primary,#555);font-size:0.95rem">
+                        Cancel
+                    </button>
+                    <button type="submit" id="cu_submitBtn"
+                        style="padding:10px 24px;border-radius:8px;border:none;
+                        background:linear-gradient(135deg,#667eea,#764ba2);
+                        color:white;font-weight:700;cursor:pointer;font-size:0.95rem">
+                        ✅ Create User
+                    </button>
+                </div>
+            </form>
+        </div>`;
+    document.body.appendChild(modal);
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+async function submitCreateUser(e) {
+    e.preventDefault();
+    const btn = document.getElementById('cu_submitBtn');
+    btn.textContent = 'Creating...';
+    btn.disabled = true;
+
+    const data = {
+        fullName:    document.getElementById('cu_fullName').value.trim(),
+        email:       document.getElementById('cu_email').value.trim(),
+        phoneNumber: document.getElementById('cu_phone').value.trim() || undefined,
+        password:    document.getElementById('cu_password').value,
+        role:        document.getElementById('cu_role').value
+    };
+
+    try {
+        const res = await api.createUser(data);
+        if (res.success) {
+            document.getElementById('createUserModal').remove();
+            toast?.success(`✅ User "${data.fullName}" created! Welcome email sent.`);
+            await loadUsers();
+        } else {
+            toast?.error(res.message || 'Failed to create user');
+            btn.textContent = '✅ Create User';
+            btn.disabled = false;
+        }
+    } catch (err) {
+        toast?.error('Server error. Please try again.');
+        btn.textContent = '✅ Create User';
+        btn.disabled = false;
     }
 }
 

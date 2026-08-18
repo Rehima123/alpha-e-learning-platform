@@ -31,12 +31,18 @@ export const AuthProvider = ({ children }) => {
     setLoading(false)
   }, [])
 
-  const login = async (email, password) => {
+  const login = async (phoneNumberOrEmail, password) => {
     try {
+      // Accept either phone number or email as the identifier
+      const identifier = phoneNumberOrEmail
+      const body = identifier.includes('@')
+        ? { email: identifier, password }
+        : { phoneNumber: identifier, password }
+
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify(body)
       })
       const data = await res.json()
       if (!res.ok) return { success: false, error: data.message || 'Login failed' }

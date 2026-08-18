@@ -2,30 +2,55 @@ const multer = require('multer');
 const path   = require('path');
 const fs     = require('fs');
 
-// Ensure uploads/receipts directory exists
-const uploadDir = path.join(__dirname, '../uploads/receipts');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
 
+// Ensure base upload directory exists
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+const ALLOWED_TYPES = {
+    image: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+    file:  ['application/pdf', 'video/mp4', 'video/webm', 'application/zip']
+};
+
+const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+
+// ── Disk storage — swap engine to cloud adapter (e.g. multer-storage-cloudinary) for production
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename:    (req, file, cb) => {
+    destination: (req, file, cb) => {
+        const sub = file.mimetype.startsWith('image/') ? 'images' : 'files';
+        const dir = path.join(UPLOAD_DIR, sub);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
         const ext  = path.extname(file.originalname).toLowerCase();
-        const name = `receipt-${req.user._id}-${Date.now()}${ext}`;
+        const name = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
         cb(null, name);
     }
 });
 
-const fileFilter = (req, file, cb) => {
-    const allowed = ['.jpg', '.jpeg', '.png', '.pdf', '.webp'];
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext)) cb(null, true);
-    else cb(new Error('Only images (JPG, PNG, WEBP) and PDF files are allowed'), false);
-};
+function makeFileFilter(allowedMimes) {
+    return (req, file, cb) => {
+        if (allowedMimes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            const err = new Error('Unsupported file type');
+            err.statusCode = 400;
+            cb(err, false);
+        }
+    };
+}
 
-const upload = multer({
+// ── Image uploader (JPEG / PNG / WebP / GIF) ─────────────────────────────────
+exports.uploadImage = multer({
     storage,
-    fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB max
-});
+    limits:     { fileSize: MAX_SIZE },
+    fileFilter: makeFileFilter(ALLOWED_TYPES.image)
+}).single('image');
 
-module.exports = upload;
+// ── File uploader (PDF / MP4 / WebM / ZIP) ───────────────────────────────────
+exports.uploadFile = multer({
+    storage,
+    limits:     { fileSize: MAX_SIZE },
+    fileFilter: makeFileFilter(ALLOWED_TYPES.file)
+}).single('file');

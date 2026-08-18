@@ -60,6 +60,7 @@ class APIService {
             if (!navigator.onLine || error instanceof TypeError) {
                 console.warn('[API] Offline — using localStorage fallback');
                 this.offlineMode = true;
+                this._showOfflineBanner();
                 return this._offlineFallback(endpoint, options);
             }
             throw error;
@@ -74,7 +75,10 @@ class APIService {
         // Auth: login
         if (endpoint === '/auth/login' && method === 'POST') {
             const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const user  = users.find(u => u.email === body.email && u.password === body.password);
+            const user  = users.find(u =>
+                (body.email       && u.email       === body.email       && u.password === body.password) ||
+                (body.phoneNumber && u.phoneNumber === body.phoneNumber && u.password === body.password)
+            );
             if (!user) return { success: false, message: 'Invalid credentials' };
             const token = 'offline-token-' + user.id;
             this.setAuthToken(token);
@@ -85,13 +89,18 @@ class APIService {
         // Auth: register
         if (endpoint === '/auth/register' && method === 'POST') {
             const users = JSON.parse(localStorage.getItem('users') || '[]');
-            if (users.find(u => u.email === body.email)) {
+            if (body.email && users.find(u => u.email === body.email)) {
                 return { success: false, message: 'Email already registered' };
+            }
+            if (body.phoneNumber && users.find(u => u.phoneNumber === body.phoneNumber)) {
+                return { success: false, message: 'User already exists with this phone number' };
             }
             const newUser = {
                 id: 'user-' + Date.now(),
                 fullName: body.fullName,
-                email: body.email,
+                email: body.email || null,
+                phoneNumber: body.phoneNumber || null,
+                educationLevel: body.educationLevel || null,
                 password: body.password,
                 role: body.role || 'student',
                 isActive: true,
@@ -297,6 +306,7 @@ class APIService {
     async approveCourse(id)      { return this.request(`/admin/courses/${id}/approve`, { method: 'PUT' }); }
     async rejectCourse(id)       { return this.request(`/admin/courses/${id}/reject`,  { method: 'PUT' }); }
     async getAllUsers()           { return this.request('/admin/users'); }
+    async createUser(data)       { return this.request('/admin/users', { method: 'POST', body: JSON.stringify(data) }); }
     async deactivateUser(id)     { return this.request(`/admin/users/${id}/deactivate`, { method: 'PUT' }); }
     async activateUser(id)       { return this.request(`/admin/users/${id}/activate`,   { method: 'PUT' }); }
     async updateUserRole(id, role) { return this.request(`/admin/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) }); }
@@ -323,6 +333,34 @@ class APIService {
     }
     async confirmPayment(id) {
         return this.request(`/payments/${id}/confirm`, { method: 'POST' });
+    }
+
+    // ── Subscription endpoints ──────────────────────────────────────────────────
+    async getMySubscription()  { return this.request('/subscriptions/me'); }
+    async cancelSubscription() { return this.request('/subscriptions/cancel', { method: 'PUT' }); }
+    async renewSubscription()  { return this.request('/subscriptions/renew',  { method: 'PUT' }); }
+
+    // ── Upload endpoints (multipart/form-data — bypass request() JSON serialiser) ─
+    async uploadImage(file) {
+        const form = new FormData();
+        form.append('image', file);
+        const res = await fetch(`${this.baseURL}/upload/image`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${this.getAuthToken()}` },
+            body: form
+        });
+        return res.json();
+    }
+
+    async uploadFile(file) {
+        const form = new FormData();
+        form.append('file', file);
+        const res = await fetch(`${this.baseURL}/upload/file`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${this.getAuthToken()}` },
+            body: form
+        });
+        return res.json();
     }
 }
 

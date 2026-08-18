@@ -7,16 +7,20 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+const path = require('path');
+
 // Import routes
-const authRoutes = require('./routes/auth');
-const courseRoutes = require('./routes/courses');
-const userRoutes = require('./routes/users');
-const enrollmentRoutes = require('./routes/enrollments');
-const paymentRoutes = require('./routes/payments');
-const adminRoutes = require('./routes/admin');
-const couponRoutes = require('./routes/coupons');
-const aiRoutes    = require('./routes/ai');
-const videoRoutes = require('./routes/videos');
+const authRoutes         = require('./routes/auth');
+const courseRoutes       = require('./routes/courses');
+const userRoutes         = require('./routes/users');
+const enrollmentRoutes   = require('./routes/enrollments');
+const paymentRoutes      = require('./routes/payments');
+const adminRoutes        = require('./routes/admin');
+const couponRoutes       = require('./routes/coupons');
+const aiRoutes           = require('./routes/ai');
+const videoRoutes        = require('./routes/videos');
+const subscriptionRoutes = require('./routes/subscriptions');
+const uploadRoutes       = require('./routes/upload');
 
 const app = express();
 
@@ -88,8 +92,8 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
-// Static Files
-app.use('/uploads', express.static('uploads'));
+// Static Files — serve uploaded files publicly
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health Check
 app.get('/health', (req, res) => {
@@ -101,15 +105,17 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/courses', courseRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/enrollments', enrollmentRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/coupons', couponRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/videos', videoRoutes);
+app.use('/api/auth',          authRoutes);
+app.use('/api/courses',       courseRoutes);
+app.use('/api/users',         userRoutes);
+app.use('/api/enrollments',   enrollmentRoutes);
+app.use('/api/payments',      paymentRoutes);
+app.use('/api/admin',         adminRoutes);
+app.use('/api/coupons',       couponRoutes);
+app.use('/api/ai',            aiRoutes);
+app.use('/api/videos',        videoRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/upload',        uploadRoutes);
 
 // 404 Handler
 app.use((req, res) => {

@@ -9,16 +9,19 @@ const { protect } = require('../middleware/auth');
 // @access  Public
 router.post('/register', [
     body('fullName').trim().notEmpty().withMessage('Full name is required'),
-    body('email').isEmail().withMessage('Please provide a valid email'),
+    body('email').optional().isEmail().withMessage('Please provide a valid email'),
+    body('phoneNumber').optional().isMobilePhone().withMessage('Please provide a valid phone number'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    body('role').isIn(['student', 'instructor']).withMessage('Invalid role')
+    body('role').optional().isIn(['student', 'instructor']).withMessage('Invalid role'),
+    body('educationLevel').optional().trim()
 ], authController.register);
 
 // @route   POST /api/auth/login
 // @desc    Login user
 // @access  Public
 router.post('/login', [
-    body('email').isEmail().withMessage('Please provide a valid email'),
+    body('email').optional().isEmail().withMessage('Please provide a valid email'),
+    body('phoneNumber').optional().isMobilePhone().withMessage('Please provide a valid phone number'),
     body('password').notEmpty().withMessage('Password is required')
 ], authController.login);
 

@@ -62,6 +62,60 @@ app.get('/api/health', (req, res) => {
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth',        authRoutes);
+
+// ── INLINE routes that must come BEFORE course router (specific before general) ─
+// Feature 3: Secure video token
+const videoTokenHandler = require('./video-token');
+app.get('/api/courses/video-token/:lessonId', videoTokenHandler);
+
+// Per-user course access check (must be before /api/courses router)
+app.get('/api/courses/:courseId/access', async (req, res) => {
+    try {
+        const Course      = require('../server/models/Course');
+        const Enrollment  = require('../server/models/Enrollment');
+        const User        = require('../server/models/User');
+        const jwt         = require('jsonwebtoken');
+
+        const { courseId } = req.params;
+
+        let userId = null;
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            try {
+                const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET || 'fallback_secret');
+                userId = decoded.id;
+            } catch (_) {}
+        }
+
+        const course = await Course.findById(courseId).select('isPremium isLocked price');
+        if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+
+        // Free course — always accessible
+        if (!course.isPremium || course.price === 0 || course.isLocked === false) {
+            return res.json({ success: true, hasAccess: true, reason: 'free' });
+        }
+
+        if (!userId) return res.json({ success: true, hasAccess: false, reason: 'login_required' });
+
+        // Check approved enrollment
+        const enrollment = await Enrollment.findOne({ student: userId, course: courseId });
+        if (enrollment && enrollment.status === 'approved') {
+            return res.json({ success: true, hasAccess: true, reason: 'enrolled' });
+        }
+
+        // Check active subscription
+        const user = await User.findById(userId).select('subscription');
+        if (user && ['monthly', 'annual'].includes(user.subscription?.plan) && user.subscription?.status === 'active') {
+            return res.json({ success: true, hasAccess: true, reason: 'subscription' });
+        }
+
+        return res.json({ success: true, hasAccess: false, reason: enrollment ? enrollment.status : 'not_enrolled' });
+    } catch (err) {
+        console.error('Access check error:', err.message);
+        res.status(500).json({ success: false, message: 'Failed to check access' });
+    }
+});
+
 app.use('/api/courses',     courseRoutes);
 app.use('/api/users',       userRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
@@ -71,69 +125,6 @@ app.use('/api/admin',       adminRoutes);
 app.use('/api/coupons',     couponRoutes);
 app.use('/api/ai',          aiRoutes);
 app.use('/api/videos',      videoRoutes);
-
-// ── Feature 3: Secure video token endpoint (hides YouTube URLs) ───────────────
-const videoTokenHandler = require('./video-token');
-app.get('/api/courses/video-token/:lessonId', videoTokenHandler);
-
-// ── Per-user course access check ──────────────────────────────────────────────
-app.get('/api/courses/:courseId/access', async (req, res) => {
-    try {
-        const Course      = require('../server/models/Course');
-        const Enrollment  = require('../server/models/Enrollment');
-        const jwt         = require('jsonwebtoken');
-
-        const { courseId } = req.params;
-
-        // Authenticate user (optional — unauthenticated gets false for locked)
-        let userId = null;
-        const authHeader = req.headers.authorization;
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            try {
-                const token = authHeader.split(' ')[1];
-                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-                userId = decoded.id;
-            } catch (_) { /* invalid token — treat as unauthenticated */ }
-        }
-
-        const course = await Course.findById(courseId).select('isPremium isLocked price');
-        if (!course) {
-            return res.status(404).json({ success: false, message: 'Course not found' });
-        }
-
-        // Free course — always accessible
-        if (!course.isPremium || course.price === 0 || course.isLocked === false) {
-            return res.json({ success: true, hasAccess: true, reason: 'free' });
-        }
-
-        // User not logged in — no access to locked course
-        if (!userId) {
-            return res.json({ success: true, hasAccess: false, reason: 'login_required' });
-        }
-
-        // Check approved enrollment
-        const enrollment = await Enrollment.findOne({ student: userId, course: courseId });
-        if (enrollment && enrollment.status === 'approved') {
-            return res.json({ success: true, hasAccess: true, reason: 'enrolled' });
-        }
-
-        // Check active subscription on user object
-        const User = require('../server/models/User');
-        const user = await User.findById(userId).select('subscription');
-        if (user && ['monthly', 'annual'].includes(user.subscription?.plan)) {
-            return res.json({ success: true, hasAccess: true, reason: 'subscription' });
-        }
-
-        return res.json({
-            success: true,
-            hasAccess: false,
-            reason: enrollment ? enrollment.status : 'not_enrolled'
-        });
-    } catch (err) {
-        console.error('Access check error:', err.message);
-        res.status(500).json({ success: false, message: 'Failed to check access' });
-    }
-});
 
 // ── Admin: toggle course lock status ─────────────────────────────────────────
 app.put('/api/admin/courses/:courseId/toggle-lock', async (req, res) => {
