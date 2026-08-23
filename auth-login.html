@@ -79,6 +79,22 @@
     <script src="firebase-config.js"></script>
     <script src="init-admin.js"></script>
     <script src="ai-assistant.js"></script>
+
+    <!-- ── EmailJS Configuration (for Google OAuth new-user welcome email) ──
+         Same keys as auth-register.html — needed when Google creates new account
+         from login page (first-time Google users are auto-registered here too)
+    ─────────────────────────────────────────────────────────────────────── -->
+    <script>
+        window.EMAILJS_CONFIG = {
+            PUBLIC_KEY:       'YOUR_PUBLIC_KEY',          // ← same as auth-register.html
+            SERVICE_ID:       'service_b17ciqo',
+            WELCOME_TEMPLATE: 't41x1ab',
+            ADMIN_TEMPLATE:   '76pbo61',
+            ADMIN_EMAIL:      'supportalphafreshman@gmail.com'
+        };
+    </script>
+    <script src="emailjs-service.js"></script>
+
     <script src="auth-login.js"></script>
     <script src="pwa.js"></script>
 </body>

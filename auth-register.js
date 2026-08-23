@@ -184,21 +184,30 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
         const successDiv = document.getElementById('successMessage');
 
         // Register in backend
+        const googleFullName = user.displayName || user.email.split('@')[0];
+        const googleEmail    = user.email;
+        const googlePassword = 'google-oauth-' + user.uid;
+
         try {
             let backendRes;
+            let isNewUser = false;
+
             // Try register first
             try {
                 backendRes = await api.register({
-                    fullName: user.displayName || user.email.split('@')[0],
-                    email:    user.email,
-                    password: 'google-oauth-' + user.uid,
+                    fullName: googleFullName,
+                    email:    googleEmail,
+                    password: googlePassword,
                     role:     'student'
                 });
-            } catch (_) {
-                // Already registered — login instead
+                if (backendRes?.success) isNewUser = true;
+            } catch (_) {}
+
+            // Already registered — login instead
+            if (!backendRes?.success) {
                 backendRes = await api.login({
-                    email:    user.email,
-                    password: 'google-oauth-' + user.uid
+                    email:    googleEmail,
+                    password: googlePassword
                 });
             }
 
@@ -206,13 +215,24 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
                 api.setAuthToken(backendRes.token);
                 localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
 
+                // Send EmailJS welcome email for NEW users only (non-blocking)
+                if (isNewUser) {
+                    window.emailjsService?.sendRegistrationEmails({
+                        fullName: backendRes.user.fullName,
+                        email:    backendRes.user.email,
+                        role:     backendRes.user.role
+                    });
+                }
+
                 if (successDiv) {
                     successDiv.style.display = 'block';
                     successDiv.innerHTML = `
                         <div style="background:rgba(39,174,96,0.1);border:1px solid #27ae60;border-radius:12px;padding:1rem;text-align:center">
                             <div style="font-size:2rem;margin-bottom:0.5rem">🎉</div>
                             <h3 style="color:#27ae60;margin-bottom:0.3rem">Welcome, ${backendRes.user.fullName}!</h3>
-                            <p style="font-size:0.85rem;color:var(--text-secondary)">Account created with Google</p>
+                            <p style="font-size:0.85rem;color:var(--text-secondary)">
+                                ${isNewUser ? 'Account created with Google' : 'Signed in with Google'}
+                            </p>
                         </div>`;
                 }
                 setTimeout(() => window.location.href = 'courses.html', 1500);
@@ -220,16 +240,24 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
             }
         } catch (_) {}
 
-        // Fallback: Firebase-only
+        // Fallback: Firebase-only (no backend) — still send EmailJS welcome email
         const fbUser = {
             id: user.uid,
-            fullName: user.displayName || user.email.split('@')[0],
-            email: user.email,
+            fullName: googleFullName,
+            email: googleEmail,
             role: 'student',
             avatar: user.photoURL
         };
         api.setAuthToken('firebase-' + user.uid);
         localStorage.setItem('currentUser', JSON.stringify(fbUser));
+
+        // Send EmailJS welcome email in fallback too (non-blocking)
+        window.emailjsService?.sendRegistrationEmails({
+            fullName: fbUser.fullName,
+            email:    fbUser.email,
+            role:     fbUser.role
+        });
+
         window.location.href = 'courses.html';
 
     } catch (error) {

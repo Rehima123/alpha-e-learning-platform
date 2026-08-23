@@ -166,36 +166,63 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
         const user   = result.user;
 
         // Register/login in backend
+        const gFullName = user.displayName || user.email.split('@')[0];
+        const gEmail    = user.email;
+        const gPassword = 'google-oauth-' + user.uid;
+
         try {
+            let isNewUser = false;
+
             // Try login first
-            let backendRes = await api.login({ email: user.email, password: 'google-oauth-' + user.uid });
+            let backendRes = await api.login({ email: gEmail, password: gPassword });
+
             if (!backendRes.success) {
                 // New user — auto-register
                 backendRes = await api.register({
-                    fullName: user.displayName || user.email.split('@')[0],
-                    email:    user.email,
-                    password: 'google-oauth-' + user.uid,
+                    fullName: gFullName,
+                    email:    gEmail,
+                    password: gPassword,
                     role:     'student'
                 });
+                if (backendRes.success) isNewUser = true;
             }
+
             if (backendRes.success) {
                 api.setAuthToken(backendRes.token);
                 localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
+
+                // Send EmailJS welcome email for NEW Google users (non-blocking)
+                if (isNewUser) {
+                    window.emailjsService?.sendRegistrationEmails({
+                        fullName: backendRes.user.fullName,
+                        email:    backendRes.user.email,
+                        role:     backendRes.user.role
+                    });
+                }
+
                 redirectByRole(backendRes.user);
                 return;
             }
         } catch (_) {}
 
-        // Fallback: use Firebase user
+        // Fallback: use Firebase user — send welcome email too
         const fbUser = {
             id: user.uid,
-            fullName: user.displayName || user.email.split('@')[0],
-            email: user.email,
+            fullName: gFullName,
+            email: gEmail,
             role: 'student',
             avatar: user.photoURL
         };
         api.setAuthToken('firebase-' + user.uid);
         localStorage.setItem('currentUser', JSON.stringify(fbUser));
+
+        // Send EmailJS welcome email in fallback (non-blocking)
+        window.emailjsService?.sendRegistrationEmails({
+            fullName: fbUser.fullName,
+            email:    fbUser.email,
+            role:     fbUser.role
+        });
+
         window.location.href = 'courses.html';
 
     } catch (error) {
