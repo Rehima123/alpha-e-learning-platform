@@ -100,14 +100,32 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             'auth/user-not-found':     'ይህ ኢሜይል አልተመዘገበም።',
             'auth/wrong-password':     'የይለፍ ቃሉ ስህተት ነው።',
             'auth/invalid-email':      'ትክክለኛ ኢሜይል ያስፈልጋል።',
-            'auth/too-many-requests':  'ብዙ ጊዜ ሞክረዋል። ትንሽ ቆይተው ይሞክሩ።',
             'auth/invalid-credential': 'ኢሜይሉ ወይም የይለፍ ቃሉ ስህተት ነው።'
         };
+
+        if (error.code === 'auth/too-many-requests') {
+            let secs = 60;
+            errorDiv.innerHTML = `⚠️ ብዙ ጊዜ ሞክረዋል። እባክዎ <span id="countdown">${secs}</span> ሰከንድ ይጠብቁ።`;
+            errorDiv.style.display = 'block';
+            submitBtn.disabled = true;
+            const timer = setInterval(() => {
+                secs--;
+                const el = document.getElementById('countdown');
+                if (el) el.textContent = secs;
+                if (secs <= 0) {
+                    clearInterval(timer);
+                    errorDiv.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
+            }, 1000);
+            return;
+        }
+
         errorDiv.textContent = fbErrors[error.code] || error.message || 'Login failed.';
         errorDiv.style.display = 'block';
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Login';
+        submitBtn.textContent = 'Sign In';
     }
 });
 
@@ -206,16 +224,18 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
             }
         } catch (_) {}
 
-        // Fallback: use Firebase user — send welcome email only if EmailJS is configured
+        // Fallback: use Firebase user directly (no email verification needed for Google)
         const fbUser = {
             id: user.uid,
             fullName: gFullName,
             email: gEmail,
             role: 'student',
-            avatar: user.photoURL
+            avatar: user.photoURL,
+            emailVerified: true
         };
         api.setAuthToken('firebase-' + user.uid);
         localStorage.setItem('currentUser', JSON.stringify(fbUser));
+        localStorage.setItem('authToken', 'firebase-' + user.uid);
 
         // Only send EmailJS if properly configured
         if (window.emailjsService && window.EMAILJS_CONFIG?.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
@@ -226,13 +246,16 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
             });
         }
 
-        window.location.href = 'courses.html';
+        redirectByRole(fbUser);
 
     } catch (error) {
         const msg = {
-            'auth/popup-closed-by-user': 'Google login cancelled.',
-            'auth/popup-blocked':        'Popup was blocked. Please allow popups for this site.',
-            'auth/cancelled-popup-request': 'Google login cancelled.'
+            'auth/popup-closed-by-user':        'Google login cancelled.',
+            'auth/popup-blocked':               'Popup was blocked. Please allow popups for this site.',
+            'auth/cancelled-popup-request':     'Google login cancelled.',
+            'auth/unauthorized-domain':         'ይህ domain Firebase ላይ authorized አልሆነም። Firebase Console → Authentication → Settings → Authorized domains ይፈትሹ።',
+            'auth/operation-not-allowed':       'Google Sign-In Firebase Console ላይ enabled አልሆነም።',
+            'auth/network-request-failed':      'የኔትወርክ ስህተት። Internet connection ይፈትሹ።'
         };
         const errorDiv = document.getElementById('errorMessage');
         if (errorDiv) {
