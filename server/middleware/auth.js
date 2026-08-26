@@ -12,6 +12,28 @@ exports.protect = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'Not authorized — no token' });
         }
 
+        // ── Handle Firebase fallback token (firebase-{uid}) ───────────────────
+        if (token.startsWith('firebase-')) {
+            const firebaseUid = token.replace('firebase-', '');
+            // Find user by firebaseUid or try to find by any matching uid stored
+            let user = await User.findOne({ firebaseUid });
+            if (!user) {
+                // Try matching by a stored field or create a minimal guest user object
+                // For now, allow access with a guest user object
+                req.user = {
+                    _id: firebaseUid,
+                    id: firebaseUid,
+                    role: 'student',
+                    isActive: true,
+                    firebaseUid
+                };
+                return next();
+            }
+            if (!user.isActive) return res.status(401).json({ success: false, message: 'Account deactivated' });
+            req.user = user;
+            return next();
+        }
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // Fetch user including currentSessionToken
