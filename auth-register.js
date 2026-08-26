@@ -215,9 +215,10 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
                 api.setAuthToken(backendRes.token);
                 localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
 
-                // Send EmailJS welcome email for NEW users only (non-blocking)
-                if (isNewUser) {
-                    window.emailjsService?.sendRegistrationEmails({
+                // Send welcome email: backend already handles it on register.
+                // EmailJS is an optional extra layer — only if configured.
+                if (isNewUser && window.emailjsService && window.EMAILJS_CONFIG?.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+                    window.emailjsService.sendRegistrationEmails({
                         fullName: backendRes.user.fullName,
                         email:    backendRes.user.email,
                         role:     backendRes.user.role
@@ -240,7 +241,7 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
             }
         } catch (_) {}
 
-        // Fallback: Firebase-only (no backend) — still send EmailJS welcome email
+        // Fallback: Firebase-only (no backend) — send EmailJS welcome email if configured
         const fbUser = {
             id: user.uid,
             fullName: googleFullName,
@@ -251,12 +252,14 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
         api.setAuthToken('firebase-' + user.uid);
         localStorage.setItem('currentUser', JSON.stringify(fbUser));
 
-        // Send EmailJS welcome email in fallback too (non-blocking)
-        window.emailjsService?.sendRegistrationEmails({
-            fullName: fbUser.fullName,
-            email:    fbUser.email,
-            role:     fbUser.role
-        });
+        // Only send EmailJS if properly configured
+        if (window.emailjsService && window.EMAILJS_CONFIG?.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+            window.emailjsService.sendRegistrationEmails({
+                fullName: fbUser.fullName,
+                email:    fbUser.email,
+                role:     fbUser.role
+            });
+        }
 
         window.location.href = 'courses.html';
 
