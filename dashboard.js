@@ -18,15 +18,27 @@ async function loadDashboard() {
                 enrollments = cached;
                 toast?.warning('📡 Offline — showing cached data');
             }
+        } else {
+            // API returned but not success — show empty state not error
+            enrollments = [];
         }
         renderDashboard();
     } catch (error) {
         console.error('Error loading dashboard:', error);
-        document.getElementById('enrolledCourses').innerHTML =
-            `<div style="text-align:center;padding:3rem">
-                <p style="color:red;margin-bottom:1rem">Failed to load your courses.</p>
-                <button class="btn" onclick="loadDashboard()">🔄 Retry</button>
-            </div>`;
+        // Try offline cache first
+        if (typeof offlineDB !== 'undefined') {
+            try {
+                const cached = await offlineDB.getAll('enrollments').catch(() => []);
+                if (cached && cached.length > 0) {
+                    enrollments = cached;
+                    renderDashboard();
+                    return;
+                }
+            } catch {}
+        }
+        // Show empty state instead of error for better UX
+        enrollments = [];
+        renderDashboard();
     }
 }
 
