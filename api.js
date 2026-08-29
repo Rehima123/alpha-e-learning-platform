@@ -1,4 +1,4 @@
-
+    
 // API Configuration and Service Layer
 // ─── Backend runs on same Vercel deployment ───────────────────────────────────
 const API_BASE_URL = '/api';  // Same origin — no CORS issues!
@@ -365,3 +365,20 @@ class APIService {
 }
 
 const api = new APIService();
+
+// ── API Warm-up: ping backend immediately on page load to eliminate cold start ─
+// This fires silently in background — first real request will be fast
+(function warmUpAPI() {
+    // Only ping if not already pinged in last 2 minutes
+    const lastPing = parseInt(localStorage.getItem('_apiPingTime') || '0');
+    const now = Date.now();
+    if (now - lastPing < 120000) return; // skip if pinged recently
+
+    localStorage.setItem('_apiPingTime', now.toString());
+    fetch('/api/health', { method: 'GET', cache: 'no-store' })
+        .then(() => {
+            // Pre-fetch courses too while we're at it
+            return fetch('/api/courses?limit=20', { cache: 'no-store' });
+        })
+        .catch(() => {}); // silent — never block anything
+})();
