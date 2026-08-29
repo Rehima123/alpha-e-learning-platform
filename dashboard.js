@@ -6,6 +6,17 @@ if (!_dashUser || !api.getAuthToken()) {
     window.location.href = 'auth-login.html';
 }
 
+// ── Greeting ──────────────────────────────────────────────────────────────────
+if (_dashUser) {
+    const firstName = (_dashUser.fullName || 'ተማሪ').split(' ')[0];
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'እንኳን ደህና ነጋህ/ሽ' : hour < 17 ? 'እንኳን ደህና አደርህ/ሽ' : 'እንኳን ደህና መጣህ/ሽ';
+    const el = document.getElementById('dashGreeting');
+    const sub = document.getElementById('dashSubtitle');
+    if (el) el.textContent = `${greeting}, ${firstName}! 👋`;
+    if (sub) sub.textContent = `አካውንት: ${_dashUser.email || _dashUser.phoneNumber || ''} · ትምህርትዎን ይቀጥሉ!`;
+}
+
 async function loadDashboard() {
     try {
         const response = await api.getMyEnrollments();
@@ -162,39 +173,16 @@ function renderDashboard() {
     const chart = new ProgressChart('progressChart');
     chart.drawDonut(stats.overallPercent, 'Overall', '#667eea');
 }
-function updateNavbar() {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    const navLinks = document.querySelector('.nav-links');
-    if (!currentUser || !navLinks) return;
+// updateNavbar is handled by navbar.js (already loaded above)
+// Just ensure logout button works
+document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try { await api.logout(); } catch {}
+    api.removeAuthToken();
+    localStorage.removeItem('currentUser');
+    window.location.href = 'home.html';
+});
 
-    navLinks.innerHTML = `
-        <li><a href="home.html">Home</a></li>
-        <li><a href="courses.html">Courses</a></li>
-        <li><a href="dashboard.html">My Learning</a></li>
-        ${currentUser.role === 'instructor' ? '<li><a href="instructor-dashboard.html">My Courses</a></li>' : ''}
-        ${currentUser.role === 'admin' ? '<li><a href="admin-dashboard.html">Admin</a></li>' : ''}
-        <li><button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button></li>
-        <li><span style="color:white;margin-right:1rem">👤 ${currentUser.fullName}</span></li>
-        <li><a href="#" id="logoutBtn" class="btn-nav-logout">Logout</a></li>
-    `;
-
-    document.getElementById('themeToggle')?.addEventListener('click', () => {
-        const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', t);
-        localStorage.setItem('theme', t);
-        document.getElementById('themeToggle').textContent = t === 'dark' ? '☀️' : '🌙';
-    });
-
-    document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        try { await api.logout(); } catch {}
-        api.removeAuthToken();
-        localStorage.removeItem('currentUser');
-        window.location.href = 'home.html';
-    });
-}
-
-updateNavbar();
 loadDashboard().then(() => {
     streakTracker?.renderBadge(document.getElementById('streak-badge'));
     renderLeaderboard?.('leaderboard-mini');

@@ -35,7 +35,13 @@
     </nav>
 
     <main class="container">
-        <h2>My Learning Dashboard</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px">
+            <div>
+                <h2 id="dashGreeting">My Learning Dashboard</h2>
+                <p style="color:var(--text-secondary);font-size:0.9rem;margin:4px 0 0" id="dashSubtitle">ትምህርትዎን ይቀጥሉ!</p>
+            </div>
+            <a href="courses.html" class="btn btn-success" style="white-space:nowrap">+ አዲስ ኮርስ</a>
+        </div>
         <div id="streak-badge" style="margin: 0.5rem 0 1.5rem"></div>
         <div id="analytics-section" style="display:none;margin-bottom:2rem">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:1.5rem">
