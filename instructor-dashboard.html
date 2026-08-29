@@ -6,16 +6,235 @@
     <title>Instructor Dashboard - Alpha Freshman Tutorial</title>
     <link rel="stylesheet" href="elearning.css">
     <meta name="theme-color" content="#3B82F6">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="AlphaFT">
     <link rel="icon" href="logo.png" type="image/png">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" sizes="180x180" href="logo.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="logo.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="logo.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="logo.png">
+    <style>
+        /* ── Instructor Dashboard Styles ── */
+        .idash-layout { display: flex; min-height: 100vh; padding-top: 0; }
+
+        /* Tab Nav */
+        .idash-tabs {
+            display: flex; gap: 4px; margin-bottom: 28px; flex-wrap: wrap;
+            background: var(--card-bg); border-radius: 14px; padding: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .idash-tab {
+            flex: 1; min-width: 120px; padding: 10px 16px; border: none; border-radius: 10px;
+            background: transparent; color: var(--text-secondary); cursor: pointer;
+            font-size: 0.88rem; font-weight: 600; transition: all 0.2s;
+        }
+        .idash-tab:hover { background: rgba(102,126,234,0.1); color: var(--text-primary); }
+        .idash-tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; box-shadow: 0 4px 12px rgba(102,126,234,0.35);
+        }
+        .idash-panel { display: none; }
+        .idash-panel.active { display: block; }
+
+        /* Metric Cards */
+        .metric-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px; margin-bottom: 28px;
+        }
+        .metric-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 20px; position: relative; overflow: hidden;
+        }
+        .metric-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        }
+        .metric-card.revenue::before  { background: linear-gradient(90deg, #27ae60, #1a7030); }
+        .metric-card.students::before { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .metric-card.courses::before  { background: linear-gradient(90deg, #f39c12, #d35400); }
+        .metric-card.pending::before  { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        .metric-icon { font-size: 2rem; margin-bottom: 8px; }
+        .metric-value { font-size: 1.8rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+        .metric-label { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-badge {
+            position: absolute; top: 12px; right: 12px;
+            background: #e74c3c; color: white; border-radius: 20px;
+            padding: 2px 8px; font-size: 0.75rem; font-weight: 700;
+        }
+
+        /* Activity Feed */
+        .activity-feed { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; }
+        .activity-feed-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.95rem; }
+        .activity-item {
+            display: flex; align-items: center; gap: 14px; padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color); transition: background 0.15s;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-item:hover { background: rgba(255,255,255,0.03); }
+        .activity-avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg,#667eea,#764ba2);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+        }
+        .activity-info { flex: 1; min-width: 0; }
+        .activity-name { font-weight: 600; font-size: 0.88rem; color: var(--text-primary); }
+        .activity-detail { font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .activity-amount { font-weight: 700; font-size: 0.9rem; color: #27ae60; white-space: nowrap; }
+        .status-pill {
+            padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap;
+        }
+        .status-pill.pending  { background: rgba(243,156,18,0.15); color: #f39c12; }
+        .status-pill.approved { background: rgba(39,174,96,0.15);  color: #27ae60; }
+        .status-pill.rejected { background: rgba(231,76,60,0.15);  color: #e74c3c; }
+
+        /* Section Header */
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+
+        /* Course Cards Grid */
+        .course-manager-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+        .course-manager-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 16px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .course-manager-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+        .course-manager-card-header {
+            background: linear-gradient(135deg,rgba(102,126,234,0.15),rgba(118,75,162,0.1));
+            padding: 18px; display: flex; align-items: center; gap: 14px;
+        }
+        .course-emoji { font-size: 2.5rem; }
+        .course-card-title { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+        .course-card-meta { font-size: 0.78rem; color: var(--text-secondary); margin-top: 3px; }
+        .course-manager-card-body { padding: 16px; }
+        .course-card-stats { display: flex; gap: 16px; margin-bottom: 14px; }
+        .course-stat { text-align: center; }
+        .course-stat-val { font-weight: 700; font-size: 1.1rem; color: var(--text-primary); }
+        .course-stat-lbl { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; }
+        .course-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* Toggle Switch */
+        .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+        .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background: #ccc; border-radius: 24px; transition: 0.3s;
+        }
+        .toggle-slider:before {
+            content: ''; position: absolute; height: 18px; width: 18px;
+            left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s;
+        }
+        input:checked + .toggle-slider { background: linear-gradient(135deg,#667eea,#764ba2); }
+        input:checked + .toggle-slider:before { transform: translateX(20px); }
+        .toggle-label { font-size: 0.85rem; color: var(--text-secondary); }
+
+        /* Lessons Panel */
+        .lessons-panel {
+            background: var(--bg-secondary, #0f172a); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 16px; margin-top: 12px;
+        }
+        .lesson-row {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            background: var(--card-bg); border-radius: 10px; margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .lesson-order {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg,#667eea,#764ba2);
+            color: white; font-size: 0.75rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .lesson-info { flex: 1; min-width: 0; }
+        .lesson-title-text { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
+        .lesson-meta  { font-size: 0.72rem; color: var(--text-secondary); }
+        .free-badge { background: rgba(39,174,96,0.15); color: #27ae60; padding: 2px 7px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; }
+        .paid-badge { background: rgba(243,156,18,0.15); color: #f39c12; padding: 2px 7px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; }
+
+        /* Payments Table */
+        .payments-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+        .filter-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-secondary); cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: all 0.2s; }
+        .filter-btn.active { background: linear-gradient(135deg,#667eea,#764ba2); color: white; border-color: transparent; }
+        .payments-table { width: 100%; border-collapse: collapse; }
+        .payments-table th { text-align: left; padding: 12px 14px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); }
+        .payments-table td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; vertical-align: middle; }
+        .payments-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .receipt-thumb { width: 50px; height: 40px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.15s; }
+        .receipt-thumb:hover { transform: scale(1.1); }
+
+        /* Students Table */
+        .search-wrap { position: relative; }
+        .search-wrap input { padding: 10px 16px 10px 40px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-primary); font-size: 0.88rem; width: 280px; }
+        .search-wrap::before { content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; }
+        .progress-bar-wrap { background: rgba(255,255,255,0.08); border-radius: 10px; height: 8px; width: 100px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg,#667eea,#27ae60); transition: width 0.3s; }
+
+        /* Modals */
+        .idash-modal {
+            display: none; position: fixed; inset: 0; z-index: 10000;
+            background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .idash-modal.open { display: flex; }
+        .idash-modal-box {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 28px; width: 100%; max-width: 560px;
+            max-height: 90vh; overflow-y: auto; position: relative;
+        }
+        .idash-modal-box.wide { max-width: 800px; }
+        .idash-modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; }
+        .idash-modal-close {
+            position: absolute; top: 16px; right: 16px; width: 32px; height: 32px;
+            border-radius: 50%; border: none; background: rgba(255,255,255,0.1);
+            color: var(--text-primary); cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+        }
+        .idash-modal-close:hover { background: rgba(231,76,60,0.2); color: #e74c3c; }
+
+        /* Lightbox */
+        .lightbox { display: none; position: fixed; inset: 0; z-index: 20000; background: rgba(0,0,0,0.92); align-items: center; justify-content: center; }
+        .lightbox.open { display: flex; }
+        .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 12px; object-fit: contain; }
+        .lightbox-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; }
+
+        /* Form Styles */
+        .idash-form-group { margin-bottom: 16px; }
+        .idash-form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .idash-form-group input,
+        .idash-form-group textarea,
+        .idash-form-group select {
+            width: 100%; padding: 10px 14px; border-radius: 10px;
+            border: 1px solid var(--border-color); background: var(--bg-secondary, #0f172a);
+            color: var(--text-primary); font-size: 0.9rem;
+            box-sizing: border-box; transition: border-color 0.2s;
+        }
+        .idash-form-group input:focus,
+        .idash-form-group textarea:focus,
+        .idash-form-group select:focus { outline: none; border-color: #667eea; }
+        .idash-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .idash-form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+        /* Buttons */
+        .btn-icon { padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: all 0.15s; }
+        .btn-edit   { background: rgba(102,126,234,0.15); color: #667eea; }
+        .btn-edit:hover { background: rgba(102,126,234,0.3); }
+        .btn-delete { background: rgba(231,76,60,0.12); color: #e74c3c; }
+        .btn-delete:hover { background: rgba(231,76,60,0.25); }
+        .btn-approve { background: rgba(39,174,96,0.15); color: #27ae60; }
+        .btn-approve:hover { background: rgba(39,174,96,0.3); }
+        .btn-reject  { background: rgba(231,76,60,0.12); color: #e74c3c; }
+        .btn-reject:hover { background: rgba(231,76,60,0.25); }
+        .btn-grant   { background: rgba(39,174,96,0.15); color: #27ae60; }
+        .btn-revoke  { background: rgba(231,76,60,0.12); color: #e74c3c; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 48px 20px; color: var(--text-secondary); }
+        .empty-state-icon { font-size: 3.5rem; margin-bottom: 12px; }
+        .empty-state p { font-size: 0.95rem; }
+
+        /* Loading */
+        .loading-spinner { text-align: center; padding: 32px; color: var(--text-secondary); font-size: 0.9rem; }
+
+        @media (max-width: 640px) {
+            .idash-form-row { grid-template-columns: 1fr; }
+            .metric-grid { grid-template-columns: 1fr 1fr; }
+            .payments-table { font-size: 0.78rem; }
+            .payments-table th:nth-child(2),
+            .payments-table td:nth-child(2) { display: none; }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -23,113 +242,281 @@
             <a href="home.html" class="logo-container">
                 <span class="platform-name">Alpha Freshman Tutorial</span>
             </a>
-            <ul class="nav-links">
+            <ul class="nav-links" id="navLinks">
                 <li><a href="home.html">Home</a></li>
                 <li><a href="courses.html">Courses</a></li>
-                <li><a href="instructor-dashboard.html">My Courses</a></li>
-                <li><a href="study-hub.html">📚 Study Hub</a></li>
-                <li><a href="department-guide.html">🎓 Departments</a></li>
-                <li><a href="#" id="logoutBtn">Logout</a></li>
+                <li><a href="instructor-dashboard.html" style="color:#667eea;font-weight:700">Instructor</a></li>
+                <li><button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button></li>
+                <li><a href="#" id="logoutBtn" style="color:#f87171">Logout</a></li>
             </ul>
         </div>
     </nav>
 
-    <main class="container">
-        <div class="dashboard-header">
-            <h2>Instructor Dashboard</h2>
-            <button class="btn btn-success" onclick="showAddCourseModal()">+ Add New Course</button>
+    <main class="container" style="padding-top:24px;padding-bottom:60px">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+            <div>
+                <h1 style="font-size:1.6rem;font-weight:800;margin:0">Instructor Dashboard</h1>
+                <p style="color:var(--text-secondary);margin:4px 0 0;font-size:0.9rem" id="welcomeMsg">Welcome back!</p>
+            </div>
+            <button class="btn btn-success" style="margin-left:auto" onclick="openModal('courseModal')">+ New Course</button>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3 id="totalCourses">0</h3>
-                <p>Total Courses</p>
+        <!-- Tabs -->
+        <div class="idash-tabs">
+            <button class="idash-tab active" onclick="switchTab('overview')"   id="tab-overview">📊 Overview</button>
+            <button class="idash-tab"        onclick="switchTab('courses')"    id="tab-courses">📚 Course Manager</button>
+            <button class="idash-tab"        onclick="switchTab('payments')"   id="tab-payments">💰 Payments <span id="paymentBadge" style="display:none;background:#e74c3c;color:white;border-radius:10px;padding:1px 7px;font-size:0.7rem;margin-left:4px">0</span></button>
+            <button class="idash-tab"        onclick="switchTab('students')"   id="tab-students">👥 Students</button>
+        </div>
+
+        <!-- ── PANEL 1: Overview ── -->
+        <div class="idash-panel active" id="panel-overview">
+            <div class="metric-grid">
+                <div class="metric-card revenue">
+                    <div class="metric-icon">💰</div>
+                    <div class="metric-value" id="metRevenue">—</div>
+                    <div class="metric-label">Total Revenue (ETB)</div>
+                </div>
+                <div class="metric-card students">
+                    <div class="metric-icon">👥</div>
+                    <div class="metric-value" id="metStudents">—</div>
+                    <div class="metric-label">Enrolled Students</div>
+                </div>
+                <div class="metric-card courses">
+                    <div class="metric-icon">📚</div>
+                    <div class="metric-value" id="metCourses">—</div>
+                    <div class="metric-label">Active Courses</div>
+                </div>
+                <div class="metric-card pending">
+                    <div class="metric-icon">⏳</div>
+                    <div class="metric-value" id="metPending">—</div>
+                    <div class="metric-label">Pending Payments</div>
+                    <span class="metric-badge" id="pendingBadge" style="display:none">!</span>
+                </div>
             </div>
-            <div class="stat-card">
-                <h3 id="approvedCourses">0</h3>
-                <p>Approved</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="pendingCourses">0</h3>
-                <p>Pending</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="totalStudents">0</h3>
-                <p>Total Students</p>
+
+            <div class="activity-feed">
+                <div class="activity-feed-header">🕐 Recent Activity</div>
+                <div id="activityFeed"><div class="loading-spinner">Loading...</div></div>
             </div>
         </div>
 
-        <div class="instructor-courses" id="instructorCourses"></div>
+        <!-- ── PANEL 2: Course Manager ── -->
+        <div class="idash-panel" id="panel-courses">
+            <div class="section-header">
+                <div class="section-title">My Courses</div>
+                <button class="btn btn-success btn-small" onclick="openModal('courseModal')">+ Add Course</button>
+            </div>
+            <div id="courseManagerGrid" class="course-manager-grid">
+                <div class="loading-spinner">Loading courses...</div>
+            </div>
+        </div>
+
+        <!-- ── PANEL 3: Payments ── -->
+        <div class="idash-panel" id="panel-payments">
+            <div class="section-header">
+                <div class="section-title">Manual Payment Receipts</div>
+            </div>
+            <div class="payments-filter">
+                <button class="filter-btn active" onclick="filterPayments('all',    this)">All</button>
+                <button class="filter-btn"        onclick="filterPayments('pending_verification', this)">⏳ Pending</button>
+                <button class="filter-btn"        onclick="filterPayments('approved', this)">✅ Approved</button>
+                <button class="filter-btn"        onclick="filterPayments('rejected', this)">❌ Rejected</button>
+            </div>
+            <div style="overflow-x:auto;background:var(--card-bg);border:1px solid var(--border-color);border-radius:16px">
+                <table class="payments-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Email</th>
+                            <th>Course</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Receipt</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                        <tr><td colspan="8" class="loading-spinner">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── PANEL 4: Students ── -->
+        <div class="idash-panel" id="panel-students">
+            <div class="section-header">
+                <div class="section-title">Enrolled Students</div>
+                <div class="search-wrap">
+                    <input type="text" id="studentSearch" placeholder="Search name or email..." oninput="searchStudents(this.value)">
+                </div>
+            </div>
+            <div style="overflow-x:auto;background:var(--card-bg);border:1px solid var(--border-color);border-radius:16px">
+                <table class="payments-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Email</th>
+                            <th>Course</th>
+                            <th>Enrolled</th>
+                            <th>Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <tr><td colspan="6" class="loading-spinner">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </main>
 
-    <div id="addCourseModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeAddCourseModal()">&times;</span>
-            <h2>Add New Course</h2>
-            <form id="addCourseForm" class="course-form">
-                <div class="form-group">
-                    <label for="courseTitle">Course Title</label>
-                    <input type="text" id="courseTitle" required>
+    <!-- ══ MODAL: Course Create/Edit ══ -->
+    <div class="idash-modal" id="courseModal">
+        <div class="idash-modal-box">
+            <button class="idash-modal-close" onclick="closeModal('courseModal')">✕</button>
+            <div class="idash-modal-title" id="courseModalTitle">Create New Course</div>
+            <input type="hidden" id="editCourseId">
+            <div class="idash-form-group">
+                <label>Course Title *</label>
+                <input type="text" id="fCourseTitle" placeholder="e.g., Mathematics for Natural Science">
+            </div>
+            <div class="idash-form-group">
+                <label>Description *</label>
+                <textarea id="fCourseDesc" rows="3" placeholder="Brief description of what students will learn..."></textarea>
+            </div>
+            <div class="idash-form-row">
+                <div class="idash-form-group">
+                    <label>Price (ETB) *</label>
+                    <input type="number" id="fCoursePrice" min="0" placeholder="0 for free">
                 </div>
-                
-                <div class="form-group">
-                    <label for="courseDescription">Description</label>
-                    <textarea id="courseDescription" required rows="3"></textarea>
+                <div class="idash-form-group">
+                    <label>Category</label>
+                    <select id="fCourseCategory">
+                        <option value="semester1">First Semester</option>
+                        <option value="semester2">Second Semester</option>
+                        <option value="natural">Natural Science</option>
+                        <option value="social">Social Science</option>
+                    </select>
                 </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="courseCategory">Category</label>
-                        <select id="courseCategory" class="form-select">
-                            <option value="semester1">First Semester</option>
-                            <option value="semester2">Second Semester</option>
-                            <option value="natural">Natural Science Stream</option>
-                            <option value="social">Social Science Stream</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="courseLevel">Level</label>
-                        <select id="courseLevel" class="form-select">
-                            <option value="Freshman">Freshman</option>
-                            <option value="Beginner">Beginner</option>
-                            <option value="Intermediate">Intermediate</option>
-                            <option value="Advanced">Advanced</option>
-                        </select>
-                    </div>
+            </div>
+            <div class="idash-form-row">
+                <div class="idash-form-group">
+                    <label>Level</label>
+                    <select id="fCourseLevel">
+                        <option value="Freshman">Freshman</option>
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
                 </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="courseDuration">Duration</label>
-                        <input type="text" id="courseDuration" required placeholder="e.g., 8 weeks">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="coursePrice">Price ($)</label>
-                        <input type="number" id="coursePrice" required min="0" step="0.01">
-                    </div>
+                <div class="idash-form-group">
+                    <label>Duration</label>
+                    <input type="text" id="fCourseDuration" placeholder="e.g., 16 weeks">
                 </div>
-                
-                <div class="form-group">
-                    <label for="courseIcon">Icon (emoji)</label>
-                    <input type="text" id="courseIcon" required placeholder="e.g., 🎓" maxlength="2">
+            </div>
+            <div class="idash-form-row">
+                <div class="idash-form-group">
+                    <label>Icon (emoji)</label>
+                    <input type="text" id="fCourseIcon" placeholder="📚" maxlength="4">
                 </div>
-                
-                <button type="submit" class="btn btn-large btn-block btn-success">Submit for Approval</button>
-            </form>
+                <div class="idash-form-group">
+                    <label>Thumbnail URL</label>
+                    <input type="url" id="fCourseThumbnail" placeholder="https://...">
+                </div>
+            </div>
+            <div class="idash-form-group">
+                <div class="toggle-wrap">
+                    <label class="toggle">
+                        <input type="checkbox" id="fCoursePublished">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Published (visible to students)</span>
+                </div>
+            </div>
+            <div class="idash-form-actions">
+                <button class="btn" onclick="closeModal('courseModal')">Cancel</button>
+                <button class="btn btn-success" onclick="saveCourse()">Save Course</button>
+            </div>
         </div>
+    </div>
+
+    <!-- ══ MODAL: Lessons Manager ══ -->
+    <div class="idash-modal" id="lessonsModal">
+        <div class="idash-modal-box wide">
+            <button class="idash-modal-close" onclick="closeModal('lessonsModal')">✕</button>
+            <div class="idash-modal-title">📖 Lessons: <span id="lessonsCourseTitle"></span></div>
+            <div id="lessonsList"></div>
+            <button class="btn btn-success" style="width:100%;margin-top:14px" onclick="openAddLessonForm()">+ Add New Lesson</button>
+            <div id="lessonForm" style="display:none;margin-top:16px;background:var(--bg-secondary,#0f172a);border-radius:12px;padding:16px">
+                <div style="font-weight:700;margin-bottom:12px" id="lessonFormTitle">Add Lesson</div>
+                <input type="hidden" id="editLessonId">
+                <div class="idash-form-group">
+                    <label>Lesson Title *</label>
+                    <input type="text" id="fLessonTitle" placeholder="e.g., Introduction to Calculus">
+                </div>
+                <div class="idash-form-group">
+                    <label>YouTube Video URL or Embed ID</label>
+                    <input type="text" id="fLessonVideo" placeholder="https://youtu.be/... or video ID">
+                </div>
+                <div class="idash-form-row">
+                    <div class="idash-form-group">
+                        <label>Duration</label>
+                        <input type="text" id="fLessonDuration" placeholder="e.g., 12:30">
+                    </div>
+                    <div class="idash-form-group">
+                        <label>Order</label>
+                        <input type="number" id="fLessonOrder" min="1" placeholder="1">
+                    </div>
+                </div>
+                <div class="idash-form-group">
+                    <div class="toggle-wrap">
+                        <label class="toggle">
+                            <input type="checkbox" id="fLessonFree">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Free Preview (accessible without enrollment)</span>
+                    </div>
+                </div>
+                <div class="idash-form-actions">
+                    <button class="btn" onclick="cancelLessonForm()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveLesson()">Save Lesson</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ MODAL: Reject Payment Reason ══ -->
+    <div class="idash-modal" id="rejectModal">
+        <div class="idash-modal-box">
+            <button class="idash-modal-close" onclick="closeModal('rejectModal')">✕</button>
+            <div class="idash-modal-title">❌ Reject Payment</div>
+            <input type="hidden" id="rejectPaymentId">
+            <div class="idash-form-group">
+                <label>Rejection Reason *</label>
+                <textarea id="rejectReason" rows="3" placeholder="e.g., Receipt is unclear, wrong amount sent..."></textarea>
+            </div>
+            <div class="idash-form-actions">
+                <button class="btn" onclick="closeModal('rejectModal')">Cancel</button>
+                <button class="btn btn-delete" onclick="confirmRejectPayment()">Reject & Notify Student</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ Lightbox ══ -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+        <img id="lightboxImg" src="" alt="Receipt">
     </div>
 
     <script src="theme.js"></script>
     <script src="api.js"></script>
     <script src="auth-guard.js"></script>
     <script src="notifications.js"></script>
-    <script src="ai-assistant.js"></script>
     <script src="instructor-dashboard.js"></script>
-    <script src="pwa.js"></script>
 </body>
 </html>
-
-
-

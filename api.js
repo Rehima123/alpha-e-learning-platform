@@ -319,6 +319,12 @@ class APIService {
     async getMyEnrollments()         { return this.request('/enrollments/my-enrollments'); }
     async getPendingEnrollments()    { return this.request('/enrollments/pending'); }
     async getAllEnrollments()        { return this.request('/enrollments/all'); }
+
+    // ── Instructor endpoints ────────────────────────────────────────────────────
+    async getInstructorOverview()    { return this.request('/instructor/overview'); }
+    async getInstructorCourses()     { return this.request('/instructor/courses'); }
+    async getInstructorPayments(status='all') { return this.request(`/instructor/payments?status=${status}`); }
+    async getInstructorStudents(search='')    { return this.request(`/instructor/students${search ? '?search='+encodeURIComponent(search) : ''}`); }
     async approveEnrollment(id)      { return this.request(`/enrollments/${id}/approve`, { method: 'PUT' }); }
     async rejectEnrollment(id, reason = '') {
         return this.request(`/enrollments/${id}/reject`, { method: 'PUT', body: JSON.stringify({ reason }) });

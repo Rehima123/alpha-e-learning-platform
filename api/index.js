@@ -20,6 +20,7 @@ const couponRoutes        = require('../server/routes/coupons');
 const aiRoutes            = require('../server/routes/ai');
 const videoRoutes         = require('../server/routes/videos');
 const manualPaymentRoutes = require('../server/routes/manualPayments');
+const instructorRoutes    = require('../server/routes/instructor');
 
 const app = express();
 
@@ -125,6 +126,7 @@ app.use('/api/admin',       adminRoutes);
 app.use('/api/coupons',     couponRoutes);
 app.use('/api/ai',          aiRoutes);
 app.use('/api/videos',      videoRoutes);
+app.use('/api/instructor',  instructorRoutes);
 
 // ── Admin: toggle course lock status ─────────────────────────────────────────
 app.put('/api/admin/courses/:courseId/toggle-lock', async (req, res) => {

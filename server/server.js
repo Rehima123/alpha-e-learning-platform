@@ -19,8 +19,10 @@ const adminRoutes        = require('./routes/admin');
 const couponRoutes       = require('./routes/coupons');
 const aiRoutes           = require('./routes/ai');
 const videoRoutes        = require('./routes/videos');
-const subscriptionRoutes = require('./routes/subscriptions');
-const uploadRoutes       = require('./routes/upload');
+const subscriptionRoutes    = require('./routes/subscriptions');
+const uploadRoutes          = require('./routes/upload');
+const instructorRoutes      = require('./routes/instructor');
+const manualPaymentRoutes   = require('./routes/manualPayments');
 
 const app = express();
 
@@ -116,6 +118,8 @@ app.use('/api/ai',            aiRoutes);
 app.use('/api/videos',        videoRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/upload',        uploadRoutes);
+app.use('/api/payments',      manualPaymentRoutes);
+app.use('/api/instructor',    instructorRoutes);
 
 // 404 Handler
 app.use((req, res) => {

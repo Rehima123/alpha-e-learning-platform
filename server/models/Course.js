@@ -16,6 +16,10 @@ const courseSchema = new mongoose.Schema({
         type: String,
         default: '📚'
     },
+    thumbnail: {
+        type: String,
+        default: ''
+    },
     category: {
         type: String,
         required: true,
@@ -52,6 +56,7 @@ const courseSchema = new mongoose.Schema({
         videoUrl:    String,
         notes:       String,   // rich study notes for this lesson
         chapterIndex: { type: Number, default: 0 },
+        isFree:      { type: Boolean, default: false },
         materials: [{
             title: String,
             url:   String,
