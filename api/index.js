@@ -213,17 +213,22 @@ app.use((err, req, res, next) => {
 let isConnected = false;
 
 async function connectDB() {
-    if (isConnected) return;
+    if (isConnected && mongoose.connection.readyState === 1) return;
     try {
         await mongoose.connect(process.env.MONGODB_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             bufferCommands: false,
-            serverSelectionTimeoutMS: 10000
+            maxPoolSize: 5,          // low pool for serverless
+            minPoolSize: 1,
+            socketTimeoutMS: 8000,
+            serverSelectionTimeoutMS: 5000,
+            heartbeatFrequencyMS: 30000
         });
         isConnected = true;
         console.log('✅ MongoDB connected');
     } catch (err) {
+        isConnected = false;
         console.error('❌ MongoDB error:', err.message);
         throw err;
     }

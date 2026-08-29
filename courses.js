@@ -249,11 +249,17 @@ async function loadEnrollments() {
     try {
         const token = api.getAuthToken();
         if (!token) return;
-        const response = await api.getMyEnrollments();
+        // Race against a 3s timeout to avoid blocking UI
+        const response = await Promise.race([
+            api.getMyEnrollments(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+        ]);
         if (response.success) userEnrollments = response.enrollments || [];
     } catch {
-        // Not logged in — that's fine
+        // Not logged in or timeout — that's fine
     }
+    // Re-render so enroll buttons reflect status
+    renderCourses();
 }
 
 function getEnrollmentStatus(courseId) {
