@@ -13,6 +13,7 @@ import CoursePayment from './pages/CoursePayment'
 import InstructorDashboard from './pages/InstructorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminApproval from './components/AdminApproval'
 
 function App() {
   return (
@@ -28,22 +29,29 @@ function App() {
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/course-payment/:id" element={<CoursePayment />} />
-            
+
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
             } />
-            
+
             <Route path="/instructor" element={
               <ProtectedRoute role="instructor">
                 <InstructorDashboard />
               </ProtectedRoute>
             } />
-            
+
             <Route path="/admin" element={
               <ProtectedRoute role="admin">
                 <AdminDashboard />
+              </ProtectedRoute>
+            } />
+
+            {/* Payment approval panel — accessible to any admin role */}
+            <Route path="/admin/approvals" element={
+              <ProtectedRoute role="admin">
+                <AdminApproval />
               </ProtectedRoute>
             } />
           </Routes>
