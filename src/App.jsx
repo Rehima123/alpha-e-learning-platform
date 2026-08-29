@@ -19,7 +19,7 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
+        <Router basename="/app">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />

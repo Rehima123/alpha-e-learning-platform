@@ -6,7 +6,18 @@
       "use": "@vercel/node"
     },
     {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
       "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.css",
       "use": "@vercel/static"
     },
     {
@@ -15,11 +26,15 @@
       "config": { "exclude": ["api/**", "server/**"] }
     },
     {
-      "src": "*.css",
+      "src": "*.png",
       "use": "@vercel/static"
     },
     {
-      "src": "*.png",
+      "src": "manifest.json",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "sw.js",
       "use": "@vercel/static"
     }
   ],
@@ -63,6 +78,10 @@
     { "src": "/study-hub",       "dest": "/study-hub.html" },
     { "src": "/department-guide","dest": "/department-guide.html" },
     { "src": "/offline",         "dest": "/offline.html" },
-    { "src": "/(.*)",            "dest": "/$1" }
+    {
+      "src": "/app/(.*)",
+      "dest": "/dist/index.html"
+    },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
