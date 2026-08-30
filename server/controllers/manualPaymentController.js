@@ -19,8 +19,31 @@ exports.submitManualReceipt = async (req, res) => {
             return res.status(400).json({ success: false, message: 'courseId or plan is required' });
         }
 
+        // ── Resolve student ID — works for both MongoDB ObjectId and Firebase UID ──
+        const studentId = String(req.user._id || req.user.id || req.user.firebaseUid || '');
+        if (!studentId) {
+            return res.status(401).json({ success: false, message: 'User ID not found' });
+        }
+
+        // Resolve student name/email from token payload or DB
+        let studentName  = req.user.fullName  || req.user.displayName || '';
+        let studentEmail = req.user.email     || '';
+        let studentPhone = req.user.phoneNumber || '';
+
+        // Try to fetch from User model if it's a real MongoDB ID
+        if (!studentName && req.user._id && String(req.user._id).match(/^[a-f\d]{24}$/i)) {
+            try {
+                const dbUser = await User.findById(req.user._id).select('fullName email phoneNumber');
+                if (dbUser) {
+                    studentName  = dbUser.fullName;
+                    studentEmail = dbUser.email;
+                    studentPhone = dbUser.phoneNumber;
+                }
+            } catch (_) {}
+        }
+
         // Check for existing pending receipt for this student + course/plan
-        const existingQuery = { student: req.user._id, status: 'pending_verification' };
+        const existingQuery = { student: studentId, status: 'pending_verification' };
         if (courseId) existingQuery.course = courseId;
         else existingQuery.plan = plan;
 
@@ -36,18 +59,23 @@ exports.submitManualReceipt = async (req, res) => {
         let courseName = plan ? `${plan} Subscription` : 'Course';
         let courseDoc  = null;
         if (courseId) {
-            courseDoc  = await Course.findById(courseId).select('title icon');
+            try {
+                courseDoc  = await Course.findById(courseId).select('title icon');
+            } catch (_) {} // courseId might not be valid ObjectId for firebase users
             courseName = courseDoc ? `${courseDoc.icon || '📚'} ${courseDoc.title}` : 'Course';
         }
 
         // Save receipt to DB
         const payment = await ManualPayment.create({
-            student:         req.user._id,
+            student:         studentId,
             course:          courseId || null,
-            plan:            plan || null,
-            amount:          amount || 0,
+            plan:            plan     || null,
+            amount:          amount   || 0,
             receiptImage,
             receiptFileName: receiptFileName || 'receipt.jpg',
+            studentName,
+            studentEmail,
+            studentPhone,
             status:          'pending_verification'
         });
 
@@ -77,11 +105,11 @@ exports.submitManualReceipt = async (req, res) => {
                 <table style="width:100%;border-collapse:collapse;font-size:0.95rem">
                   <tr style="background:#fef9f0">
                     <td style="padding:10px;color:#666;border-bottom:1px solid #eee;width:160px"><strong>Student Name</strong></td>
-                    <td style="padding:10px;border-bottom:1px solid #eee">${req.user.fullName}</td>
+                    <td style="padding:10px;border-bottom:1px solid #eee">${studentName || studentId}</td>
                   </tr>
                   <tr>
                     <td style="padding:10px;color:#666;border-bottom:1px solid #eee"><strong>Email</strong></td>
-                    <td style="padding:10px;border-bottom:1px solid #eee">${req.user.email}</td>
+                    <td style="padding:10px;border-bottom:1px solid #eee">${studentEmail || '—'}</td>
                   </tr>
                   <tr style="background:#fef9f0">
                     <td style="padding:10px;color:#666;border-bottom:1px solid #eee"><strong>Course / Plan</strong></td>
@@ -131,7 +159,7 @@ exports.submitManualReceipt = async (req, res) => {
 
             const mailOptions = {
                 to:      OWNER_EMAIL,
-                subject: `💰 New Payment Receipt — ${req.user.fullName} → ${courseName}`,
+                subject: `💰 New Payment Receipt — ${studentName || studentId} → ${courseName}`,
                 html:    ownerHtml
             };
 
@@ -176,13 +204,33 @@ exports.getPendingReceipts = async (req, res) => {
         const query = {};
         if (status !== 'all') query.status = status;
 
+        // Don't populate student — it may be a Firebase UID string, not an ObjectId
         const payments = await ManualPayment.find(query)
-            .populate('student', 'fullName email')
-            .populate('course',  'title icon category')
-            .populate('reviewedBy', 'fullName')
-            .sort({ submittedAt: -1 });
+            .populate({ path: 'course', select: 'title icon category', strictPopulate: false })
+            .sort({ submittedAt: -1 })
+            .lean();
 
-        res.json({ success: true, payments, count: payments.length });
+        // Enrich with student info: try DB lookup for ObjectId students, fall back to snapshot
+        const mongoose = require('mongoose');
+        const enriched = await Promise.all(payments.map(async (p) => {
+            let studentInfo = {
+                _id:         p.student,
+                fullName:    p.studentName  || '',
+                email:       p.studentEmail || '',
+                phoneNumber: p.studentPhone || ''
+            };
+            // If it looks like a Mongo ObjectId, try to fetch from DB
+            const studentStr = String(p.student || '');
+            if (/^[a-f\d]{24}$/i.test(studentStr)) {
+                try {
+                    const u = await User.findById(studentStr).select('fullName email phoneNumber').lean();
+                    if (u) studentInfo = { _id: u._id, fullName: u.fullName, email: u.email, phoneNumber: u.phoneNumber };
+                } catch (_) {}
+            }
+            return { ...p, student: studentInfo };
+        }));
+
+        res.json({ success: true, payments: enriched, count: enriched.length });
     } catch (err) {
         console.error('[getPendingReceipts]', err);
         res.status(500).json({ success: false, message: err.message });
@@ -193,107 +241,94 @@ exports.getPendingReceipts = async (req, res) => {
 exports.approveReceipt = async (req, res) => {
     try {
         const payment = await ManualPayment.findById(req.params.id)
-            .populate('student', 'fullName email')
-            .populate('course',  'title icon category _id');
+            .populate({ path: 'course', select: 'title icon category _id', strictPopulate: false })
+            .lean();
 
         if (!payment) return res.status(404).json({ success: false, message: 'Payment not found' });
         if (payment.status !== 'pending_verification') {
             return res.status(400).json({ success: false, message: `Payment already ${payment.status}` });
         }
 
-        // Update status
-        payment.status     = 'approved';
-        payment.reviewedBy = req.user._id;
-        payment.reviewedAt = new Date();
-        await payment.save();
+        // Resolve student info (Mixed field — could be ObjectId or Firebase UID)
+        const studentId  = String(payment.student || '');
+        let studentName  = payment.studentName  || '';
+        let studentEmail = payment.studentEmail || '';
 
-        // Create or update enrollment
-        if (payment.course) {
+        if (!studentName && /^[a-f\d]{24}$/i.test(studentId)) {
+            try {
+                const u = await User.findById(studentId).select('fullName email');
+                if (u) { studentName = u.fullName; studentEmail = u.email; }
+            } catch (_) {}
+        }
+
+        // Update status
+        await ManualPayment.findByIdAndUpdate(req.params.id, {
+            status:     'approved',
+            reviewedBy: req.user._id || req.user.id,
+            reviewedAt: new Date()
+        });
+
+        // Create or update enrollment (only if course is a valid ObjectId)
+        if (payment.course?._id) {
+            const courseId = payment.course._id;
             const existingEnroll = await Enrollment.findOne({
-                student: payment.student._id,
-                course:  payment.course._id
+                student: studentId,
+                course:  courseId
             });
 
             if (existingEnroll) {
-                existingEnroll.status    = 'approved';
+                existingEnroll.status     = 'approved';
                 existingEnroll.reviewedAt = new Date();
-                existingEnroll.reviewedBy = req.user._id;
-                existingEnroll.receipt   = {
-                    amountPaid:    payment.amount,
-                    paymentMethod: 'Manual Transfer',
-                    submittedAt:   payment.submittedAt,
-                    paidAt:        new Date()
-                };
+                existingEnroll.reviewedBy = req.user._id || req.user.id;
                 await existingEnroll.save();
             } else {
                 await Enrollment.create({
-                    student:     payment.student._id,
-                    course:      payment.course._id,
+                    student:     studentId,
+                    course:      courseId,
                     status:      'approved',
                     reviewedAt:  new Date(),
-                    reviewedBy:  req.user._id,
-                    requestedAt: payment.submittedAt,
-                    receipt: {
-                        amountPaid:    payment.amount,
-                        paymentMethod: 'Manual Transfer',
-                        submittedAt:   payment.submittedAt,
-                        paidAt:        new Date()
-                    }
+                    reviewedBy:  req.user._id || req.user.id,
+                    requestedAt: payment.submittedAt
                 });
             }
-
-            // Increment enrolled students
-            await Course.findByIdAndUpdate(payment.course._id, { $inc: { enrolledStudents: 1 } });
+            await Course.findByIdAndUpdate(courseId, { $inc: { enrolledStudents: 1 } });
         }
 
-        // ── Email student ─────────────────────────────────────────────────────
+        // Email student
         const courseName = payment.course
             ? `${payment.course.icon || '📚'} ${payment.course.title}`
-            : `${payment.plan} Subscription`;
-
-        const courseLink = payment.course
+            : `${payment.plan || ''} Subscription`;
+        const courseLink = payment.course?._id
             ? `${CLIENT_URL}/course-detail.html?id=${payment.course._id}`
             : `${CLIENT_URL}/dashboard.html`;
 
-        try {
-            await sendEmail({
-                to:      payment.student.email,
-                subject: `✅ Payment Approved — ${payment.course?.title || payment.plan}`,
-                html: `
-                <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-                  <div style="background:linear-gradient(135deg,#27ae60,#1a7030);padding:32px;text-align:center">
-                    <h1 style="color:white;margin:0">Alpha Freshman Tutorial</h1>
-                    <p style="color:rgba(255,255,255,0.85);margin:8px 0 0">Way to Success</p>
-                  </div>
-                  <div style="background:white;padding:32px">
-                    <h2 style="color:#27ae60">🎉 Payment Approved!</h2>
-                    <p>Dear <strong>${payment.student.fullName}</strong>,</p>
-                    <p>Your manual payment receipt has been <strong style="color:#27ae60">verified and approved</strong>!</p>
-                    <div style="background:#f0fff4;border:1px solid #27ae60;border-radius:8px;padding:16px;margin:20px 0">
-                      <p style="margin:0"><strong>Item:</strong> ${courseName}</p>
-                      <p style="margin:8px 0 0"><strong>Amount:</strong> ${payment.amount.toLocaleString()} ETB</p>
-                      <p style="margin:8px 0 0"><strong>Status:</strong> <span style="color:#27ae60">✅ Approved</span></p>
-                    </div>
-                    <p>Your course is now unlocked. Start learning today! 🚀</p>
-                    <div style="text-align:center;margin:24px 0">
-                      <a href="${courseLink}"
-                         style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;
-                         padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:1rem">
-                        Start Learning →
-                      </a>
-                    </div>
-                    ${req.body.adminNote ? `<p style="background:#f8f9fa;border-radius:6px;padding:12px;font-size:0.88rem;color:#555"><strong>Admin Note:</strong> ${req.body.adminNote}</p>` : ''}
-                  </div>
-                  <div style="background:#f9f9f9;padding:16px;text-align:center;font-size:0.8rem;color:#888">
-                    © ${new Date().getFullYear()} Alpha Freshman Tutorial
-                  </div>
-                </div>`
-            });
-        } catch (emailErr) {
-            console.error('[Approval email failed]', emailErr.message);
+        if (studentEmail) {
+            try {
+                await sendEmail({
+                    to:      studentEmail,
+                    subject: `✅ Payment Approved — ${payment.course?.title || payment.plan || ''}`,
+                    html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+                      <div style="background:linear-gradient(135deg,#27ae60,#1a7030);padding:32px;text-align:center">
+                        <h1 style="color:white;margin:0">Alpha Freshman Tutorial</h1>
+                      </div>
+                      <div style="background:white;padding:32px">
+                        <h2 style="color:#27ae60">🎉 Payment Approved!</h2>
+                        <p>Dear <strong>${studentName || 'Student'}</strong>,</p>
+                        <p>Your payment for <strong>${courseName}</strong> has been <strong style="color:#27ae60">verified and approved</strong>!</p>
+                        <div style="background:#f0fff4;border:1px solid #27ae60;border-radius:8px;padding:16px;margin:20px 0">
+                          <p style="margin:0"><strong>Amount:</strong> ${(payment.amount || 0).toLocaleString()} ETB</p>
+                          <p style="margin:8px 0 0"><strong>Status:</strong> ✅ Approved</p>
+                        </div>
+                        <div style="text-align:center;margin:24px 0">
+                          <a href="${courseLink}" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold">Start Learning →</a>
+                        </div>
+                      </div>
+                    </div>`
+                });
+            } catch (e) { console.error('[Approval email failed]', e.message); }
         }
 
-        res.json({ success: true, message: `Payment approved and course unlocked for ${payment.student.fullName}`, payment });
+        res.json({ success: true, message: `Payment approved for ${studentName || studentId}` });
     } catch (err) {
         console.error('[approveReceipt]', err);
         res.status(500).json({ success: false, message: err.message });
@@ -306,67 +341,61 @@ exports.rejectReceipt = async (req, res) => {
         const { reason } = req.body;
 
         const payment = await ManualPayment.findById(req.params.id)
-            .populate('student', 'fullName email')
-            .populate('course',  'title icon');
+            .populate({ path: 'course', select: 'title icon', strictPopulate: false })
+            .lean();
 
         if (!payment) return res.status(404).json({ success: false, message: 'Payment not found' });
         if (payment.status !== 'pending_verification') {
             return res.status(400).json({ success: false, message: `Payment already ${payment.status}` });
         }
 
-        payment.status     = 'rejected';
-        payment.adminNote  = reason || '';
-        payment.reviewedBy = req.user._id;
-        payment.reviewedAt = new Date();
-        await payment.save();
+        const studentId    = String(payment.student || '');
+        let   studentEmail = payment.studentEmail || '';
+        let   studentName  = payment.studentName  || 'Student';
+
+        if (!studentEmail && /^[a-f\d]{24}$/i.test(studentId)) {
+            try {
+                const u = await User.findById(studentId).select('fullName email');
+                if (u) { studentName = u.fullName; studentEmail = u.email; }
+            } catch (_) {}
+        }
+
+        await ManualPayment.findByIdAndUpdate(req.params.id, {
+            status:     'rejected',
+            adminNote:  reason || '',
+            reviewedBy: req.user._id || req.user.id,
+            reviewedAt: new Date()
+        });
 
         const courseName = payment.course
             ? `${payment.course.icon || '📚'} ${payment.course.title}`
-            : `${payment.plan} Subscription`;
+            : `${payment.plan || ''} Subscription`;
 
-        // ── Email student ─────────────────────────────────────────────────────
-        try {
-            await sendEmail({
-                to:      payment.student.email,
-                subject: `❌ Payment Receipt Not Verified — ${payment.course?.title || payment.plan}`,
-                html: `
-                <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-                  <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:32px;text-align:center">
-                    <h1 style="color:white;margin:0">Alpha Freshman Tutorial</h1>
-                  </div>
-                  <div style="background:white;padding:32px">
-                    <h2 style="color:#e74c3c">Payment Not Verified</h2>
-                    <p>Dear <strong>${payment.student.fullName}</strong>,</p>
-                    <p>Unfortunately, your payment receipt for <strong>${courseName}</strong> could not be verified.</p>
-                    ${reason ? `
-                    <div style="background:#fff5f5;border:1px solid #e74c3c;border-radius:8px;padding:16px;margin:20px 0">
-                      <p style="margin:0"><strong>Reason:</strong> ${reason}</p>
-                    </div>` : ''}
-                    <p>Please ensure:</p>
-                    <ul style="color:#555;line-height:2">
-                      <li>The receipt clearly shows the transaction ID and amount</li>
-                      <li>Payment was sent to the correct account</li>
-                      <li>The image/PDF is clear and readable</li>
-                    </ul>
-                    <p>You can resubmit a new receipt on the payment page.</p>
-                    <div style="text-align:center;margin:24px 0">
-                      <a href="${CLIENT_URL}/payment.html"
-                         style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;
-                         padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold">
-                        Resubmit Receipt →
-                      </a>
-                    </div>
-                  </div>
-                  <div style="background:#f9f9f9;padding:16px;text-align:center;font-size:0.8rem;color:#888">
-                    © ${new Date().getFullYear()} Alpha Freshman Tutorial
-                  </div>
-                </div>`
-            });
-        } catch (emailErr) {
-            console.error('[Rejection email failed]', emailErr.message);
+        if (studentEmail) {
+            try {
+                await sendEmail({
+                    to:      studentEmail,
+                    subject: `❌ Payment Receipt Not Verified — ${payment.course?.title || payment.plan || ''}`,
+                    html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+                      <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:32px;text-align:center">
+                        <h1 style="color:white;margin:0">Alpha Freshman Tutorial</h1>
+                      </div>
+                      <div style="background:white;padding:32px">
+                        <h2 style="color:#e74c3c">Payment Not Verified</h2>
+                        <p>Dear <strong>${studentName}</strong>,</p>
+                        <p>Your receipt for <strong>${courseName}</strong> could not be verified.</p>
+                        ${reason ? `<div style="background:#fff5f5;border:1px solid #e74c3c;border-radius:8px;padding:16px;margin:20px 0"><strong>Reason:</strong> ${reason}</div>` : ''}
+                        <p>Please resubmit a clear receipt showing the transaction ID and amount.</p>
+                        <div style="text-align:center;margin:24px 0">
+                          <a href="${CLIENT_URL}/payment.html" style="background:#667eea;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold">Resubmit Receipt →</a>
+                        </div>
+                      </div>
+                    </div>`
+                });
+            } catch (e) { console.error('[Rejection email failed]', e.message); }
         }
 
-        res.json({ success: true, message: 'Receipt rejected', payment });
+        res.json({ success: true, message: 'Receipt rejected' });
     } catch (err) {
         console.error('[rejectReceipt]', err);
         res.status(500).json({ success: false, message: err.message });
