@@ -60,6 +60,25 @@
       },
       "dest": "/manifest.json"
     },
+    {
+      "src": "/(.*\\.html)",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache"
+      }
+    },
+    {
+      "src": "/(.*\\.js)",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "src": "/(.*\\.css)",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
     { "src": "/download",        "dest": "/download.html" },
     { "src": "/home",            "dest": "/home.html" },
     { "src": "/courses",         "dest": "/courses.html" },

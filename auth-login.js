@@ -7,12 +7,14 @@ async function initFirebaseLogin() {
         const cfg = window.FIREBASE_CONFIG;
         if (!cfg || cfg.apiKey === 'YOUR_API_KEY') return null;
 
-        const { initializeApp }   = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { initializeApp, getApps, getApp } =
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
         const { getAuth, signInWithEmailAndPassword, signOut, sendEmailVerification } =
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
 
         if (!firebaseAuthLogin) {
-            const app = initializeApp(cfg, 'login-app');
+            const existing = getApps().find(a => a.name === 'login-app');
+            const app = existing || initializeApp(cfg, 'login-app');
             firebaseAuthLogin = getAuth(app);
         }
         return { firebaseAuthLogin, signInWithEmailAndPassword, signOut, sendEmailVerification };
@@ -25,24 +27,23 @@ async function initFirebaseLogin() {
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const email    = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const errorDiv = document.getElementById('errorMessage');
+    const email     = document.getElementById('email').value.trim();
+    const password  = document.getElementById('password').value;
+    const errorDiv  = document.getElementById('errorMessage');
     const submitBtn = e.target.querySelector('button[type="submit"]');
 
     errorDiv.style.display = 'none';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Logging in...';
+    submitBtn.disabled     = true;
+    submitBtn.textContent  = 'Logging in...';
 
     try {
         // Try Firebase first (if configured)
         const fb = await initFirebaseLogin();
         if (fb) {
-            let firebaseUser = null;
             try {
                 const { firebaseAuthLogin, signInWithEmailAndPassword, signOut, sendEmailVerification } = fb;
                 const userCredential = await signInWithEmailAndPassword(firebaseAuthLogin, email, password);
-                firebaseUser = userCredential.user;
+                const firebaseUser   = userCredential.user;
 
                 // Try backend login first
                 try {
@@ -62,7 +63,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
                         <div>
                             አካውንትዎ ገና አልተረጋገጠም።<br>
                             <small style="opacity:0.85">ወደ <strong>${email}</strong> ማረጋገጫ ኢሜይል ይላካሉ።</small><br>
-                            <button onclick="resendVerification('${email}','${password}')"
+                            <button onclick="resendVerification('${email}','${encodeURIComponent(password)}')"
                                 style="margin-top:8px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);
                                 color:inherit;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.82rem">
                                 📧 ድጋሚ ማረጋገጫ ኢሜይል ላክ
@@ -72,10 +73,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
                     return;
                 }
 
-                // Firebase verified, use Firebase user as fallback
+                // Firebase verified — use Firebase user as fallback
                 const fbUser = {
-                    id: firebaseUser.uid, fullName: firebaseUser.displayName || email.split('@')[0],
-                    email: firebaseUser.email, role: 'student'
+                    id: firebaseUser.uid,
+                    fullName: firebaseUser.displayName || email.split('@')[0],
+                    email: firebaseUser.email,
+                    role: 'student'
                 };
                 localStorage.setItem('currentUser', JSON.stringify(fbUser));
                 api.setAuthToken('firebase-' + firebaseUser.uid);
@@ -86,20 +89,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 // Firebase network error — fall through to backend-only login
                 if (firebaseErr.code === 'auth/network-request-failed') {
                     console.warn('Firebase unreachable, trying backend only...');
-                    // Fall through to backend login below
+                    // Fall through below
                 } else {
-                    throw firebaseErr; // re-throw other Firebase errors
+                    throw firebaseErr;
                 }
             }
-        }            // Firebase verified, use Firebase user as fallback
-            const fbUser = {
-                id: user.uid, fullName: user.displayName || email.split('@')[0],
-                email: user.email, role: 'student'
-            };
-            localStorage.setItem('currentUser', JSON.stringify(fbUser));
-            api.setAuthToken('firebase-' + user.uid);
-            redirectByRole(fbUser);
-            return;
         }
 
         // Fallback: backend-only login
@@ -109,7 +103,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             localStorage.setItem('currentUser', JSON.stringify(response.user));
             redirectByRole(response.user);
         } else {
-            errorDiv.textContent = response.message || 'Login failed';
+            errorDiv.textContent   = response.message || 'Login failed';
             errorDiv.style.display = 'block';
         }
 
@@ -140,10 +134,10 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             return;
         }
 
-        errorDiv.textContent = fbErrors[error.code] || error.message || 'Login failed.';
+        errorDiv.textContent   = fbErrors[error.code] || error.message || 'Login failed.';
         errorDiv.style.display = 'block';
     } finally {
-        submitBtn.disabled = false;
+        submitBtn.disabled    = false;
         submitBtn.textContent = 'Sign In';
     }
 });
@@ -159,7 +153,8 @@ function redirectByRole(user) {
     }
 }
 
-async function resendVerification(email, password) {
+async function resendVerification(email, passwordEncoded) {
+    const password = decodeURIComponent(passwordEncoded);
     try {
         const fb = await initFirebaseLogin();
         if (!fb) { alert('Firebase not configured'); return; }
@@ -176,8 +171,8 @@ async function resendVerification(email, password) {
 // ── Google Sign-In ────────────────────────────────────────────────────────────
 document.querySelector('.btn-google')?.addEventListener('click', async () => {
     const btn = document.querySelector('.btn-google');
-    btn.disabled = true;
-    btn.textContent = '⏳ Connecting to Google...';
+    btn.disabled     = true;
+    btn.textContent  = '⏳ Connecting to Google...';
 
     try {
         const cfg = window.FIREBASE_CONFIG;
@@ -186,13 +181,13 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
             return;
         }
 
-        const { initializeApp }   = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { initializeApp, getApps, getApp } =
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
         const { getAuth, signInWithPopup, GoogleAuthProvider } =
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
 
-        let app;
-        try { app = initializeApp(cfg, 'google-login'); }
-        catch { app = (await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js")).getApp('google-login'); }
+        const existing = getApps().find(a => a.name === 'google-login');
+        const app      = existing || initializeApp(cfg, 'google-login');
 
         const auth     = getAuth(app);
         const provider = new GoogleAuthProvider();
@@ -202,87 +197,71 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
         const result = await signInWithPopup(auth, provider);
         const user   = result.user;
 
-        // Register/login in backend
         const gFullName = user.displayName || user.email.split('@')[0];
         const gEmail    = user.email;
         const gPassword = 'google-oauth-' + user.uid;
 
-        try {
-            let isNewUser = false;
+        // Try backend login first, then register if new user
+        let backendRes  = await api.login({ email: gEmail, password: gPassword });
+        let isNewUser   = false;
 
-            // Try login first
-            let backendRes = await api.login({ email: gEmail, password: gPassword });
+        if (!backendRes.success) {
+            backendRes = await api.register({
+                fullName: gFullName,
+                email:    gEmail,
+                password: gPassword,
+                role:     'student'
+            });
+            if (backendRes.success) isNewUser = true;
+        }
 
-            if (!backendRes.success) {
-                // New user — auto-register
-                backendRes = await api.register({
-                    fullName: gFullName,
-                    email:    gEmail,
-                    password: gPassword,
-                    role:     'student'
+        if (backendRes.success) {
+            api.setAuthToken(backendRes.token);
+            localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
+
+            // Optional EmailJS (only if configured)
+            if (isNewUser && window.emailjsService && window.EMAILJS_CONFIG?.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+                window.emailjsService.sendRegistrationEmails({
+                    fullName: backendRes.user.fullName,
+                    email:    backendRes.user.email,
+                    role:     backendRes.user.role
                 });
-                if (backendRes.success) isNewUser = true;
             }
 
-            if (backendRes.success) {
-                api.setAuthToken(backendRes.token);
-                localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
+            redirectByRole(backendRes.user);
+            return;
+        }
 
-                // Backend already sends welcome email on register.
-                // EmailJS is optional extra — only if properly configured.
-                if (isNewUser && window.emailjsService && window.EMAILJS_CONFIG?.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
-                    window.emailjsService.sendRegistrationEmails({
-                        fullName: backendRes.user.fullName,
-                        email:    backendRes.user.email,
-                        role:     backendRes.user.role
-                    });
-                }
-
-                redirectByRole(backendRes.user);
-                return;
-            }
-        } catch (_) {}
-
-        // Fallback: use Firebase user directly (no email verification needed for Google)
+        // Backend unavailable — use Firebase user directly as fallback
         const fbUser = {
-            id: user.uid,
-            fullName: gFullName,
-            email: gEmail,
-            role: 'student',
-            avatar: user.photoURL,
+            id:            user.uid,
+            fullName:      gFullName,
+            email:         gEmail,
+            role:          'student',
+            avatar:        user.photoURL,
             emailVerified: true
         };
         api.setAuthToken('firebase-' + user.uid);
         localStorage.setItem('currentUser', JSON.stringify(fbUser));
-        localStorage.setItem('authToken', 'firebase-' + user.uid);
-
-        // Only send EmailJS if properly configured
-        if (window.emailjsService && window.EMAILJS_CONFIG?.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
-            window.emailjsService.sendRegistrationEmails({
-                fullName: fbUser.fullName,
-                email:    fbUser.email,
-                role:     fbUser.role
-            });
-        }
-
+        localStorage.setItem('authToken',   'firebase-' + user.uid);
         redirectByRole(fbUser);
 
     } catch (error) {
         const msg = {
-            'auth/popup-closed-by-user':        'Google login cancelled.',
-            'auth/popup-blocked':               'Popup was blocked. Please allow popups for this site.',
-            'auth/cancelled-popup-request':     'Google login cancelled.',
-            'auth/unauthorized-domain':         'ይህ domain Firebase ላይ authorized አልሆነም። Firebase Console → Authentication → Settings → Authorized domains ይፈትሹ።',
-            'auth/operation-not-allowed':       'Google Sign-In Firebase Console ላይ enabled አልሆነም።',
-            'auth/network-request-failed':      'የኔትወርክ ስህተት። Internet connection ይፈትሹ።'
+            'auth/popup-closed-by-user':    'Google login cancelled.',
+            'auth/popup-blocked':           'Popup was blocked. Please allow popups for this site.',
+            'auth/cancelled-popup-request': 'Google login cancelled.',
+            'auth/unauthorized-domain':     'ይህ domain Firebase ላይ authorized አልሆነም። Firebase Console → Authentication → Settings → Authorized domains ይፈትሹ።',
+            'auth/operation-not-allowed':   'Google Sign-In Firebase Console ላይ enabled አልሆነም።',
+            'auth/network-request-failed':  'የኔትወርክ ስህተት። Internet connection ይፈትሹ።'
         };
         const errorDiv = document.getElementById('errorMessage');
         if (errorDiv) {
-            errorDiv.textContent = msg[error.code] || 'Google login failed: ' + error.message;
+            errorDiv.textContent   = msg[error.code] || 'Google login failed: ' + error.message;
             errorDiv.style.display = 'block';
         }
     } finally {
-        btn.disabled = false;
+        btn.disabled  = false;
         btn.innerHTML = '🔍 Continue with Google';
     }
 });
