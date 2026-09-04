@@ -55,6 +55,7 @@ class APIService {
             }
 
             this.offlineMode = false;
+            this._hideOfflineBanner();
             return data;
         } catch (error) {
             if (!navigator.onLine || error instanceof TypeError) {
@@ -254,7 +255,32 @@ class APIService {
         return { success: false, offline: true, message: 'Offline — feature unavailable', courses: [], enrollments: [], users: [] };
     }
 
-    // ── Auth endpoints ──────────────────────────────────────────────────────────
+    // ── Offline banner ─────────────────────────────────────────────────────────
+    _showOfflineBanner() {
+        if (document.getElementById('api-offline-banner')) return; // already showing
+        const banner = document.createElement('div');
+        banner.id           = 'api-offline-banner';
+        banner.role         = 'alert';
+        banner.setAttribute('aria-live', 'polite');
+        banner.style.cssText = `
+            position:fixed;top:0;left:0;right:0;z-index:999998;
+            background:#dc2626;color:white;
+            padding:10px 16px;display:flex;align-items:center;justify-content:center;
+            gap:10px;font-family:'Segoe UI',sans-serif;font-size:0.88rem;font-weight:600;
+            box-shadow:0 4px 12px rgba(220,38,38,0.4);`;
+        banner.innerHTML = `
+            <span>📵 ኢንተርኔት ግኑኝነት የለም — cached data እያሳዩ ነን።</span>
+            <button onclick="document.getElementById('api-offline-banner')?.remove()"
+                style="background:rgba(255,255,255,0.2);border:none;color:white;
+                padding:4px 10px;border-radius:12px;cursor:pointer;font-size:0.8rem">✕</button>`;
+        document.body.prepend(banner);
+    }
+
+    _hideOfflineBanner() {
+        document.getElementById('api-offline-banner')?.remove();
+    }
+
+
     async register(userData) {
         return this.request('/auth/register', { method: 'POST', body: JSON.stringify(userData) });
     }

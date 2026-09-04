@@ -30,16 +30,19 @@ let firebaseAuth = null;
 
 async function initFirebase() {
     try {
-        // Only load Firebase if config exists
         const cfg = window.FIREBASE_CONFIG;
         if (!cfg || cfg.apiKey === 'YOUR_API_KEY') return null;
 
-        const { initializeApp }             = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { initializeApp, getApps } =
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
         const { getAuth, createUserWithEmailAndPassword, sendEmailVerification } =
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
 
-        const app = initializeApp(cfg);
-        firebaseAuth = getAuth(app);
+        if (!firebaseAuth) {
+            const existing = getApps().find(a => a.name === 'register-app');
+            const app = existing || initializeApp(cfg, 'register-app');
+            firebaseAuth = getAuth(app);
+        }
         return { firebaseAuth, createUserWithEmailAndPassword, sendEmailVerification };
     } catch (e) {
         console.warn('Firebase not configured:', e.message);
@@ -164,13 +167,13 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
             return;
         }
 
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { initializeApp, getApps } =
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
         const { getAuth, signInWithPopup, GoogleAuthProvider } =
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
 
-        let app;
-        try { app = initializeApp(cfg, 'google-register'); }
-        catch { app = (await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js")).getApp('google-register'); }
+        const existing = getApps().find(a => a.name === 'google-register');
+        const app      = existing || initializeApp(cfg, 'google-register');
 
         const auth     = getAuth(app);
         const provider = new GoogleAuthProvider();
