@@ -258,26 +258,45 @@ class APIService {
     // ── Offline banner ─────────────────────────────────────────────────────────
     _showOfflineBanner() {
         if (document.getElementById('api-offline-banner')) return; // already showing
+
         const banner = document.createElement('div');
-        banner.id           = 'api-offline-banner';
-        banner.role         = 'alert';
+        banner.id   = 'api-offline-banner';
+        banner.role = 'alert';
         banner.setAttribute('aria-live', 'polite');
-        banner.style.cssText = `
-            position:fixed;top:0;left:0;right:0;z-index:999998;
-            background:#dc2626;color:white;
-            padding:10px 16px;display:flex;align-items:center;justify-content:center;
-            gap:10px;font-family:'Segoe UI',sans-serif;font-size:0.88rem;font-weight:600;
-            box-shadow:0 4px 12px rgba(220,38,38,0.4);`;
+        banner.style.cssText = [
+            'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:999998',
+            'background:#dc2626', 'color:white',
+            'padding:10px 20px',
+            'display:flex', 'align-items:center', 'justify-content:center', 'gap:12px',
+            "font-family:'Segoe UI',Tahoma,sans-serif", 'font-size:0.88rem', 'font-weight:600',
+            'box-shadow:0 4px 16px rgba(220,38,38,0.5)',
+            'animation:slideDown 0.25s ease',
+        ].join(';');
         banner.innerHTML = `
-            <span>📵 ኢንተርኔት ግኑኝነት የለም — cached data እያሳዩ ነን።</span>
-            <button onclick="document.getElementById('api-offline-banner')?.remove()"
-                style="background:rgba(255,255,255,0.2);border:none;color:white;
-                padding:4px 10px;border-radius:12px;cursor:pointer;font-size:0.8rem">✕</button>`;
+            <span style="font-size:1rem">📵</span>
+            <span>ኢንተርኔት ግኑኝነት የለም — cached data እያሳዩ ነን።</span>
+            <span style="font-size:0.78rem;opacity:0.8;margin-left:4px">(Offline mode)</span>
+            <button
+                onclick="this.closest('#api-offline-banner')?.remove()"
+                aria-label="Dismiss"
+                style="margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:white;
+                       width:26px;height:26px;border-radius:50%;cursor:pointer;
+                       font-size:0.9rem;display:flex;align-items:center;justify-content:center;
+                       flex-shrink:0;transition:background 0.2s">✕</button>`;
+
+        // Push page content down so banner doesn't overlap navbar
+        document.body.style.marginTop = '44px';
         document.body.prepend(banner);
     }
 
     _hideOfflineBanner() {
-        document.getElementById('api-offline-banner')?.remove();
+        const banner = document.getElementById('api-offline-banner');
+        if (!banner) return;
+        banner.style.animation = 'slideUp 0.2s ease forwards';
+        setTimeout(() => {
+            banner?.remove();
+            document.body.style.marginTop = '';
+        }, 200);
     }
 
 
@@ -397,6 +416,45 @@ class APIService {
 }
 
 const api = new APIService();
+
+// ── Auto-dismiss offline banner when network returns ──────────────────────────
+window.addEventListener('online', () => {
+    api.offlineMode = false;
+    api._hideOfflineBanner();
+    // Show brief "back online" green toast if toast is available
+    setTimeout(() => {
+        if (typeof toast !== 'undefined') {
+            toast.success('🟢 ኢንተርኔት ተመልሷል — reconnected');
+        }
+    }, 300);
+});
+
+// Auto-show banner immediately if page loads while already offline
+window.addEventListener('offline', () => {
+    api.offlineMode = true;
+    api._showOfflineBanner();
+});
+
+// Inject slide animations for the offline banner
+(function injectBannerStyles() {
+    if (document.getElementById('_offline-banner-styles')) return;
+    const style = document.createElement('style');
+    style.id = '_offline-banner-styles';
+    style.textContent = `
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(0);     opacity: 1; }
+            to   { transform: translateY(-100%); opacity: 0; }
+        }
+        #api-offline-banner button:hover {
+            background: rgba(255,255,255,0.35) !important;
+        }
+    `;
+    document.head.appendChild(style);
+})();
 
 // ── API Warm-up: ping backend immediately on page load to eliminate cold start ─
 // This fires silently in background — first real request will be fast

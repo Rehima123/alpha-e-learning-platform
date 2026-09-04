@@ -1,90 +1,211 @@
 // ─── Video Security Module ────────────────────────────────────────────────────
-// Feature 2: Dynamic Video Watermarking
-// Feature 3: YouTube Link Protection
-// Feature 4: Encrypted Offline Video Storage (IndexedDB)
+// Feature 1: Screen Capture / Screenshot Deterrence
+// Feature 2: Dynamic Video Watermarking (name + phone/email, drifting)
+// Feature 3: YouTube Link Protection (token-based embed URL)
+// Feature 4: Encrypted Offline Video Storage (IndexedDB + XOR obfuscation)
 // ─────────────────────────────────────────────────────────────────────────────
 
 'use strict';
 
-// ── Disable right-click globally on lesson pages ──────────────────────────────
+// ── Disable right-click on the entire page (not just video) ──────────────────
 document.addEventListener('contextmenu', (e) => {
-    if (e.target.closest('#videoWrapper') || e.target.closest('iframe')) {
-        e.preventDefault();
-        return false;
-    }
+    e.preventDefault();
+    return false;
 });
 
 // Disable drag on video area
 document.addEventListener('dragstart', (e) => {
-    if (e.target.closest('#videoWrapper')) e.preventDefault();
+    if (e.target.closest('#videoWrapper') || e.target.closest('[id^="svp-"]')) {
+        e.preventDefault();
+    }
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FEATURE 2 — Dynamic Video Watermark
+// FEATURE 1 — Screen Capture & Screenshot Deterrence
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _screenShieldEl = null;
+
+function _showScreenShield() {
+    const user = _getWatermarkText();
+
+    if (_screenShieldEl) {
+        // Shield already in DOM — just reset its timer
+        clearTimeout(_screenShieldEl._dismissTimer);
+    } else {
+        _screenShieldEl = document.createElement('div');
+        _screenShieldEl.id = 'screen-shield';
+        _screenShieldEl.style.cssText = [
+            'position:fixed', 'inset:0', 'z-index:2147483647',
+            'background:rgba(0,0,0,0.97)',
+            'display:flex', 'flex-direction:column',
+            'align-items:center', 'justify-content:center',
+            'color:#fff', 'font-family:sans-serif',
+            'pointer-events:none', 'user-select:none',
+        ].join(';');
+        _screenShieldEl.innerHTML = `
+            <div style="font-size:3rem;margin-bottom:14px">⛔</div>
+            <p style="font-weight:700;font-size:1rem;margin:0">Screen capture is not permitted.</p>
+            <p style="font-size:0.75rem;opacity:0.45;margin:8px 0 0;font-family:monospace">${user}</p>`;
+        document.body.appendChild(_screenShieldEl);
+    }
+
+    _screenShieldEl._dismissTimer = setTimeout(() => {
+        _screenShieldEl?.remove();
+        _screenShieldEl = null;
+    }, 3000);
+}
+
+function _getWatermarkText() {
+    try {
+        const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        return [u.fullName, u.phoneNumber || u.email]
+            .filter(Boolean).join(' | ') || 'Alpha Freshman Tutorial';
+    } catch {
+        return 'Alpha Freshman Tutorial';
+    }
+}
+
+// PrintScreen & common screenshot key combos
+document.addEventListener('keydown', (e) => {
+    const isPrint = e.key === 'PrintScreen';
+    const isMac   = e.metaKey && e.shiftKey && ['3', '4', '5'].includes(e.key);
+    const isWin   = e.metaKey && e.shiftKey && e.key === 's';
+    if (isPrint || isMac || isWin) {
+        e.preventDefault();
+        _showScreenShield();
+        if (typeof toast !== 'undefined') toast.warning('⚠️ Screenshots are not permitted.');
+    }
+}, true);
+
+// Visibility-change heuristic: PrintScreen briefly hides the tab on some systems
+let _lastTabHidden = 0;
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        _lastTabHidden = Date.now();
+    } else {
+        const elapsed = Date.now() - _lastTabHidden;
+        if (elapsed > 0 && elapsed < 800) {
+            _showScreenShield();
+        }
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FEATURE 2 — Dynamic Video Watermark (name + phone/email, multi-position drift)
 // ═══════════════════════════════════════════════════════════════════════════════
 let _watermarkTimer = null;
+
+// Watermark position pool (covers all screen quadrants)
+const _WM_POSITIONS_PCT = [
+    { top: 8,  left: 5  },
+    { top: 8,  left: 60 },
+    { top: 30, left: 40 },
+    { top: 55, left: 10 },
+    { top: 55, left: 65 },
+    { top: 78, left: 30 },
+];
+let _wmPosIdx = 0;
 
 function startVideoWatermark() {
     const overlay = document.getElementById('videoWatermark');
     if (!overlay) return;
 
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    if (!user.email) return; // no watermark for unauthenticated
-
-    const name   = user.fullName  || 'Student';
-    const email  = user.email     || '';
-    const uid    = (user.id || user._id || '').toString().slice(-8);
+    const name  = user.fullName    || 'Student';
+    const phone = user.phoneNumber || user.email || '';
+    const uid   = (user.id || user._id || '').toString().slice(-6);
 
     // Stop any existing animation
-    if (_watermarkTimer) clearInterval(_watermarkTimer);
+    if (_watermarkTimer) { clearInterval(_watermarkTimer); _watermarkTimer = null; }
 
-    function createWatermarkEl() {
-        const el = document.createElement('div');
-        el.style.cssText = `
-            position: absolute;
-            opacity: 0.32;
-            color: #ffffff;
-            font-size: clamp(10px, 1.4vw, 14px);
-            font-family: monospace;
-            font-weight: 600;
-            line-height: 1.5;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-            white-space: nowrap;
-            pointer-events: none;
-            user-select: none;
-            -webkit-user-select: none;
-            transition: top 2s ease, left 2s ease;
-            will-change: top, left;
-        `;
-        el.innerHTML = `${name}<br>${email}<br>ID:${uid}`;
-        return el;
-    }
-
-    // Remove old watermarks
+    // Build watermark element
     overlay.innerHTML = '';
-    const wm = createWatermarkEl();
+
+    // ── Drifting centre watermark ────────────────────────────────────────────
+    const wm = document.createElement('div');
+    wm.id = 'wm-drift';
+    wm.style.cssText = [
+        'position:absolute',
+        'opacity:0.28',
+        'color:#ffffff',
+        'font-size:clamp(10px,1.5vw,14px)',
+        'font-family:monospace',
+        'font-weight:700',
+        'line-height:1.5',
+        'text-shadow:0 1px 4px rgba(0,0,0,0.9)',
+        'white-space:nowrap',
+        'pointer-events:none',
+        'user-select:none',
+        '-webkit-user-select:none',
+        'transition:top 1.2s ease-in-out,left 1.2s ease-in-out',
+        'will-change:top,left',
+    ].join(';');
+    wm.textContent = phone ? `${name} | ${phone}` : name;
     overlay.appendChild(wm);
 
+    // ── Fixed corner watermarks (always in frame) ────────────────────────────
+    const corners = [
+        { top: '3px',  left: '3px'   },
+        { top: '3px',  right: '3px'  },
+        { bottom:'3px',left: '3px'   },
+        { bottom:'3px',right:'3px'   },
+    ];
+    corners.forEach(pos => {
+        const c = document.createElement('div');
+        const styleArr = [
+            'position:absolute',
+            'opacity:0.12',
+            'color:#ffffff',
+            'font-size:9px',
+            'font-family:monospace',
+            'pointer-events:none',
+            'user-select:none',
+            '-webkit-user-select:none',
+            'white-space:nowrap',
+        ];
+        if (pos.top)    styleArr.push(`top:${pos.top}`);
+        if (pos.bottom) styleArr.push(`bottom:${pos.bottom}`);
+        if (pos.left)   styleArr.push(`left:${pos.left}`);
+        if (pos.right)  styleArr.push(`right:${pos.right}`);
+        c.style.cssText = styleArr.join(';');
+        c.textContent = phone ? `${name} | ${phone}` : name;
+        overlay.appendChild(c);
+    });
+
+    // ── Diagonal ghost watermark (visible in screen recordings) ─────────────
+    const diag = document.createElement('div');
+    diag.style.cssText = [
+        'position:absolute', 'inset:0',
+        'display:flex', 'align-items:center', 'justify-content:center',
+        'pointer-events:none', 'user-select:none', 'overflow:hidden',
+        'transform:rotate(-25deg)',
+    ].join(';');
+    const diagTxt = document.createElement('span');
+    diagTxt.style.cssText = [
+        'color:rgba(255,255,255,0.04)',
+        'font-size:clamp(10px,2.2vw,20px)',
+        'font-weight:700',
+        'font-family:monospace',
+        'letter-spacing:4px',
+        'white-space:nowrap',
+    ].join(';');
+    const label = phone ? `${name} | ${phone}` : name;
+    diagTxt.textContent = `${label}   ${label}`;
+    diag.appendChild(diagTxt);
+    overlay.appendChild(diag);
+
+    // ── Start drift animation ─────────────────────────────────────────────────
     function moveWatermark() {
         const wrapper = document.getElementById('videoWrapper');
         if (!wrapper || !wm) return;
-
-        const maxX = Math.max(0, wrapper.offsetWidth  - 200);
-        const maxY = Math.max(0, wrapper.offsetHeight - 60);
-
-        const x = Math.floor(Math.random() * maxX);
-        const y = Math.floor(Math.random() * maxY);
-
-        wm.style.left = x + 'px';
-        wm.style.top  = y + 'px';
+        _wmPosIdx = (_wmPosIdx + 1) % _WM_POSITIONS_PCT.length;
+        const p = _WM_POSITIONS_PCT[_wmPosIdx];
+        wm.style.top  = p.top  + '%';
+        wm.style.left = p.left + '%';
     }
-
-    // Initial position
     moveWatermark();
-
-    // Move every 6–10 seconds
-    const interval = 6000 + Math.random() * 4000;
-    _watermarkTimer = setInterval(moveWatermark, interval);
+    _watermarkTimer = setInterval(moveWatermark, 4000);
 }
 
 function stopVideoWatermark() {

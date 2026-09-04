@@ -162,7 +162,7 @@ const templates = {
                 <li>Browse 22 Ethiopian Freshman courses</li>
                 <li>Request enrollment in your desired courses</li>
                 <li>Track your progress on the dashboard</li>
-                <li>Earn certificates upon completion</li>
+                <li>Study with AI-powered quizzes and notes</li>
               </ul>
             </div>
             <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/courses.html"

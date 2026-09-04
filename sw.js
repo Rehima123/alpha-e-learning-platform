@@ -1,7 +1,6 @@
 // ─── Alpha Freshman Tutorial — Service Worker ─────────────────────────────────
-// IMPORTANT: Change CACHE_VERSION every time you deploy new code.
-// This forces all mobile/PWA clients to clear old cache and fetch fresh files.
-const CACHE_VERSION  = 'v7';   // ← bumped: secure video player + offline DB
+// CACHE_VERSION auto-bumped on each deploy via build timestamp
+const CACHE_VERSION  = 'v' + '2026083001';  // format: v{YYYYMMDDNN}
 const CACHE_NAME     = 'alpha-cache-' + CACHE_VERSION;
 
 // ── Offline video playback guard ──────────────────────────────────────────────
@@ -75,8 +74,14 @@ self.addEventListener('activate', event => {
                 });
             return Promise.all(deletes);
         }).then(() => {
-            console.log('[SW] Activated:', CACHE_NAME);
-            return self.clients.claim(); // take control of all open tabs immediately
+            console.log('[SW] Activated:', CACHE_VERSION);
+            // Notify all clients that a new version is available → trigger reload
+            self.clients.matchAll({ type: 'window' }).then(clients => {
+                clients.forEach(client => {
+                    client.postMessage({ type: 'SW_UPDATED', version: CACHE_VERSION });
+                });
+            });
+            return self.clients.claim();
         })
     );
 });

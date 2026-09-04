@@ -139,7 +139,6 @@ Before going live:
 - [ ] Implement subscription cancellation/renewal
 - [ ] Add course thumbnail upload
 - [ ] Add video upload to cloud storage
-- [ ] Implement certificate generation
 - [ ] Add real-time notifications (WebSocket)
 - [ ] Add course reviews and ratings
 - [ ] Implement discussion forums

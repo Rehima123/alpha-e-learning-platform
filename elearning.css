@@ -2279,3 +2279,92 @@ body { animation: fadeIn 0.3s ease; }
     .btn-nav-login, .btn-nav-register { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
     .auth-card { padding: 1.2rem; }
 }
+
+
+/* ─── Secure Video Player ─────────────────────────────────────────────────── */
+
+/* Hide the video area when the browser print dialog opens.
+   This deters screenshot-via-print tricks. */
+@media print {
+    #securePlayerMount,
+    #videoWrapper,
+    [id^="svp-root"] {
+        display: none !important;
+    }
+}
+
+/* Prevent text selection on the entire player mount area */
+#securePlayerMount,
+#securePlayerMount *,
+[id^="svp-root"],
+[id^="svp-root"] * {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Screen-capture shield overlay */
+#screen-shield {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;       /* max z-index — always on top */
+    background: rgba(0, 0, 0, 0.97);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: sans-serif;
+    pointer-events: none;
+    user-select: none;
+    animation: shieldFadeIn 0.15s ease;
+}
+
+@keyframes shieldFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+#screen-shield p {
+    margin: 6px 0 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+/* Watermark drift transition — smooth movement across video */
+#wm-drift {
+    transition: top 1.2s ease-in-out, left 1.2s ease-in-out;
+    will-change: top, left;
+}
+
+/* Offline video save progress bar */
+#svp-prog-wrap {
+    background: #0f172a;
+    padding: 0 14px 8px;
+}
+
+#svp-prog-bar {
+    transition: width 0.3s ease;
+}
+
+/* Secure player footer */
+[id^="svp-root"] > div:last-child {
+    background: #0f172a;
+}
+
+/* Prevent right-click cursor hint on video area */
+#securePlayerMount iframe,
+#videoWrapper iframe {
+    pointer-events: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+
+/* Dev credit line */
+.dev-credit {
+    text-align: center;
+    padding: 1rem 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}

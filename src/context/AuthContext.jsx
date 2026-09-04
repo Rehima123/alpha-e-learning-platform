@@ -78,9 +78,41 @@ export const AuthProvider = ({ children }) => {
     validateSession()
   }, [])
 
+  // ── Re-validate when user returns to the tab (mobile PWA fix) ──────────────
+  // On mobile, when users switch apps and come back, the session may be stale.
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const token = localStorage.getItem('authToken')
+        if (!token || token.startsWith('firebase-')) return
+        // Silently re-validate in background — no loading state
+        fetch(`${API_BASE_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache:   'no-store'
+        }).then(res => {
+          if (res.ok) return res.json()
+          // Token expired — log out silently
+          localStorage.removeItem('authToken')
+          localStorage.removeItem('currentUser')
+          setCurrentUser(null)
+        }).then(data => {
+          if (data) {
+            const freshUser = data.user || data
+            localStorage.setItem('currentUser', JSON.stringify(freshUser))
+            setCurrentUser(freshUser)
+          }
+        }).catch(() => {}) // network error — keep existing state
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
   const login = async (phoneNumberOrEmail, password) => {
     try {
       const identifier = phoneNumberOrEmail
+      // Route by identifier type — email contains @, phone doesn't
       const body = identifier.includes('@')
         ? { email: identifier, password }
         : { phoneNumber: identifier, password }

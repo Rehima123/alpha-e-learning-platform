@@ -36,36 +36,50 @@
             <p class="auth-subtitle">Login to continue your learning journey</p>
             
             <form id="loginForm" class="auth-form">
-                <div id="errorMessage" style="display: none; color: #e74c3c; background: #fadbd8; padding: 10px; border-radius: 5px; margin-bottom: 15px;"></div>
-                
+                <div id="errorMessage" style="display:none;color:#e74c3c;background:#fadbd8;padding:12px 14px;border-radius:8px;margin-bottom:15px;font-size:0.9rem"></div>
+                <div id="successMessage" style="display:none;color:#27ae60;background:#d4efdf;padding:12px 14px;border-radius:8px;margin-bottom:15px;font-size:0.9rem"></div>
+
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required placeholder="your@email.com">
+                    <label for="email">Email ወይም Phone Number</label>
+                    <input type="text" id="email" required
+                        placeholder="email@example.com ወይም +2519..."
+                        autocomplete="username"
+                        style="font-size:1rem">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Enter your password">
+                    <div style="position:relative">
+                        <input type="password" id="password" required
+                            placeholder="የይለፍ ቃልዎን ያስገቡ"
+                            autocomplete="current-password"
+                            style="font-size:1rem;padding-right:44px">
+                        <button type="button" id="togglePwd"
+                            onclick="(function(){const i=document.getElementById('password');const b=document.getElementById('togglePwd');i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁️':'🙈';})()"
+                            style="position:absolute;right:10px;top:50%;transform:translateY(-50%);
+                            background:none;border:none;cursor:pointer;font-size:1.1rem;padding:0"
+                            aria-label="Show/hide password">👁️</button>
+                    </div>
                 </div>
-                
+
                 <div class="form-options">
                     <label class="checkbox-label">
                         <input type="checkbox" id="remember">
                         Remember me
                     </label>
-                    <a href="#" class="link">Forgot password?</a>
+                    <a href="#" class="link" id="forgotPwdLink">Forgot password?</a>
                 </div>
-                
-                <button type="submit" class="btn btn-large btn-block">Login</button>
-                
-                <div class="auth-divider">
-                    <span>OR</span>
-                </div>
-                
+
+                <button type="submit" class="btn btn-large btn-block" id="loginBtn">
+                    🔐 Login
+                </button>
+
+                <div class="auth-divider"><span>OR</span></div>
+
                 <button type="button" class="btn btn-social btn-google">
                     🔍 Continue with Google
                 </button>
-                
+
                 <p class="auth-footer">
                     Don't have an account? <a href="auth-register.html" class="link">Sign up</a>
                 </p>
@@ -78,16 +92,11 @@
     <script src="notifications.js"></script>
     <script src="firebase-config.js"></script>
     <script src="init-admin.js"></script>
-    <script src="auth-login.js"></script>
     <script src="ai-assistant.js"></script>
 
-    <!-- ── EmailJS Configuration (for Google OAuth new-user welcome email) ──
-         Same keys as auth-register.html — needed when Google creates new account
-         from login page (first-time Google users are auto-registered here too)
-    ─────────────────────────────────────────────────────────────────────── -->
     <script>
         window.EMAILJS_CONFIG = {
-            PUBLIC_KEY:       'YOUR_PUBLIC_KEY',          // ← same as auth-register.html
+            PUBLIC_KEY:       'YOUR_PUBLIC_KEY',
             SERVICE_ID:       'service_b17ciqo',
             WELCOME_TEMPLATE: 't41x1ab',
             ADMIN_TEMPLATE:   '76pbo61',
@@ -95,7 +104,6 @@
         };
     </script>
     <script src="emailjs-service.js"></script>
-
     <script src="auth-login.js"></script>
     <script src="pwa.js"></script>
 </body>

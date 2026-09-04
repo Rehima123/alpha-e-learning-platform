@@ -7,7 +7,7 @@ async function initFirebaseLogin() {
         const cfg = window.FIREBASE_CONFIG;
         if (!cfg || cfg.apiKey === 'YOUR_API_KEY') return null;
 
-        const { initializeApp, getApps, getApp } =
+        const { initializeApp, getApps } =
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
         const { getAuth, signInWithEmailAndPassword, signOut, sendEmailVerification } =
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
@@ -23,122 +23,158 @@ async function initFirebaseLogin() {
     }
 }
 
+// ── Helper: is identifier an email? ──────────────────────────────────────────
+function isEmail(identifier) {
+    return identifier.includes('@');
+}
+
+// ── Helper: show/hide messages ────────────────────────────────────────────────
+function showError(msg) {
+    const el = document.getElementById('errorMessage');
+    if (!el) return;
+    el.innerHTML = msg;
+    el.style.display = 'block';
+    document.getElementById('successMessage').style.display = 'none';
+}
+function showSuccess(msg) {
+    const el = document.getElementById('successMessage');
+    if (!el) return;
+    el.innerHTML = msg;
+    el.style.display = 'block';
+    document.getElementById('errorMessage').style.display = 'none';
+}
+function clearMessages() {
+    document.getElementById('errorMessage').style.display  = 'none';
+    document.getElementById('successMessage').style.display = 'none';
+}
+
 // ── Login form ────────────────────────────────────────────────────────────────
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const email     = document.getElementById('email').value.trim();
-    const password  = document.getElementById('password').value;
-    const errorDiv  = document.getElementById('errorMessage');
-    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const identifier = document.getElementById('email').value.trim();
+    const password   = document.getElementById('password').value;
+    const submitBtn  = document.getElementById('loginBtn');
 
-    errorDiv.style.display = 'none';
-    submitBtn.disabled     = true;
-    submitBtn.textContent  = 'Logging in...';
+    if (!identifier || !password) {
+        showError('Email/phone number እና password ያስፈልጋሉ።');
+        return;
+    }
+
+    clearMessages();
+    submitBtn.disabled    = true;
+    submitBtn.textContent = '⏳ Logging in...';
 
     try {
-        // Try Firebase first (if configured)
-        const fb = await initFirebaseLogin();
-        if (fb) {
-            try {
-                const { firebaseAuthLogin, signInWithEmailAndPassword, signOut, sendEmailVerification } = fb;
-                const userCredential = await signInWithEmailAndPassword(firebaseAuthLogin, email, password);
-                const firebaseUser   = userCredential.user;
+        // ── Path A: Email login (try Firebase first, then backend) ────────────
+        if (isEmail(identifier)) {
+            const fb = await initFirebaseLogin();
 
-                // Try backend login first
+            if (fb) {
                 try {
-                    const backendRes = await api.login({ email, password });
-                    if (backendRes.success) {
-                        api.setAuthToken(backendRes.token);
-                        localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
-                        redirectByRole(backendRes.user);
+                    const { firebaseAuthLogin, signInWithEmailAndPassword, signOut } = fb;
+                    const userCredential = await signInWithEmailAndPassword(firebaseAuthLogin, identifier, password);
+                    const firebaseUser   = userCredential.user;
+
+                    // Always try backend login too (gets role/subscription data)
+                    try {
+                        const backendRes = await api.login({ email: identifier, password });
+                        if (backendRes.success) {
+                            api.setAuthToken(backendRes.token);
+                            localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
+                            showSuccess('✅ Login successful! Redirecting...');
+                            setTimeout(() => redirectByRole(backendRes.user), 600);
+                            return;
+                        }
+                    } catch (_) {}
+
+                    // Backend failed — check email verification
+                    if (!firebaseUser.emailVerified) {
+                        await signOut(firebaseAuthLogin);
+                        showError(`
+                            አካውንትዎ ገና አልተረጋገጠም።<br>
+                            <small>ወደ <strong>${identifier}</strong> ማረጋገጫ ኢሜይል ይፈልጉ።</small><br>
+                            <button onclick="resendVerification('${identifier}','${encodeURIComponent(password)}')"
+                                style="margin-top:8px;background:#e74c3c;border:none;color:white;
+                                padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.82rem">
+                                📧 ድጋሚ ማረጋገጫ ኢሜይል ላክ
+                            </button>`);
                         return;
                     }
-                } catch (_) {}
 
-                // Backend failed — check Firebase email verification
-                if (!firebaseUser.emailVerified) {
-                    await signOut(firebaseAuthLogin);
-                    errorDiv.innerHTML = `
-                        <div>
-                            አካውንትዎ ገና አልተረጋገጠም።<br>
-                            <small style="opacity:0.85">ወደ <strong>${email}</strong> ማረጋገጫ ኢሜይል ይላካሉ።</small><br>
-                            <button onclick="resendVerification('${email}','${encodeURIComponent(password)}')"
-                                style="margin-top:8px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);
-                                color:inherit;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.82rem">
-                                📧 ድጋሚ ማረጋገጫ ኢሜይል ላክ
-                            </button>
-                        </div>`;
-                    errorDiv.style.display = 'block';
+                    // Firebase verified — use as fallback
+                    const fbUser = {
+                        id: firebaseUser.uid,
+                        fullName: firebaseUser.displayName || identifier.split('@')[0],
+                        email: firebaseUser.email,
+                        role: 'student'
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(fbUser));
+                    api.setAuthToken('firebase-' + firebaseUser.uid);
+                    showSuccess('✅ Login successful! Redirecting...');
+                    setTimeout(() => redirectByRole(fbUser), 600);
                     return;
-                }
 
-                // Firebase verified — use Firebase user as fallback
-                const fbUser = {
-                    id: firebaseUser.uid,
-                    fullName: firebaseUser.displayName || email.split('@')[0],
-                    email: firebaseUser.email,
-                    role: 'student'
-                };
-                localStorage.setItem('currentUser', JSON.stringify(fbUser));
-                api.setAuthToken('firebase-' + firebaseUser.uid);
-                redirectByRole(fbUser);
-                return;
-
-            } catch (firebaseErr) {
-                // Firebase network error — fall through to backend-only login
-                if (firebaseErr.code === 'auth/network-request-failed') {
-                    console.warn('Firebase unreachable, trying backend only...');
-                    // Fall through below
-                } else {
-                    throw firebaseErr;
+                } catch (firebaseErr) {
+                    if (firebaseErr.code === 'auth/network-request-failed') {
+                        // Firebase unreachable — fall through to backend-only
+                    } else if (firebaseErr.code === 'auth/too-many-requests') {
+                        let secs = 60;
+                        showError(`⚠️ ብዙ ጊዜ ሞክረዋል። እባክዎ <span id="countdown">${secs}</span> ሰከንድ ይጠብቁ።`);
+                        submitBtn.disabled = true;
+                        const timer = setInterval(() => {
+                            secs--;
+                            const el = document.getElementById('countdown');
+                            if (el) el.textContent = secs;
+                            if (secs <= 0) { clearInterval(timer); submitBtn.disabled = false; clearMessages(); }
+                        }, 1000);
+                        return;
+                    } else {
+                        const fbErrors = {
+                            'auth/user-not-found':     'ይህ ኢሜይል አልተመዘገበም።',
+                            'auth/wrong-password':     'የይለፍ ቃሉ ስህተት ነው።',
+                            'auth/invalid-email':      'ትክክለኛ ኢሜይል ያስፈልጋል።',
+                            'auth/invalid-credential': 'ኢሜይሉ ወይም የይለፍ ቃሉ ስህተት ነው።',
+                        };
+                        // Don't show Firebase error yet — try backend first
+                        if (!['auth/user-not-found','auth/wrong-password','auth/invalid-credential'].includes(firebaseErr.code)) {
+                            showError(fbErrors[firebaseErr.code] || firebaseErr.message);
+                            return;
+                        }
+                        // Fall through to backend
+                    }
                 }
+            }
+
+            // ── Backend-only email login ──────────────────────────────────────
+            const response = await api.login({ email: identifier, password });
+            if (response.success) {
+                api.setAuthToken(response.token);
+                localStorage.setItem('currentUser', JSON.stringify(response.user));
+                showSuccess('✅ Login successful! Redirecting...');
+                setTimeout(() => redirectByRole(response.user), 600);
+            } else {
+                showError(response.message || 'ኢሜይሉ ወይም የይለፍ ቃሉ ስህተት ነው።');
+            }
+
+        } else {
+            // ── Path B: Phone number login (backend only — no Firebase) ──────
+            const response = await api.login({ phoneNumber: identifier, password });
+            if (response.success) {
+                api.setAuthToken(response.token);
+                localStorage.setItem('currentUser', JSON.stringify(response.user));
+                showSuccess('✅ Login successful! Redirecting...');
+                setTimeout(() => redirectByRole(response.user), 600);
+            } else {
+                showError(response.message || 'Phone number ወይም password ስህተት ነው።');
             }
         }
 
-        // Fallback: backend-only login
-        const response = await api.login({ email, password });
-        if (response.success) {
-            api.setAuthToken(response.token);
-            localStorage.setItem('currentUser', JSON.stringify(response.user));
-            redirectByRole(response.user);
-        } else {
-            errorDiv.textContent   = response.message || 'Login failed';
-            errorDiv.style.display = 'block';
-        }
-
     } catch (error) {
-        const fbErrors = {
-            'auth/user-not-found':        'ይህ ኢሜይል አልተመዘገበም።',
-            'auth/wrong-password':        'የይለፍ ቃሉ ስህተት ነው።',
-            'auth/invalid-email':         'ትክክለኛ ኢሜይል ያስፈልጋል።',
-            'auth/invalid-credential':    'ኢሜይሉ ወይም የይለፍ ቃሉ ስህተት ነው።',
-            'auth/network-request-failed':'የኔትወርክ ስህተት። Backend ን እየሞክር ነው...'
-        };
-
-        if (error.code === 'auth/too-many-requests') {
-            let secs = 60;
-            errorDiv.innerHTML = `⚠️ ብዙ ጊዜ ሞክረዋል። እባክዎ <span id="countdown">${secs}</span> ሰከንድ ይጠብቁ።`;
-            errorDiv.style.display = 'block';
-            submitBtn.disabled = true;
-            const timer = setInterval(() => {
-                secs--;
-                const el = document.getElementById('countdown');
-                if (el) el.textContent = secs;
-                if (secs <= 0) {
-                    clearInterval(timer);
-                    errorDiv.style.display = 'none';
-                    submitBtn.disabled = false;
-                }
-            }, 1000);
-            return;
-        }
-
-        errorDiv.textContent   = fbErrors[error.code] || error.message || 'Login failed.';
-        errorDiv.style.display = 'block';
+        showError(error.message || 'Login failed. Please try again.');
     } finally {
         submitBtn.disabled    = false;
-        submitBtn.textContent = 'Sign In';
+        submitBtn.textContent = '🔐 Login';
     }
 });
 
@@ -152,6 +188,29 @@ function redirectByRole(user) {
         window.location.href = 'courses.html';
     }
 }
+
+// ── Forgot Password ───────────────────────────────────────────────────────────
+document.getElementById('forgotPwdLink')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const identifier = document.getElementById('email').value.trim();
+    if (!identifier || !isEmail(identifier)) {
+        showError('Password reset ለማድረግ email address ይጻፉ።');
+        return;
+    }
+    try {
+        const res = await api.request('/auth/forgot-password', {
+            method: 'POST',
+            body: JSON.stringify({ email: identifier })
+        });
+        if (res.success) {
+            showSuccess(`✅ Password reset link ወደ ${identifier} ተልኳል።`);
+        } else {
+            showError(res.message || 'Password reset failed.');
+        }
+    } catch {
+        showError('Password reset request failed. Please try again.');
+    }
+});
 
 async function resendVerification(email, passwordEncoded) {
     const password = decodeURIComponent(passwordEncoded);

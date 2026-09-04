@@ -134,6 +134,18 @@
         .lesson-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .lesson-actions .btn { flex: 1; min-width: 140px; text-align: center; }
 
+        /* ── Secure Player: prevent text selection on video area ── */
+        #securePlayerMount,
+        #securePlayerMount * {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        /* Hide video when browser print dialog opens (deters screenshot-via-print) */
+        @media print {
+            #securePlayerMount,
+            #videoWrapper { display: none !important; }
+        }
+
         /* Layout: sidebar + viewer on desktop */
         @media (min-width: 900px) {
             .course-layout { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; align-items: start; }
@@ -154,6 +166,7 @@
                 <li><a href="study-hub.html">📚 Study Hub</a></li>
                 <li><a href="department-guide.html">🎓 Departments</a></li>
                 <li><a href="ai-study.html">🤖 AI Study</a></li>
+                <li><a href="offline.html">📥 Offline Videos</a></li>
                 <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </div>
@@ -188,6 +201,7 @@
     <script src="ai-assistant.js"></script>
     <script src="ai-engine.js"></script>
     <script src="lesson-download.js"></script>
+    <script src="secure-player.js"></script>
     <script src="course-detail.js"></script>
     <script src="video-security.js"></script>
     <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
