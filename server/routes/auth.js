@@ -62,4 +62,9 @@ router.post('/reset-password/:token', [
 // @access  Private
 router.post('/logout', protect, authController.logout);
 
+// @route   POST /api/auth/sync-user
+// @desc    Sync Firebase user to MongoDB (called after Google/Firebase login)
+// @access  Public (Firebase token verified client-side before calling)
+router.post('/sync-user', require('../controllers/syncUserController').syncUser);
+
 module.exports = router;

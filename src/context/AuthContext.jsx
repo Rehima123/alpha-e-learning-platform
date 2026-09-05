@@ -192,7 +192,9 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     refreshUser,
-    loading
+    loading,
+    // Expose setter so AuthModal (Firebase flow) can update context directly
+    setCurrentUserExternal: setCurrentUser
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

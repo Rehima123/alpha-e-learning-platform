@@ -1,137 +1,167 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const bcrypt   = require('bcryptjs');
+const jwt      = require('jsonwebtoken');
+
+// ── Support/admin email — always gets role: "admin" ──────────────────────────
+const ADMIN_EMAIL = 'supportalphafreshman@gmail.com';
 
 // ── Role permission map ───────────────────────────────────────────────────────
 const ROLE_PERMISSIONS = {
-    super_admin:     ['*'],                                          // full control
-    content_admin:   ['courses.create','courses.edit','videos.upload','pdfs.upload','quizzes.manage'],
-    finance_admin:   ['payments.view','payments.approve','payments.refund','coupons.manage','revenue.view'],
-    support_admin:   ['students.view','tickets.manage','enrollments.view','messages.reply'],
-    instructor:      ['courses.create.own','courses.edit.own','students.own.view'],
-    student:         ['courses.view','enrollments.own','progress.own']
+    super_admin:   ['*'],
+    admin:         ['*'],
+    content_admin: ['courses.create','courses.edit','videos.upload','pdfs.upload','quizzes.manage'],
+    finance_admin: ['payments.view','payments.approve','payments.refund','coupons.manage','revenue.view'],
+    support_admin: ['students.view','tickets.manage','enrollments.view','messages.reply'],
+    instructor:    ['courses.create.own','courses.edit.own','students.own.view'],
+    student:       ['courses.view','enrollments.own','progress.own']
 };
 
 const userSchema = new mongoose.Schema({
+    // ── Firebase UID (set when user authenticates via Google/Firebase) ─────────
+    firebaseUid: {
+        type:   String,
+        unique: true,
+        sparse: true,   // allows null/undefined for password-based users
+        trim:   true
+    },
+
     fullName: {
-        type: String,
-        required: [true, 'Please provide your full name'],
-        trim: true,
+        type:      String,
+        required:  [true, 'Please provide your full name'],
+        trim:      true,
         maxlength: [100, 'Name cannot exceed 100 characters']
     },
+
     email: {
-        type: String,
-        required: false,        // optional — user may register with phone number instead
-        unique: true,
-        sparse: true,           // sparse: allows multiple docs without email
+        type:      String,
+        required:  false,
+        unique:    true,
+        sparse:    true,    // allows phone-only users
         lowercase: true,
-        trim: true,
-        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
+        trim:      true,
+        match:     [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
     },
+
     phoneNumber: {
-        type: String,
+        type:   String,
         unique: true,
-        sparse: true,           // sparse: allows multiple docs without phone
-        trim: true,
-        match: [/^\+?[\d\s\-]{7,15}$/, 'Please provide a valid phone number']
+        sparse: true,
+        trim:   true,
+        default: '',
+        match:  [/^\+?[\d\s\-]{7,15}$/, 'Please provide a valid phone number']
     },
-    educationLevel: {
-        type: String,
-        trim: true,
-        default: null
-    },
+
+    educationLevel: { type: String, trim: true, default: null },
+
     password: {
-        type: String,
-        required: [true, 'Please provide a password'],
+        type:      String,
         minlength: [6, 'Password must be at least 6 characters'],
-        select: false
+        select:    false  // never returned in queries unless explicitly requested
     },
+
+    // ── Role: supportalphafreshman@gmail.com always forces "admin" ─────────────
     role: {
-        type: String,
-        enum: ['student', 'instructor', 'super_admin', 'content_admin', 'finance_admin', 'support_admin', 'admin'],
+        type:    String,
+        enum:    ['student', 'instructor', 'admin', 'super_admin',
+                  'content_admin', 'finance_admin', 'support_admin'],
         default: 'student'
     },
-    avatar: {
-        type: String,
-        default: null
-    },
+
+    avatar: { type: String, default: null },
+
+    // ── isApproved: admin can suspend accounts ────────────────────────────────
+    isApproved: { type: Boolean, default: true },
+    isActive:   { type: Boolean, default: true },
+
     enrolledCourses: [{
-        course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
-        enrolledAt: { type: Date, default: Date.now },
-        expiresAt: Date,
-        progress: { type: Number, default: 0 },
+        course:           { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+        enrolledAt:       { type: Date, default: Date.now },
+        expiresAt:        Date,
+        progress:         { type: Number, default: 0 },
         completedLessons: [{ type: String }]
     }],
+
     subscription: {
-        plan:   { type: String, enum: ['free', 'monthly', 'annual'], default: 'free' },
-        status: { type: String, enum: ['active', 'expired', 'cancelled'], default: 'active' },
+        plan:      { type: String, enum: ['free','monthly','annual'], default: 'free' },
+        status:    { type: String, enum: ['active','expired','cancelled'], default: 'active' },
         startDate: Date,
-        endDate: Date
+        endDate:   Date
     },
-    isActive:        { type: Boolean, default: true },
-    isEmailVerified: { type: Boolean, default: false },
+
+    isEmailVerified:    { type: Boolean, default: false },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-    // ── Single-device session enforcement ────────────────────────────────────
-    currentSessionToken: { type: String, default: null, select: false },
-    lastLoginAt:  { type: Date, default: null },
-    lastLoginIP:  { type: String, default: null },
-    createdAt: { type: Date, default: Date.now }
-}, { timestamps: true });
 
-// ── Require at least email OR phoneNumber ─────────────────────────────────────
-userSchema.pre('validate', function(next) {
-    if (!this.email && !this.phoneNumber) {
-        this.invalidate('email', 'Either email or phone number is required');
+    // ── Single-device session enforcement ─────────────────────────────────────
+    currentSessionToken: { type: String, default: null, select: false },
+    lastLoginAt:         { type: Date,   default: null },
+    lastLoginIP:         { type: String, default: null }
+
+}, { timestamps: true });   // adds createdAt + updatedAt automatically
+
+// ── Pre-validate: require email OR phoneNumber ────────────────────────────────
+userSchema.pre('validate', function (next) {
+    if (!this.email && !this.phoneNumber && !this.firebaseUid) {
+        this.invalidate('email', 'Either email, phone number, or Firebase UID is required');
     }
     next();
 });
 
-// ── Hash password before saving ───────────────────────────────────────────────
-userSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) return next();
-    const salt = await bcrypt.genSalt(10);
+// ── Pre-save: force admin role for support email ──────────────────────────────
+userSchema.pre('save', function (next) {
+    if (this.email && this.email.toLowerCase() === ADMIN_EMAIL) {
+        this.role = 'admin';
+    }
+    next();
+});
+
+// ── Pre-save: hash password ───────────────────────────────────────────────────
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password') || !this.password) return next();
+    const salt   = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 
-// ── Compare password ──────────────────────────────────────────────────────────
-userSchema.methods.comparePassword = async function(enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
+// ── Instance: compare password ────────────────────────────────────────────────
+userSchema.methods.comparePassword = async function (entered) {
+    return bcrypt.compare(entered, this.password);
 };
 
-// ── Generate JWT with unique session ID ──────────────────────────────────────
-userSchema.methods.generateAuthToken = function(sessionId) {
+// ── Instance: generate JWT with optional session ID ──────────────────────────
+userSchema.methods.generateAuthToken = function (sessionId) {
     const sid = sessionId || require('crypto').randomBytes(16).toString('hex');
     return jwt.sign(
         { id: this._id, role: this.role, sid },
         process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRE }
+        { expiresIn: process.env.JWT_EXPIRE || '30d' }
     );
 };
 
-// ── Check permission ──────────────────────────────────────────────────────────
-userSchema.methods.hasPermission = function(permission) {
+// ── Instance: check named permission ─────────────────────────────────────────
+userSchema.methods.hasPermission = function (permission) {
     const perms = ROLE_PERMISSIONS[this.role] || [];
     return perms.includes('*') || perms.includes(permission);
 };
 
-// ── Is any kind of admin ──────────────────────────────────────────────────────
-userSchema.methods.isAdmin = function() {
-    return ['super_admin', 'content_admin', 'finance_admin', 'support_admin', 'admin'].includes(this.role);
+// ── Instance: is any kind of admin ───────────────────────────────────────────
+userSchema.methods.isAdminUser = function () {
+    return ['admin','super_admin','content_admin',
+            'finance_admin','support_admin'].includes(this.role);
 };
 
-// ── Generate Password Reset Token ─────────────────────────────────────────────
-userSchema.methods.generateResetToken = function() {
-    const resetToken = jwt.sign(
+// ── Instance: generate password reset token ──────────────────────────────────
+userSchema.methods.generateResetToken = function () {
+    const token = jwt.sign(
         { id: this._id },
         process.env.JWT_SECRET,
         { expiresIn: '1h' }
     );
-    this.resetPasswordToken = resetToken;
-    this.resetPasswordExpire = Date.now() + 3600000;
-    return resetToken;
+    this.resetPasswordToken  = token;
+    this.resetPasswordExpire = Date.now() + 3_600_000; // 1 hour
+    return token;
 };
 
 module.exports = mongoose.model('User', userSchema);
+module.exports.ADMIN_EMAIL      = ADMIN_EMAIL;
 module.exports.ROLE_PERMISSIONS = ROLE_PERMISSIONS;
