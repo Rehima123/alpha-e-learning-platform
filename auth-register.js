@@ -188,9 +188,18 @@ async function initPhoneAuth() {
     if (!recaptchaVerifier) {
         recaptchaVerifier = new RecaptchaVerifier(phoneAuthInstance, 'recaptcha-container', {
             size:     'invisible',
-            callback: () => {}   // reCAPTCHA solved — allow OTP send
+            callback: () => {},
+            'expired-callback': () => {
+                // reCAPTCHA expired — clear so it re-renders next time
+                recaptchaVerifier = null;
+            }
         });
-        await recaptchaVerifier.render();
+        try {
+            await recaptchaVerifier.render();
+        } catch (renderErr) {
+            console.warn('[reCAPTCHA] render failed:', renderErr.message);
+            recaptchaVerifier = null;
+        }
     }
 
     return phoneAuthInstance;
