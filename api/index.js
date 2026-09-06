@@ -61,6 +61,33 @@ app.get('/api/health', (req, res) => {
     res.json({ success: true, message: 'API is running', timestamp: new Date().toISOString() });
 });
 
+// ── Seed Admin endpoint ───────────────────────────────────────────────────────
+app.get('/api/seed-admin', async (req, res) => {
+    const secret = req.query.secret;
+    if (secret !== (process.env.SEED_SECRET || 'alpha-seed-2024')) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    try {
+        const User  = require('../server/models/User');
+        const email = req.query.email || 'supportalphafreshman@gmail.com';
+        const user  = await User.findOneAndUpdate(
+            { email },
+            { role: 'admin', isActive: true },
+            { new: true }
+        );
+        if (!user) {
+            return res.status(404).json({ success: false, message: `User not found: ${email}. Register first.` });
+        }
+        res.json({
+            success: true,
+            message: `✅ ${user.fullName} is now ADMIN`,
+            user: { id: user._id, email: user.email, role: user.role }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // ── Test Email endpoint ───────────────────────────────────────────────────────
 app.get('/api/test-email', async (req, res) => {
     const secret = req.query.secret;
