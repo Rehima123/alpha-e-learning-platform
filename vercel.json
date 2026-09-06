@@ -84,6 +84,11 @@
     { "src": "/courses",         "dest": "/courses.html" },
     { "src": "/login",           "dest": "/auth-login.html" },
     { "src": "/register",        "dest": "/auth-register.html" },
+    { "src": "/forgot-password", "dest": "/forgot-password.html" },
+    {
+      "src": "/reset-password/?(.*)",
+      "dest": "/reset-password.html"
+    },
     { "src": "/dashboard",       "dest": "/dashboard.html" },
     { "src": "/course-detail",   "dest": "/course-detail.html" },
     { "src": "/course-payment",  "dest": "/course-payment.html" },
