@@ -314,34 +314,17 @@ function renderCourses() {
             <div class="course-card" onclick="window.location.href='course-detail.html?id=${course._id}'" style="cursor:pointer">
                 <div class="course-image">
                     ${course.icon || '📚'}
-                    ${isFree
-                        ? '<span class="badge-free">FREE</span>'
-                        : course.isFreePreview
-                            ? '<span class="badge-preview">FREE PREVIEW</span>'
-                            : '<span class="badge-premium">⭐ PREMIUM</span>'
-                    }
+                    <span class="badge-premium">⭐ PREMIUM</span>
                 </div>
                 <div class="course-content">
-                    <div class="course-badge">${course.level}</div>
+                    <div class="course-badge">${course.level || 'Freshman'}</div>
                     <h3>${course.title}</h3>
                     <p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${course.description}</p>
-                    <div class="course-instructor"><span>👤 ${instructorName}</span></div>
-                    <div class="course-rating">
-                        <span class="stars">${'⭐'.repeat(Math.floor(course.rating || 0))}</span>
-                        <span>${(course.rating || 0).toFixed(1)}</span>
-                    </div>
-                    <div class="course-meta">
-                        <span>📚 ${totalLessons} lessons</span> |
-                        <span>⏱️ ${course.duration}</span>
-                    </div>
                     <div class="course-footer">
                         <span class="course-price">
-                            ${isFree
-                                ? '<span style="color:#27ae60;font-weight:700">Free</span>'
-                                : `<strong>${priceETB.toLocaleString()} ETB</strong>`
-                            }
+                            <strong style="color:#667eea;font-size:1.05rem">1,000 ETB</strong>
                         </span>
-                        <a href="course-detail.html?id=${course._id}" class="${btnClass}" onclick="event.stopPropagation()">${btnLabel}</a>
+                        <a href="course-detail.html?id=${course._id}" class="btn" onclick="event.stopPropagation()">👁 View Course</a>
                     </div>
                 </div>
             </div>
