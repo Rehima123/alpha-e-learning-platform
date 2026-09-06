@@ -740,11 +740,10 @@ async function seed() {
     for (const c of COURSES) {
       const totalLessons = c.chapters.reduce((s, ch) => s + ch.lessons.length, 0);
 
-      // Natural & Social stream courses → 1000 ETB premium
-      // Common stream courses           → free
-      const isPremium = c.stream !== 'Common';
-      const price     = isPremium ? 1000 : 0;
-      const isLocked  = isPremium;
+      // ALL courses → 1000 ETB premium (Common + Natural + Social)
+      const isPremium = true;
+      const price     = 1000;
+      const isLocked  = true;
 
       await Course.create({
         ...c,
@@ -771,7 +770,7 @@ async function seed() {
     console.log('📊 Breakdown:');
     console.log(`   Semester 1: ${COURSES.filter(c => c.semester === 1).length} courses`);
     console.log(`   Semester 2: ${COURSES.filter(c => c.semester === 2).length} courses`);
-    console.log(`   Common (FREE):     ${summary.Common} courses`);
+    console.log(`   Common  (1000 ETB): ${summary.Common} courses`);
     console.log(`   Natural (1000 ETB): ${summary.Natural} courses`);
     console.log(`   Social  (1000 ETB): ${summary.Social} courses`);
     console.log('\n🔍 Test filtering:');
