@@ -371,9 +371,15 @@ class APIService {
     async getInstructorCourses()     { return this.request('/instructor/courses'); }
     async getInstructorPayments(status='all') { return this.request(`/instructor/payments?status=${status}`); }
     async getInstructorStudents(search='')    { return this.request(`/instructor/students${search ? '?search='+encodeURIComponent(search) : ''}`); }
-    async approveEnrollment(id)      { return this.request(`/enrollments/${id}/approve`, { method: 'PUT' }); }
+    async approveEnrollment(id, enrolledPackage = null) {
+        const body = enrolledPackage ? { enrolledPackage } : {};
+        return this.request(`/enrollments/${id}/approve`, { method: 'PUT', body: JSON.stringify(body) });
+    }
     async rejectEnrollment(id, reason = '') {
         return this.request(`/enrollments/${id}/reject`, { method: 'PUT', body: JSON.stringify({ reason }) });
+    }
+    async assignPackage(userId, enrolledPackage) {
+        return this.request(`/admin/users/${userId}/package`, { method: 'PUT', body: JSON.stringify({ enrolledPackage }) });
     }
     async updateProgress(enrollmentId, progressData) {
         return this.request(`/enrollments/${enrollmentId}/progress`, { method: 'PUT', body: JSON.stringify(progressData) });

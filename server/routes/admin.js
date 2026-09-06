@@ -40,4 +40,24 @@ router.put('/tickets/:id/reply',     isSupportAdmin, adminController.replyTicket
 // ── Enrollment management (super_admin + support_admin) ──────────────────────
 router.get('/enrollments',           isAnyAdmin,     adminController.getAllEnrollments);
 
+// ── Package assignment (assign enrolled package to a student) ─────────────────
+router.put('/users/:id/package',     isAnyAdmin,     async (req, res, next) => {
+    try {
+        const User = require('../models/User');
+        const { enrolledPackage } = req.body;
+        const validPackages = ['None', '1st Semester Natural', '1st Semester Social',
+                               '2nd Semester Natural', '2nd Semester Social'];
+        if (!validPackages.includes(enrolledPackage)) {
+            return res.status(400).json({ success: false, message: 'Invalid package' });
+        }
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { enrolledPackage },
+            { new: true }
+        ).select('-password');
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        res.json({ success: true, message: `Package set to "${enrolledPackage}"`, user });
+    } catch (err) { next(err); }
+});
+
 module.exports = router;

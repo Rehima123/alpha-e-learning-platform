@@ -10,7 +10,7 @@ const OWNER_EMAIL = process.env.OWNER_EMAIL || 'supportalphafreshman@gmail.com';
 // ── POST /api/payments/manual-receipt ────────────────────────────────────────
 exports.submitManualReceipt = async (req, res) => {
     try {
-        const { courseId, plan, amount, receiptImage, receiptFileName } = req.body;
+        const { courseId, plan, amount, receiptImage, receiptFileName, enrolledPackage } = req.body;
 
         if (!receiptImage) {
             return res.status(400).json({ success: false, message: 'Receipt image is required' });
@@ -66,6 +66,8 @@ exports.submitManualReceipt = async (req, res) => {
         }
 
         // Save receipt to DB
+        const validPackages = ['None', '1st Semester Natural', '1st Semester Social',
+                               '2nd Semester Natural', '2nd Semester Social'];
         const payment = await ManualPayment.create({
             student:         studentId,
             course:          courseId || null,
@@ -76,6 +78,8 @@ exports.submitManualReceipt = async (req, res) => {
             studentName,
             studentEmail,
             studentPhone,
+            enrolledPackage: (enrolledPackage && validPackages.includes(enrolledPackage))
+                                ? enrolledPackage : null,
             status:          'pending_verification'
         });
 
@@ -310,12 +314,25 @@ exports.approveReceipt = async (req, res) => {
             } catch (_) {}
         }
 
-        // Update status
+        // Update status + assign enrolledPackage to user if set
         await ManualPayment.findByIdAndUpdate(req.params.id, {
             status:     'approved',
             reviewedBy: req.user._id || req.user.id,
             reviewedAt: new Date()
         });
+
+        // Assign package to student if present
+        if (payment.enrolledPackage && payment.enrolledPackage !== 'None') {
+            const validPackages = ['1st Semester Natural', '1st Semester Social',
+                                   '2nd Semester Natural', '2nd Semester Social'];
+            if (validPackages.includes(payment.enrolledPackage) &&
+                /^[a-f\d]{24}$/i.test(studentId)) {
+                try {
+                    await User.findByIdAndUpdate(studentId,
+                        { enrolledPackage: payment.enrolledPackage });
+                } catch (_) {}
+            }
+        }
 
         // Create or update enrollment (only if course is a valid ObjectId)
         if (payment.course?._id) {

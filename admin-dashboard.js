@@ -208,8 +208,21 @@ async function loadEnrollmentRequests() {
                             </td>
                             <td>
                                 ${e.status === 'pending' ? `
-                                    <button class="btn btn-success btn-sm" onclick="approveEnrollment('${e._id}')">✓ Approve</button>
-                                    <button class="btn btn-danger btn-sm" onclick="rejectEnrollment('${e._id}')">✗ Reject</button>
+                                    <div style="display:flex;flex-direction:column;gap:6px">
+                                        <select id="pkg-${e._id}"
+                                            style="padding:5px 8px;border-radius:6px;border:1px solid var(--border-color);
+                                            background:var(--bg-secondary);color:var(--text-primary);font-size:0.78rem;cursor:pointer;min-width:180px">
+                                            <option value="">— Assign Package —</option>
+                                            <option value="1st Semester Natural">📐 1st Sem · Natural Science</option>
+                                            <option value="1st Semester Social">📊 1st Sem · Social Science</option>
+                                            <option value="2nd Semester Natural">🔬 2nd Sem · Natural Science</option>
+                                            <option value="2nd Semester Social">📈 2nd Sem · Social Science</option>
+                                        </select>
+                                        <div style="display:flex;gap:6px">
+                                            <button class="btn btn-success btn-sm" onclick="approveEnrollment('${e._id}')">✓ Approve</button>
+                                            <button class="btn btn-danger btn-sm" onclick="rejectEnrollment('${e._id}')">✗ Reject</button>
+                                        </div>
+                                    </div>
                                 ` : `<span style="font-size:0.8rem;color:var(--text-secondary)">Reviewed</span>`}
                             </td>
                         </tr>
@@ -229,9 +242,12 @@ async function loadEnrollmentRequests() {
 
 async function approveEnrollment(id) {
     try {
-        const res = await api.approveEnrollment(id);
+        const pkgSelect = document.getElementById(`pkg-${id}`);
+        const enrolledPackage = pkgSelect ? pkgSelect.value : null;
+        const res = await api.approveEnrollment(id, enrolledPackage || null);
         if (res.success) {
-            toast?.success(`Enrollment approved for ${res.enrollment.student?.fullName}`);
+            const pkg = enrolledPackage ? ` (Package: ${enrolledPackage})` : '';
+            toast?.success(`Enrollment approved for ${res.enrollment.student?.fullName}${pkg}`);
             await loadEnrollmentRequests();
             await loadAdminData();
         }
@@ -1154,6 +1170,7 @@ async function loadAllCourses() {
                                     ${c.isLocked ? '🔓 Unlock' : '🔒 Lock'}
                                 </button>
                                 <button class="btn btn-sm btn-success" onclick="viewEnrolledStudents('${c._id}')">👥 Students</button>
+                                <button class="btn btn-sm btn-danger" onclick="adminDeleteCourse('${c._id}','${c.title.replace(/'/g,"\\'").replace(/"/g,'\\"')}')">🗑️ Delete</button>
                             </td>
                         </tr>
                     `).join('')}
@@ -1173,6 +1190,19 @@ async function toggleCourseLock(courseId, btn) {
             await loadAllCourses();
         }
     } catch (e) { toast?.error('Failed to toggle lock'); }
+}
+
+async function adminDeleteCourse(courseId, title) {
+    if (!window.confirm(`⚠️ Delete course:\n"${title}"\n\nThis cannot be undone. Proceed?`)) return;
+    try {
+        const res = await api.deleteCourse(courseId);
+        if (res.success) {
+            toast?.success(`"${title}" deleted`);
+            await loadAllCourses();
+        } else {
+            toast?.error(res.message || 'Failed to delete course');
+        }
+    } catch (e) { toast?.error(e.message || 'Failed to delete course'); }
 }
 
 async function viewEnrolledStudents(courseId) {

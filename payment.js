@@ -157,6 +157,36 @@ let receiptBase64 = null;
 let receiptFileName = '';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+// ── Package selection ────────────────────────────────────────────────────────
+function selectPackage(value) {
+    // Check the radio
+    const radio = document.querySelector(`input[name="enrolledPackage"][value="${value}"]`);
+    if (radio) radio.checked = true;
+
+    // Highlight selected label, de-highlight others
+    document.querySelectorAll('[id^="pkg-label-"]').forEach(lbl => {
+        lbl.style.borderColor = '';
+        lbl.style.background  = '';
+    });
+    const keyMap = {
+        '1st Semester Natural': 'pkg-label-1st-nat',
+        '1st Semester Social':  'pkg-label-1st-soc',
+        '2nd Semester Natural': 'pkg-label-2nd-nat',
+        '2nd Semester Social':  'pkg-label-2nd-soc'
+    };
+    const lbl = document.getElementById(keyMap[value]);
+    if (lbl) {
+        lbl.style.borderColor = '#667eea';
+        lbl.style.background  = 'rgba(102,126,234,0.07)';
+    }
+    document.getElementById('pkgError').style.display = 'none';
+}
+
+function getSelectedPackage() {
+    const radio = document.querySelector('input[name="enrolledPackage"]:checked');
+    return radio ? radio.value : null;
+}
+
 function copyText(text, btn) {
     navigator.clipboard.writeText(text).then(() => {
         const orig = btn.textContent;
@@ -227,6 +257,15 @@ function clearReceipt() {
 
 async function submitManualPayment() {
     const submitBtn = document.getElementById('manualSubmitBtn');
+
+    // Validate package selection
+    const selectedPackage = getSelectedPackage();
+    if (!selectedPackage) {
+        document.getElementById('pkgError').style.display = 'block';
+        toast?.error('Please select your semester package first');
+        return;
+    }
+
     if (!receiptBase64) {
         toast?.error('Please upload your payment receipt first');
         return;
@@ -246,7 +285,8 @@ async function submitManualPayment() {
             receiptFileName: receiptFileName,
             amount:          total,
             studentName:     currentUser?.fullName,
-            studentEmail:    currentUser?.email
+            studentEmail:    currentUser?.email,
+            enrolledPackage: selectedPackage        // ← new field
         };
         if (courseId) body.courseId = courseId;
         else body.plan = plan;

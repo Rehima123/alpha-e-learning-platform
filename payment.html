@@ -127,6 +127,82 @@
                         Transfer the exact amount shown in the order summary to one of these accounts, then upload your payment screenshot.
                     </p>
 
+                    <!-- Package selector -->
+                    <div style="background:rgba(102,126,234,0.07);border:1.5px solid rgba(102,126,234,0.3);
+                        border-radius:12px;padding:16px 18px;margin-bottom:1rem">
+                        <div style="font-weight:700;color:var(--text-primary);margin-bottom:12px;font-size:0.95rem">
+                            🎓 Select Your Package <span style="color:#e74c3c">*</span>
+                        </div>
+                        <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 12px">
+                            Choose your semester and stream. You'll get access to all courses in that package including Common courses.
+                        </p>
+                        <div style="display:flex;flex-direction:column;gap:8px">
+                            <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+                                border:1.5px solid var(--border-color);border-radius:8px;cursor:pointer;
+                                transition:all 0.2s" id="pkg-label-1st-nat"
+                                onclick="selectPackage('1st Semester Natural')">
+                                <input type="radio" name="enrolledPackage" value="1st Semester Natural"
+                                    id="pkg-1st-nat" style="accent-color:#667eea;width:16px;height:16px">
+                                <div>
+                                    <div style="font-weight:600;color:var(--text-primary);font-size:0.9rem">
+                                        📐 1st Semester — Natural Science
+                                    </div>
+                                    <div style="font-size:0.78rem;color:var(--text-secondary)">
+                                        Includes: Math, Physics, Chemistry, Psychology + All Common courses
+                                    </div>
+                                </div>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+                                border:1.5px solid var(--border-color);border-radius:8px;cursor:pointer;
+                                transition:all 0.2s" id="pkg-label-1st-soc"
+                                onclick="selectPackage('1st Semester Social')">
+                                <input type="radio" name="enrolledPackage" value="1st Semester Social"
+                                    id="pkg-1st-soc" style="accent-color:#667eea;width:16px;height:16px">
+                                <div>
+                                    <div style="font-weight:600;color:var(--text-primary);font-size:0.9rem">
+                                        📊 1st Semester — Social Science
+                                    </div>
+                                    <div style="font-size:0.78rem;color:var(--text-secondary)">
+                                        Includes: Math (Social), Economics, Inclusiveness, Anthropology + All Common courses
+                                    </div>
+                                </div>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+                                border:1.5px solid var(--border-color);border-radius:8px;cursor:pointer;
+                                transition:all 0.2s" id="pkg-label-2nd-nat"
+                                onclick="selectPackage('2nd Semester Natural')">
+                                <input type="radio" name="enrolledPackage" value="2nd Semester Natural"
+                                    id="pkg-2nd-nat" style="accent-color:#667eea;width:16px;height:16px">
+                                <div>
+                                    <div style="font-weight:600;color:var(--text-primary);font-size:0.9rem">
+                                        🔬 2nd Semester — Natural Science
+                                    </div>
+                                    <div style="font-size:0.78rem;color:var(--text-secondary)">
+                                        Includes: Calculus, Biology, Emerging Technologies + All Common courses
+                                    </div>
+                                </div>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+                                border:1.5px solid var(--border-color);border-radius:8px;cursor:pointer;
+                                transition:all 0.2s" id="pkg-label-2nd-soc"
+                                onclick="selectPackage('2nd Semester Social')">
+                                <input type="radio" name="enrolledPackage" value="2nd Semester Social"
+                                    id="pkg-2nd-soc" style="accent-color:#667eea;width:16px;height:16px">
+                                <div>
+                                    <div style="font-weight:600;color:var(--text-primary);font-size:0.9rem">
+                                        📈 2nd Semester — Social Science
+                                    </div>
+                                    <div style="font-size:0.78rem;color:var(--text-secondary)">
+                                        Includes: Basic Statistics + All Common courses
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <p id="pkgError" style="color:#e74c3c;font-size:0.82rem;margin:8px 0 0;display:none">
+                            ⚠️ Please select a package before submitting.
+                        </p>
+                    </div>
+
                     <!-- Bank details -->
                     <div class="bank-detail-box">
                         <div style="font-weight:700;color:var(--text-primary);margin-bottom:10px">🏦 Bank Account Details</div>

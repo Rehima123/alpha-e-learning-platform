@@ -95,7 +95,15 @@ const userSchema = new mongoose.Schema({
     // ── Single-device session enforcement ─────────────────────────────────────
     currentSessionToken: { type: String, default: null, select: false },
     lastLoginAt:         { type: Date,   default: null },
-    lastLoginIP:         { type: String, default: null }
+    lastLoginIP:         { type: String, default: null },
+
+    // ── Package enrollment (semester + stream bundle) ─────────────────────────
+    enrolledPackage: {
+        type:    String,
+        enum:    ['None', '1st Semester Natural', '1st Semester Social',
+                  '2nd Semester Natural', '2nd Semester Social'],
+        default: 'None'
+    }
 
 }, { timestamps: true });   // adds createdAt + updatedAt automatically
 
