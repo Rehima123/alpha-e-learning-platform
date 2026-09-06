@@ -68,25 +68,33 @@ app.get('/api/seed-admin', async (req, res) => {
         return res.status(403).json({ success: false, message: 'Forbidden' });
     }
     try {
-        const User  = require('../server/models/User');
-        const email = req.query.email || 'supportalphafreshman@gmail.com';
-        const name  = req.query.name  || null;
+        const User     = require('../server/models/User');
+        const bcrypt   = require('bcryptjs');
+        const email    = req.query.email    || 'supportalphafreshman@gmail.com';
+        const name     = req.query.name     || null;
+        const newPass  = req.query.password || null;
 
         const updateFields = { role: 'admin', isActive: true };
-        if (name) updateFields.fullName = name;
+        if (name)    updateFields.fullName = name;
 
-        const user  = await User.findOneAndUpdate(
+        // If a new password is provided, hash it and update
+        if (newPass) {
+            const salt = await bcrypt.genSalt(10);
+            updateFields.password = await bcrypt.hash(newPass, salt);
+        }
+
+        const user = await User.findOneAndUpdate(
             { email },
             updateFields,
             { new: true }
         );
         if (!user) {
-            return res.status(404).json({ success: false, message: `User not found: ${email}. Register first.` });
+            return res.status(404).json({ success: false, message: `User not found: ${email}. Register first at /auth-register.html` });
         }
         res.json({
             success: true,
-            message: `✅ ${user.fullName} is now ADMIN`,
-            user: { id: user._id, email: user.email, role: user.role }
+            message: `✅ ${user.fullName} is now ADMIN${newPass ? ' with new password' : ''}`,
+            user: { id: user._id, email: user.email, role: user.role, fullName: user.fullName }
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
