@@ -185,6 +185,55 @@ exports.submitManualReceipt = async (req, res) => {
             // Don't fail the request if email fails
         }
 
+        // ── Send confirmation email to STUDENT ───────────────────────────────
+        if (studentEmail) {
+            try {
+                await sendEmail({
+                    to:      studentEmail,
+                    subject: `🧾 Receipt Received — ${courseName} | Alpha Freshman Tutorial`,
+                    html: `
+                    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+                      <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:32px;text-align:center">
+                        <h1 style="color:white;margin:0">Alpha Freshman Tutorial</h1>
+                        <p style="color:rgba(255,255,255,0.85);margin:8px 0 0">Payment Receipt Confirmation</p>
+                      </div>
+                      <div style="background:white;padding:32px">
+                        <h2 style="color:#667eea">✅ Receipt Received!</h2>
+                        <p>Dear <strong>${studentName || 'Student'}</strong>,</p>
+                        <p>We have successfully received your payment receipt for:</p>
+                        <div style="background:#f0f4ff;border:1px solid #667eea;border-radius:8px;padding:16px;margin:20px 0">
+                          <p style="margin:0;font-size:1.05rem"><strong>${courseName}</strong></p>
+                          <p style="margin:8px 0 0;color:#667eea;font-weight:bold;font-size:1.1rem">
+                            Amount: ${(amount || 0).toLocaleString()} ETB
+                          </p>
+                          <p style="margin:8px 0 0;color:#555;font-size:0.88rem">
+                            Receipt ID: <code>${payment._id}</code>
+                          </p>
+                        </div>
+                        <div style="background:#fffbea;border-left:4px solid #f39c12;padding:14px;border-radius:0 8px 8px 0;margin:20px 0">
+                          <p style="margin:0;color:#856404">
+                            ⏳ <strong>What happens next?</strong><br>
+                            Our admin team will verify your receipt within <strong>24 hours</strong>.
+                            You will receive another email once your payment is approved and your course access is unlocked.
+                          </p>
+                        </div>
+                        <p>If you have any questions, contact us at
+                          <a href="mailto:supportalphafreshman@gmail.com" style="color:#667eea">
+                            supportalphafreshman@gmail.com
+                          </a>
+                        </p>
+                      </div>
+                      <div style="background:#f9f9f9;padding:16px;text-align:center;font-size:0.8rem;color:#888">
+                        © ${new Date().getFullYear()} Alpha Freshman Tutorial · Way to Success
+                      </div>
+                    </div>`
+                });
+                console.log(`[Receipt confirm email sent] → ${studentEmail}`);
+            } catch (emailErr) {
+                console.error('[Student receipt confirm email failed]', emailErr.message);
+            }
+        }
+
         res.status(201).json({
             success: true,
             message: 'Receipt submitted successfully. Admin will verify within 24 hours.',
