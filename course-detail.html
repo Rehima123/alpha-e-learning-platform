@@ -17,6 +17,52 @@
     <link rel="apple-touch-icon" sizes="120x120" href="logo.png">
     <link rel="apple-touch-icon" sizes="76x76" href="logo.png">
     <style>
+        /* ══════════════════════════════════════════════════════════════════
+           SCREENSHOT / SCREEN-RECORD PREVENTION
+           ══════════════════════════════════════════════════════════════════ */
+
+        /* 1. Prevent text selection on protected content */
+        .lesson-viewer, #lessonViewer, .lesson-notes, .notes-content,
+        iframe, video, #videoWrapper {
+            -webkit-user-select: none !important;
+            -moz-user-select:    none !important;
+            -ms-user-select:     none !important;
+            user-select:         none !important;
+        }
+
+        /* 2. Prevent image/element drag-save */
+        img, iframe, video {
+            -webkit-user-drag: none !important;
+            user-drag:         none !important;
+            pointer-events:    none;
+        }
+        /* Re-enable pointer for clickable lesson rows */
+        .lesson-row, .chapter-header, button, a { pointer-events: auto !important; }
+
+        /* 3. CSS-only print blackout — hides content when printing (Ctrl+P screenshot) */
+        @media print {
+            body * { visibility: hidden !important; }
+            body::after {
+                content: "⛔ Printing is not allowed — Alpha Freshman Tutorial";
+                visibility: visible !important;
+                position: fixed; inset: 0;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.5rem; font-weight: bold; color: #e74c3c;
+                background: white;
+            }
+        }
+
+        /* 4. Screen-capture shield (shown by JS on PrintScreen/tab-switch) */
+        #alpha-screen-shield {
+            position: fixed; inset: 0; z-index: 2147483647;
+            background: #000;
+            display: none;
+            align-items: center; justify-content: center; flex-direction: column;
+            color: #fff; font-family: sans-serif;
+            pointer-events: none; user-select: none;
+        }
+        #alpha-screen-shield.active { display: flex; }
+
         /* ── Breadcrumb ── */
         .breadcrumb {
             display: flex; align-items: center; gap: 6px;
@@ -204,6 +250,92 @@
     <script src="secure-player.js"></script>
     <script src="course-detail.js"></script>
     <script src="video-security.js"></script>
+
+    <!-- ── Extra screenshot / screen-record deterrence ── -->
+    <div id="alpha-screen-shield">
+        <div style="font-size:3rem;margin-bottom:16px">⛔</div>
+        <p style="font-size:1.1rem;font-weight:700;margin:0">Screen capture is not permitted.</p>
+        <p id="shield-user" style="font-size:0.75rem;opacity:0.4;margin:10px 0 0;font-family:monospace"></p>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        function getUserLabel() {
+            try {
+                const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                return [u.fullName, u.phoneNumber || u.email].filter(Boolean).join(' | ') || 'Alpha Freshman Tutorial';
+            } catch { return 'Alpha Freshman Tutorial'; }
+        }
+
+        let shieldTimer = null;
+        function showShield() {
+            const shield = document.getElementById('alpha-screen-shield');
+            const label  = document.getElementById('shield-user');
+            if (!shield) return;
+            if (label) label.textContent = getUserLabel();
+            shield.classList.add('active');
+            clearTimeout(shieldTimer);
+            shieldTimer = setTimeout(() => shield.classList.remove('active'), 3000);
+        }
+
+        // Block PrintScreen + Mac/Win screenshot shortcuts
+        document.addEventListener('keydown', function(e) {
+            // PrintScreen
+            if (e.key === 'PrintScreen') { e.preventDefault(); showShield(); return; }
+            // Mac: Cmd+Shift+3, Cmd+Shift+4, Cmd+Shift+5, Cmd+Shift+6
+            if (e.metaKey && e.shiftKey && ['3','4','5','6','s','S'].includes(e.key)) {
+                e.preventDefault(); showShield(); return;
+            }
+            // Windows: Win+Shift+S (Snip & Sketch), Win+PrtScn
+            if (e.key === 'PrintScreen' || (e.metaKey && e.shiftKey && e.key === 's')) {
+                e.preventDefault(); showShield(); return;
+            }
+            // Block Ctrl+P (print to PDF / screenshot via print)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                if (typeof toast !== 'undefined') toast.warning('⚠️ Printing is not allowed.');
+                return;
+            }
+            // Block Ctrl+S (save page)
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault(); return;
+            }
+            // Block F12 / DevTools
+            if (e.key === 'F12') { e.preventDefault(); return; }
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i','I','j','J','c','C'].includes(e.key)) {
+                e.preventDefault(); return;
+            }
+        }, true);
+
+        // Visibility-change heuristic (PrintScreen briefly hides tab on Windows)
+        let lastHidden = 0;
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                lastHidden = Date.now();
+            } else {
+                const elapsed = Date.now() - lastHidden;
+                // Very brief hide (<800ms) is likely a screenshot action
+                if (elapsed > 0 && elapsed < 800) showShield();
+            }
+        });
+
+        // Block right-click on entire page (prevents "Save image as")
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault(); return false;
+        }, true);
+
+        // Block drag-to-save on images and iframes
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.tagName === 'IMG' || e.target.tagName === 'IFRAME' ||
+                e.target.tagName === 'VIDEO') {
+                e.preventDefault();
+            }
+        }, true);
+
+    })();
+    </script>
     <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
     <script src="/pwa.js"></script>
 </body>
