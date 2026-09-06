@@ -13,9 +13,156 @@
     <link rel="icon" href="logo.png" type="image/png">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" sizes="180x180" href="logo.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="logo.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="logo.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="logo.png">
+
+    <style>
+        /* ── OTP input boxes ──────────────────────────────────────────────── */
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .otp-inputs input {
+            width: 48px;
+            height: 56px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border: 2px solid var(--border-color, #ddd);
+            border-radius: 12px;
+            background: var(--bg-secondary, #f8f9fa);
+            color: var(--text-primary, #1a1a2e);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .otp-inputs input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+        }
+        .otp-inputs input.otp-filled {
+            border-color: #27ae60;
+            background: rgba(39,174,96,0.06);
+        }
+
+        /* ── Step indicator ──────────────────────────────────────────────── */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border-color, #ddd);
+            transition: all 0.3s;
+        }
+        .step-dot.active {
+            background: #667eea;
+            transform: scale(1.3);
+        }
+        .step-dot.done {
+            background: #27ae60;
+        }
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: var(--border-color, #ddd);
+            transition: background 0.3s;
+        }
+        .step-line.done { background: #27ae60; }
+
+        /* ── Phone field with country code ───────────────────────────────── */
+        .phone-input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .country-code {
+            background: var(--bg-secondary, #f8f9fa);
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-weight: 700;
+            color: var(--text-primary, #1a1a2e);
+            font-size: 0.95rem;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .phone-input-wrapper input {
+            flex: 1;
+        }
+
+        /* ── Resend countdown ────────────────────────────────────────────── */
+        .resend-row {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary, #666);
+            margin-top: 8px;
+        }
+        .resend-row button {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .resend-row button:disabled {
+            color: var(--text-secondary, #999);
+            cursor: not-allowed;
+            text-decoration: none;
+        }
+
+        /* ── Tab switcher (Phone / Email) ────────────────────────────────── */
+        .register-tabs {
+            display: flex;
+            background: var(--bg-secondary, #f0f0f0);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .register-tab {
+            flex: 1;
+            padding: 9px;
+            text-align: center;
+            border: none;
+            border-radius: 9px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            background: transparent;
+            color: var(--text-secondary, #666);
+            transition: all 0.2s;
+        }
+        .register-tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        /* Hide step panels */
+        .register-step { display: none; }
+        .register-step.active { display: block; }
+
+        .phone-verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(39,174,96,0.12);
+            border: 1px solid #27ae60;
+            color: #27ae60;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -31,69 +178,193 @@
     </nav>
 
     <div class="auth-container">
-        <div class="auth-card">
-            <h2>Create Account</h2>
-            <p class="auth-subtitle">Start your learning journey today</p>
-            
-            <form id="registerForm" class="auth-form">
-                <div id="errorMessage" style="display:none;color:#e74c3c;background:#fadbd8;padding:10px;border-radius:8px;margin-bottom:15px"></div>
-                <div id="successMessage" style="display:none;margin-bottom:15px"></div>
-                
-                <div class="form-group">
-                    <label for="fullName">Full Name</label>
-                    <input type="text" id="fullName" required placeholder="John Doe">
+        <div class="auth-card" style="max-width:440px">
+
+            <!-- Step indicator -->
+            <div class="step-indicator" id="stepIndicator">
+                <div class="step-dot active" id="dot1"></div>
+                <div class="step-line" id="line1"></div>
+                <div class="step-dot" id="dot2"></div>
+                <div class="step-line" id="line2"></div>
+                <div class="step-dot" id="dot3"></div>
+            </div>
+
+            <h2 id="stepTitle">Create Account</h2>
+            <p class="auth-subtitle" id="stepSubtitle">Start your learning journey today</p>
+
+            <!-- ── Global messages ──────────────────────────────────────────── -->
+            <div id="errorMessage" style="display:none;color:#e74c3c;background:#fadbd8;padding:10px;border-radius:8px;margin-bottom:15px"></div>
+            <div id="successMessage" style="display:none;margin-bottom:15px"></div>
+
+            <!-- ════════════════════════════════════════════════════════════
+                 STEP 1 — Registration method tabs + details form
+            ════════════════════════════════════════════════════════════ -->
+            <div class="register-step active" id="step1">
+
+                <!-- Tab switcher -->
+                <div class="register-tabs">
+                    <button class="register-tab active" id="tabPhone" onclick="switchTab('phone')">
+                        📱 Phone Number
+                    </button>
+                    <button class="register-tab" id="tabEmail" onclick="switchTab('email')">
+                        ✉️ Email
+                    </button>
                 </div>
-                
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required placeholder="your@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="At least 6 characters">
-                    <div style="margin-top:8px">
-                        <div style="height:4px;background:#eee;border-radius:4px;overflow:hidden">
-                            <div id="strengthBar" style="height:100%;width:0;transition:all 0.3s;border-radius:4px"></div>
-                        </div>
-                        <span id="strengthText" style="font-size:0.75rem;margin-top:4px;display:block"></span>
+
+                <form id="registerForm" class="auth-form" autocomplete="off">
+
+                    <!-- Full Name -->
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" required placeholder="e.g. Abebe Kebede" autocomplete="name">
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <input type="password" id="confirmPassword" required placeholder="Confirm your password">
-                </div>
-                
-                <div class="form-group">
-                    <label for="role">Register as</label>
-                    <select id="role" class="form-select">
-                        <option value="student">Student</option>
-                        <option value="instructor">Instructor</option>
-                    </select>
-                </div>
-                
-                <label class="checkbox-label">
-                    <input type="checkbox" id="terms" required>
-                    I agree to the Terms of Service and Privacy Policy
-                </label>
-                
-                <button type="submit" class="btn btn-large btn-block">Create Account</button>
-                
-                <div class="auth-divider">
-                    <span>OR</span>
-                </div>
-                
-                <button type="button" class="btn btn-social btn-google">
+
+                    <!-- Phone section (default) -->
+                    <div id="phoneSection">
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <div class="phone-input-wrapper">
+                                <div class="country-code">🇪🇹 +251</div>
+                                <input type="tel" id="phoneNumber"
+                                    placeholder="9xxxxxxxx"
+                                    pattern="[0-9]{9}"
+                                    maxlength="9"
+                                    autocomplete="tel"
+                                    style="letter-spacing:2px">
+                            </div>
+                            <small style="color:var(--text-secondary);font-size:0.78rem;margin-top:4px;display:block">
+                                9 ቁጥር ብቻ ያስገቡ (ምሳሌ: 912345678)
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Email section (hidden by default) -->
+                    <div id="emailSection" style="display:none">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" placeholder="your@email.com" autocomplete="email">
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="At least 6 characters" autocomplete="new-password">
+                        <div style="margin-top:8px">
+                            <div style="height:4px;background:#eee;border-radius:4px;overflow:hidden">
+                                <div id="strengthBar" style="height:100%;width:0;transition:all 0.3s;border-radius:4px"></div>
+                            </div>
+                            <span id="strengthText" style="font-size:0.75rem;margin-top:4px;display:block"></span>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password">
+                    </div>
+
+                    <!-- Role -->
+                    <div class="form-group">
+                        <label for="role">Register as</label>
+                        <select id="role" class="form-select">
+                            <option value="student">📚 Student</option>
+                            <option value="instructor">🎓 Instructor</option>
+                        </select>
+                    </div>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="terms" required>
+                        I agree to the Terms of Service and Privacy Policy
+                    </label>
+
+                    <!-- Submit (changes based on tab) -->
+                    <button type="submit" class="btn btn-large btn-block" id="step1Btn">
+                        📱 Send OTP Code
+                    </button>
+
+                </form>
+
+                <div class="auth-divider"><span>OR</span></div>
+
+                <button type="button" class="btn btn-social btn-google" id="googleSignupBtn">
                     🔍 Sign up with Google
                 </button>
-                
+
                 <p class="auth-footer">
                     Already have an account? <a href="auth-login.html" class="link">Login</a>
                 </p>
-            </form>
+            </div>
+
+            <!-- ════════════════════════════════════════════════════════════
+                 STEP 2 — OTP verification
+            ════════════════════════════════════════════════════════════ -->
+            <div class="register-step" id="step2">
+                <div style="text-align:center;margin-bottom:20px">
+                    <div style="font-size:3.5rem;margin-bottom:8px">📱</div>
+                    <p style="color:var(--text-secondary);font-size:0.9rem">
+                        <strong id="otpSentTo"></strong> ላይ 6-digit OTP ተልኳል
+                    </p>
+                </div>
+
+                <!-- 6 boxes for OTP -->
+                <div class="otp-inputs" id="otpInputs">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" data-index="0">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" data-index="1">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" data-index="2">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" data-index="3">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" data-index="4">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-box" data-index="5">
+                </div>
+
+                <button id="verifyOtpBtn" class="btn btn-large btn-block" onclick="verifyOTP()" disabled>
+                    ✅ Verify & Create Account
+                </button>
+
+                <div class="resend-row" style="margin-top:16px">
+                    <span id="resendText">OTP ያልደረሰዎ? </span>
+                    <button id="resendBtn" onclick="resendOTP()" disabled>
+                        ⏳ Resend in <span id="resendCountdown">60</span>s
+                    </button>
+                </div>
+
+                <button onclick="goBackToStep1()"
+                    style="display:block;margin:16px auto 0;background:none;border:none;
+                    color:var(--text-secondary);font-size:0.85rem;cursor:pointer;text-decoration:underline">
+                    ← ተመለስ
+                </button>
+
+                <!-- Invisible reCAPTCHA container for Firebase -->
+                <div id="recaptcha-container"></div>
+            </div>
+
+            <!-- ════════════════════════════════════════════════════════════
+                 STEP 3 — Success
+            ════════════════════════════════════════════════════════════ -->
+            <div class="register-step" id="step3">
+                <div style="text-align:center;padding:20px 0">
+                    <div style="font-size:4rem;margin-bottom:12px">🎉</div>
+                    <h3 style="color:#27ae60;margin-bottom:8px">ምዝገባዎ ተሳክቷል!</h3>
+                    <div class="phone-verified-badge">
+                        ✅ Phone Verified
+                    </div>
+                    <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:16px">
+                        እንኳን ደህና መጡ, <strong id="welcomeName"></strong>!<br>
+                        ወደ courses እየሄዱ ነው...
+                    </p>
+                    <div style="margin-top:20px">
+                        <div style="width:40px;height:40px;border:3px solid #667eea;border-top-color:transparent;
+                            border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto"></div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
+
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 
     <script src="theme.js"></script>
     <script src="api.js"></script>
@@ -101,15 +372,9 @@
     <script src="notifications.js"></script>
     <script src="ai-assistant.js"></script>
 
-    <!-- ── EmailJS Configuration ──────────────────────────────────────────
-         Get your keys from https://www.emailjs.com
-         1. Create a Service  → paste SERVICE_ID below
-         2. Create 2 Templates (welcome + admin alert) → paste template IDs
-         3. Copy Public Key from Account → API Keys
-    ─────────────────────────────────────────────────────────────────────── -->
     <script>
         window.EMAILJS_CONFIG = {
-            PUBLIC_KEY:       'YOUR_PUBLIC_KEY',          // ← paste your EmailJS Public Key here
+            PUBLIC_KEY:       'YOUR_PUBLIC_KEY',
             SERVICE_ID:       'service_b17ciqo',
             WELCOME_TEMPLATE: 't41x1ab',
             ADMIN_TEMPLATE:   '76pbo61',
@@ -117,11 +382,7 @@
         };
     </script>
     <script src="emailjs-service.js"></script>
-
     <script src="auth-register.js"></script>
     <script src="pwa.js"></script>
 </body>
 </html>
-
-
-
