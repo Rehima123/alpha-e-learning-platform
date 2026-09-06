@@ -46,11 +46,11 @@ exports.register = async (req, res, next) => {
             }
         }
 
-        // Create user
+        // Create user — strip empty strings so sparse index works correctly
         const user = await User.create({
             fullName,
-            email: email || undefined,
-            phoneNumber: phoneNumber || undefined,
+            email:          email      || undefined,
+            phoneNumber:    (phoneNumber && phoneNumber.trim()) ? phoneNumber.trim() : undefined,
             educationLevel: educationLevel || undefined,
             password,
             role: role || 'student'

@@ -145,9 +145,29 @@ mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => {
+.then(async () => {
     console.log('✅ MongoDB Connected Successfully');
-    
+
+    // ── Fix: drop the old non-sparse phoneNumber index if it exists ──────────
+    // The old index included empty strings "" which caused E11000 duplicate key
+    // errors when multiple users registered without a phone number.
+    // The User model now defines phoneNumber as sparse:true (no default:'')
+    // so we just need to make sure the old bad index is gone.
+    try {
+        const db = mongoose.connection.db;
+        const indexes = await db.collection('users').indexes();
+        const badIdx = indexes.find(i =>
+            i.name === 'phoneNumber_1' && !i.sparse
+        );
+        if (badIdx) {
+            await db.collection('users').dropIndex('phoneNumber_1');
+            console.log('✅ Dropped old non-sparse phoneNumber_1 index');
+        }
+    } catch (idxErr) {
+        // Index may not exist yet — that's fine
+        console.log('[startup] phoneNumber index check:', idxErr.message);
+    }
+
     // Start Server
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {

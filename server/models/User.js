@@ -45,9 +45,9 @@ const userSchema = new mongoose.Schema({
     phoneNumber: {
         type:   String,
         unique: true,
-        sparse: true,
+        sparse: true,   // sparse = only index non-null values, allows many nulls
         trim:   true,
-        default: '',
+        // NO default — sparse index only works when field is absent/null, not ""
         match:  [/^\+?[\d\s\-]{7,15}$/, 'Please provide a valid phone number']
     },
 

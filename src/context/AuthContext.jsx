@@ -136,10 +136,19 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
+      // Strip empty strings — prevents MongoDB sparse unique index violation
+      const cleanData = { ...userData }
+      if (!cleanData.phoneNumber || !cleanData.phoneNumber.trim()) {
+        delete cleanData.phoneNumber
+      }
+      if (!cleanData.email || !cleanData.email.trim()) {
+        delete cleanData.email
+      }
+
       const res  = await fetch(`${API_BASE_URL}/auth/register`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(userData)
+        body:    JSON.stringify(cleanData)
       })
       const data = await res.json()
       if (!res.ok) return { success: false, error: data.message || 'Registration failed' }

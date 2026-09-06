@@ -81,6 +81,8 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     try {
         // Backend-first registration — no Firebase email-verification gate.
         // Students can start learning immediately after sign-up.
+        // phoneNumber is intentionally omitted (undefined) for email-only users
+        // to avoid MongoDB sparse unique index E11000 errors.
         const response = await api.register({ fullName, email, password, role });
         if (response.success) {
             api.setAuthToken(response.token);
