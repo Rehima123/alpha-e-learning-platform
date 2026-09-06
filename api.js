@@ -51,7 +51,7 @@ class APIService {
                     setTimeout(() => window.location.href = 'auth-login.html', 1500);
                     throw new Error(data.message);
                 }
-                throw new Error(data.message || 'API request failed');
+                throw new Error(data.message || 'Server error. Please try again.');
             }
 
             this.offlineMode = false;
@@ -64,6 +64,7 @@ class APIService {
                 this._showOfflineBanner();
                 return this._offlineFallback(endpoint, options);
             }
+            // Server error — re-throw with clean message
             throw error;
         }
     }

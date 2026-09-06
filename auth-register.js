@@ -255,9 +255,18 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
                 'auth/too-many-requests':      'ብዙ ጊዜ ሞክረዋል። ትንሽ ቆይተው ይሞክሩ።',
                 'auth/quota-exceeded':         'SMS quota exceeded. ቆይተው ይሞክሩ።',
                 'auth/captcha-check-failed':   'reCAPTCHA failed. Page ን refresh አድርጉ።',
-                'auth/network-request-failed': 'ኢንተርኔት ችግር አለ። ይፈትሹ።'
+                'auth/network-request-failed': 'ኢንተርኔት ችግር አለ። ይፈትሹ።',
+                'auth/missing-phone-number':   'ስልክ ቁጥር ያስፈልጋል።',
+                'auth/app-not-authorized':     'Firebase ላይ Phone Auth enabled አልሆነም። Console ይፈትሹ።'
             };
-            showError(msgs[err.code] || ('OTP መላክ አልተሳካም: ' + err.message));
+            // "Firebase not configured" — show friendly message
+            if (err.message?.includes('Firebase not configured')) {
+                showError('⚠️ Phone OTP አሁን አይሰራም። ✉️ Email tab ይጠቀሙ።');
+            } else if (err.code) {
+                showError(msgs[err.code] || ('OTP መላክ አልተሳካም: ' + err.message));
+            } else {
+                showError('OTP መላክ አልተሳካም። ደግሞ ይሞክሩ ወይም ✉️ Email tab ይጠቀሙ።');
+            }
             // Reset reCAPTCHA on error
             if (recaptchaVerifier) {
                 try { recaptchaVerifier.clear(); } catch {}
@@ -274,7 +283,12 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     // PATH B — Email (direct registration, no OTP)
     // ════════════════════════════════════════════════════════════════════════
     const email = document.getElementById('email').value.trim();
-    if (!email) { showError('ኢሜይልዎን ያስገቡ።'); submitBtn.disabled = false; submitBtn.textContent = '🎓 Create Account'; return; }
+    if (!email) {
+        showError('ኢሜይልዎን ያስገቡ።');
+        submitBtn.disabled    = false;
+        submitBtn.textContent = '🎓 Create Account';
+        return;
+    }
 
     try {
         const response = await api.register({ fullName, email, password, role });
@@ -288,7 +302,6 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
                 role:     response.user.role
             });
 
-            // Show success step
             document.getElementById('welcomeName').textContent = response.user.fullName;
             showStep(3);
             setTimeout(() => {
@@ -296,10 +309,16 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
                     ? 'instructor-dashboard.html' : 'courses.html';
             }, 1800);
         } else {
-            throw new Error(response.message || 'Registration failed');
+            // Surface the actual backend error message
+            showError(response.message || 'ምዝገባ አልተሳካም። ደግሞ ይሞክሩ።');
         }
     } catch (err) {
-        showError(err.message || 'Registration failed.');
+        // Network error — server may be sleeping (cold start), retry once
+        if (err.message?.includes('API request failed') || err.message?.includes('fetch')) {
+            showError('⏳ Server እየተነሳ ነው... ደቂቃ ቆይተው ደግሞ ይሞክሩ።');
+        } else {
+            showError(err.message || 'ምዝገባ አልተሳካም።');
+        }
     } finally {
         submitBtn.disabled    = false;
         submitBtn.textContent = '🎓 Create Account';
