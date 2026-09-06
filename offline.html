@@ -210,6 +210,39 @@
             <h3 style="color:#f39c12">📡 You are offline — only saved videos are playable.</h3>
         </div>
 
+        <!-- Download All Courses — single big button -->
+        <div style="background:linear-gradient(135deg,rgba(102,126,234,0.15),rgba(118,75,162,0.15));
+            border:1.5px solid rgba(102,126,234,0.35);border-radius:20px;padding:24px 20px;
+            text-align:center;margin-bottom:1.5rem">
+            <div style="font-size:2.5rem;margin-bottom:8px">📥</div>
+            <h3 style="color:var(--text-primary);margin:0 0 6px;font-size:1.1rem;font-weight:800">
+                Download All 12 Courses
+            </h3>
+            <p style="color:var(--text-secondary);font-size:0.84rem;margin:0 0 14px;max-width:400px;margin-left:auto;margin-right:auto">
+                አንዴ download ካደረጉ ሁሉም ኮርሶች ቪዲዮዎች internet ሳያስፈልግ ይሠራሉ።<br>
+                <em style="font-size:0.78rem">Once downloaded — watch all videos offline anytime.</em>
+            </p>
+            <div id="downloadAllProgress" style="display:none;margin-bottom:12px">
+                <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;margin-bottom:6px">
+                    <div id="downloadAllBar" style="height:100%;width:0;background:linear-gradient(90deg,#667eea,#27ae60);border-radius:8px;transition:width 0.4s"></div>
+                </div>
+                <span id="downloadAllStatus" style="font-size:0.8rem;color:var(--text-secondary)">Preparing...</span>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                <button id="downloadAllBtn" onclick="downloadAllCourses()"
+                    style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;
+                    padding:14px 32px;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;
+                    box-shadow:0 6px 20px rgba(102,126,234,0.4);transition:all 0.2s">
+                    📥 Download All Courses
+                </button>
+                <button onclick="checkDownloadedCourses()"
+                    style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border-color);
+                    padding:14px 20px;border-radius:14px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s">
+                    🔍 Check Status
+                </button>
+            </div>
+        </div>
+
         <!-- Tabs -->
         <div class="tab-bar">
             <button class="tab-btn active" id="tabAvailable" onclick="switchTab('available')">
@@ -496,6 +529,90 @@
 
     // Disable right-click in player overlay
     document.getElementById('playerOverlay').addEventListener('contextmenu', e => e.preventDefault());
+
+    // ── Download ALL courses at once ──────────────────────────────────────────
+    async function downloadAllCourses() {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (!user._id && !user.id) {
+            if (typeof toast !== 'undefined') toast.error('Please login first.');
+            window.location.href = 'auth-login.html';
+            return;
+        }
+
+        const btn      = document.getElementById('downloadAllBtn');
+        const progDiv  = document.getElementById('downloadAllProgress');
+        const progBar  = document.getElementById('downloadAllBar');
+        const progStat = document.getElementById('downloadAllStatus');
+
+        btn.disabled    = true;
+        btn.textContent = '⏳ Downloading...';
+        progDiv.style.display = 'block';
+
+        let completed = 0;
+        const total   = SAMPLE_VIDEOS.length;
+
+        for (const v of SAMPLE_VIDEOS) {
+            if (savedIds.has(v.id)) {
+                // Already saved — skip
+                completed++;
+            } else {
+                progStat.textContent = `Saving: "${v.title}" (${completed + 1}/${total})`;
+                try {
+                    await dbPut({
+                        id:        v.id,
+                        title:     v.title,
+                        course:    v.course,
+                        duration:  v.duration,
+                        youtubeId: v.youtubeId,
+                        thumbnail: v.thumbnail,
+                        savedBy:   user._id || user.id || 'guest',
+                        savedAt:   Date.now(),
+                        secure:    true,
+                    });
+                    savedIds.add(v.id);
+                    completed++;
+                } catch (err) {
+                    console.warn('[Offline] Failed to save', v.title, err.message);
+                    completed++;
+                }
+            }
+            // Update progress bar
+            const pct = Math.round((completed / total) * 100);
+            progBar.style.width = pct + '%';
+            progStat.textContent = `${completed}/${total} courses saved (${pct}%)`;
+            // Small delay so UI can update
+            await new Promise(r => setTimeout(r, 60));
+        }
+
+        document.getElementById('savedCount').textContent = savedIds.size;
+        btn.disabled    = false;
+        btn.textContent = '✅ All Downloaded!';
+        btn.style.background = 'linear-gradient(135deg,#27ae60,#1a7030)';
+        progStat.textContent = `✅ ${savedIds.size} courses saved for offline viewing!`;
+
+        if (typeof toast !== 'undefined') {
+            toast.success(`✅ All ${savedIds.size} courses saved for offline viewing!`);
+        }
+
+        renderAvailable();
+    }
+
+    // ── Check downloaded courses status ───────────────────────────────────────
+    async function checkDownloadedCourses() {
+        const all   = await dbGetAll();
+        const count = all.length;
+        const total = SAMPLE_VIDEOS.length;
+        if (typeof toast !== 'undefined') {
+            if (count === 0) {
+                toast.warning('No courses downloaded yet. Click "Download All Courses".');
+            } else if (count >= total) {
+                toast.success(`✅ All ${count} courses are saved offline!`);
+            } else {
+                toast.warning(`${count}/${total} courses saved. Click "Download All" to get the rest.`);
+            }
+        }
+        switchTab('saved');
+    }
 
     // ── Init ──────────────────────────────────────────────────────────────────
     async function init() {

@@ -1,15 +1,22 @@
 const ETB_RATE = 56;
 const TAX_RATE = 0.15;
 
+// ── FLAT PRICE: 1000 ETB for everything ───────────────────────────────────────
+const FLAT_PRICE_ETB = 1000;
+
 const params = new URLSearchParams(window.location.search);
 const courseId = params.get('courseId');
 const plan     = params.get('plan');
-const method   = params.get('method'); // 'manual' auto-selects bank transfer tab
+const method   = params.get('method');
 
-let subtotal = 0, discount = 0, couponData = null;
+let subtotal = FLAT_PRICE_ETB, discount = 0, couponData = null;
 let selectedMethod = method === 'manual' ? 'manual' : 'chapa';
 
-const planInfo = { monthly: { name: 'Monthly Subscription', etb: 1650 }, annual: { name: 'Annual Subscription', etb: 11300 } };
+// All plans now resolve to the same 1000 ETB flat price
+const planInfo = {
+    monthly: { name: 'Full Access — All 12 Courses (1 Year)', etb: FLAT_PRICE_ETB },
+    annual:  { name: 'Full Access — All 12 Courses (1 Year)', etb: FLAT_PRICE_ETB }
+};
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
@@ -23,15 +30,16 @@ async function init() {
                 const c = res.course;
                 document.getElementById('orderIcon').textContent  = c.icon || '📚';
                 document.getElementById('orderTitle').textContent = c.title;
-                document.getElementById('orderType').textContent  = `Course · ${c.category}`;
-                subtotal = Math.round(c.price * ETB_RATE);
+                document.getElementById('orderType').textContent  = `Full Access — All 12 Courses`;
+                subtotal = FLAT_PRICE_ETB;   // always 1000 ETB
             }
         } catch { toast?.error('Failed to load course info'); }
-    } else if (plan && planInfo[plan]) {
-        document.getElementById('orderIcon').textContent  = plan === 'annual' ? '⭐' : '📅';
-        document.getElementById('orderTitle').textContent = planInfo[plan].name;
-        document.getElementById('orderType').textContent  = 'Subscription';
-        subtotal = planInfo[plan].etb;
+    } else {
+        // Plan or default — always 1000 ETB
+        document.getElementById('orderIcon').textContent  = '🎓';
+        document.getElementById('orderTitle').textContent = 'Full Access — All 12 Courses';
+        document.getElementById('orderType').textContent  = '1 Year · Offline Download Included';
+        subtotal = FLAT_PRICE_ETB;
     }
 
     updateTotals();

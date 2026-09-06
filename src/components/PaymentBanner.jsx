@@ -1,268 +1,222 @@
 /**
- * PaymentBanner.jsx
- *
- * Animated auto-playing carousel banner (3.5s interval) showcasing
- * platform benefits. Slides between 3 cards with smooth CSS transitions.
- * Bilingual: English + Amharic.
+ * PaymentBanner.jsx — Auto-playing carousel, 3.5s interval
+ * 3 slides: HD Video | Mid/Final Exam PDF | Full Access 1000 ETB
+ * CTA → /subscription  |  Bilingual EN + Amharic
  */
 
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  PlayCircle,
-  FileText,
-  Unlock,
-  ChevronLeft,
-  ChevronRight,
-  Zap
+  PlayCircle, FileText, Unlock,
+  ChevronLeft, ChevronRight, Zap, Download, Wifi
 } from 'lucide-react'
 
-// ── Slide data ────────────────────────────────────────────────────────────────
+const PRICE     = '1,000 ETB'
+const INTERVAL  = 3500
+
 const SLIDES = [
   {
-    id:       1,
-    icon:     PlayCircle,
-    iconColor:'text-blue-400',
-    bg:       'from-blue-600/20 via-blue-900/10 to-transparent',
-    accent:   'border-blue-500/30',
-    badge:    '🎬 Video',
-    badgeCss: 'bg-blue-500/15 text-blue-300 border-blue-500/25',
-    title:    'HD Video Lectures',
-    titleAm:  'ሁሉም ኮርሶች ቪዲዮ',
-    desc:     'Crystal-clear HD lectures for all 12 Ethiopian Freshman courses — watch anytime, anywhere.',
-    descAm:   'ሁሉም 12 ኮርሶች HD ቪዲዮ ትምህርቶች — internet ሲኖርዎ ወይም offline ሲሆን ይጠቀሙ።',
-    highlights: ['📐 Math & Physics', '🧪 Chemistry & Biology', '📖 English & Logic'],
+    id: 1,
+    Icon: PlayCircle,
+    iconCls: 'text-blue-400',
+    gradient: 'from-blue-600/25 via-blue-900/10',
+    border: 'border-blue-500/25',
+    badge: '🎬 Video',
+    badgeCls: 'bg-blue-500/15 text-blue-300 border-blue-500/25',
+    en: 'HD Video Lectures — All 12 Courses',
+    am: 'ሁሉም 12 ኮርሶች HD ቪዲዮ',
+    desc: 'Crystal-clear HD video for every Ethiopian Freshman subject — watch online or save offline.',
+    pills: ['📐 Math & Physics', '🧪 Chemistry & Biology', '📖 English & Logic'],
   },
   {
-    id:       2,
-    icon:     FileText,
-    iconColor:'text-purple-400',
-    bg:       'from-purple-600/20 via-purple-900/10 to-transparent',
-    accent:   'border-purple-500/30',
-    badge:    '📄 PDF',
-    badgeCss: 'bg-purple-500/15 text-purple-300 border-purple-500/25',
-    title:    'Mid & Final Exam Questions + PDF Notes',
-    titleAm:  'ፈተና ጥያቄዎች + PDF ማስታወሻ',
-    desc:     'Past mid-term & final exam questions with detailed PDF notes — everything you need to score top marks.',
-    descAm:   'ያለፉ ፈተናዎች ጥያቄዎች እና ዝርዝር PDF ማስታወሻዎች — ሁሉም ለ download ዝግጁ ናቸው።',
-    highlights: ['📝 Mid-term Questions', '📋 Final Exam Questions', '📑 Detailed PDF Notes'],
+    id: 2,
+    Icon: FileText,
+    iconCls: 'text-purple-400',
+    gradient: 'from-purple-600/25 via-purple-900/10',
+    border: 'border-purple-500/25',
+    badge: '📄 PDF',
+    badgeCls: 'bg-purple-500/15 text-purple-300 border-purple-500/25',
+    en: 'Mid & Final Exam Questions + PDF Notes',
+    am: 'ፈተና ጥያቄዎች + PDF ማስታወሻ',
+    desc: 'Past mid-term & final exam questions with full PDF notes — everything to ace your exams.',
+    pills: ['📝 Mid-term Qs', '📋 Final Exam Qs', '📑 PDF Notes'],
   },
   {
-    id:       3,
-    icon:     Unlock,
-    iconColor:'text-green-400',
-    bg:       'from-green-600/20 via-emerald-900/10 to-transparent',
-    accent:   'border-green-500/30',
-    badge:    '✅ Full Access',
-    badgeCss: 'bg-green-500/15 text-green-300 border-green-500/25',
-    title:    'Unlock Full Access',
-    titleAm:  'ሁሉም ይፈቱ',
-    desc:     'One payment — unlimited access to all courses, videos, PDFs, and offline PWA for 1 full year.',
-    descAm:   'አንድ ምዝገባ — ሁሉም ቪዲዮዎች፣ PDF፣ Offline access ለ1 ዓመት ይፈቱልዎ።',
-    highlights: ['🚀 Instant Access', '📱 Offline PWA', '🎓 All 12 Courses'],
+    id: 3,
+    Icon: Unlock,
+    iconCls: 'text-green-400',
+    gradient: 'from-green-600/25 via-emerald-900/10',
+    border: 'border-green-500/25',
+    badge: '✅ Full Access',
+    badgeCls: 'bg-green-500/15 text-green-300 border-green-500/25',
+    en: `Unlock Everything — Only ${PRICE}`,
+    am: `ሁሉም ይፈቱ — ዋጋ ${PRICE} ብቻ`,
+    desc: `One payment of ${PRICE} — all 12 courses, videos, PDFs, offline download for a full year.`,
+    pills: ['📱 Offline Download', `💰 ${PRICE} ብቻ`, '🎓 All 12 Courses'],
   },
 ]
 
-const INTERVAL_MS = 3500
-
-// ─────────────────────────────────────────────────────────────────────────────
 export default function PaymentBanner() {
-  const navigate   = useNavigate()
-  const [active, setActive]         = useState(0)
-  const [animDir, setAnimDir]       = useState('right')  // 'right' | 'left'
-  const [isVisible, setIsVisible]   = useState(true)
-  const [isPaused, setIsPaused]     = useState(false)
+  const navigate = useNavigate()
+  const [active,   setActive]   = useState(0)
+  const [dir,      setDir]      = useState('right')
+  const [visible,  setVisible]  = useState(true)
+  const [paused,   setPaused]   = useState(false)
 
-  // ── Go to slide ──────────────────────────────────────────────────────────
-  const goTo = useCallback((idx, dir = 'right') => {
-    setIsVisible(false)
-    setAnimDir(dir)
-    setTimeout(() => {
-      setActive(idx)
-      setIsVisible(true)
-    }, 250)
+  const goTo = useCallback((idx, d = 'right') => {
+    setVisible(false)
+    setDir(d)
+    setTimeout(() => { setActive(idx); setVisible(true) }, 220)
   }, [])
 
-  const next = useCallback(() => {
-    goTo((active + 1) % SLIDES.length, 'right')
-  }, [active, goTo])
+  const next = useCallback(() => goTo((active + 1) % SLIDES.length, 'right'), [active, goTo])
+  const prev = useCallback(() => goTo((active - 1 + SLIDES.length) % SLIDES.length, 'left'), [active, goTo])
 
-  const prev = useCallback(() => {
-    goTo((active - 1 + SLIDES.length) % SLIDES.length, 'left')
-  }, [active, goTo])
-
-  // ── Auto-play ────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (isPaused) return
-    const timer = setInterval(next, INTERVAL_MS)
-    return () => clearInterval(timer)
-  }, [next, isPaused])
+    if (paused) return
+    const t = setInterval(next, INTERVAL)
+    return () => clearInterval(t)
+  }, [next, paused])
 
-  const slide = SLIDES[active]
-  const Icon  = slide.icon
+  const s = SLIDES[active]
 
   return (
     <div
-      className="w-full mx-auto max-w-6xl px-4 py-3"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      className="w-full max-w-6xl mx-auto px-4 pt-3 pb-1"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
     >
-      {/* ── Banner card ──────────────────────────────────────────────────── */}
+      {/* ── Card ── */}
       <div className={`
-        relative overflow-hidden rounded-2xl
-        bg-gradient-to-br ${slide.bg}
-        border ${slide.accent}
-        bg-slate-900/60 backdrop-blur-sm
-        shadow-xl shadow-black/30
-        transition-all duration-500
+        relative overflow-hidden rounded-2xl border ${s.border}
+        bg-gradient-to-br ${s.gradient} to-slate-900/80
+        shadow-xl shadow-black/40 backdrop-blur-sm
       `}>
 
-        {/* Background glow */}
-        <div className="absolute inset-0 bg-slate-900/50 pointer-events-none" />
-        <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/3 rounded-full blur-3xl pointer-events-none" />
+        {/* BG overlay */}
+        <div className="absolute inset-0 bg-slate-900/55 pointer-events-none" />
 
-        {/* ── Slide content ─────────────────────────────────────────────── */}
+        {/* ── Price chip — always visible top-right ── */}
+        <div className="absolute top-3 right-3 z-20">
+          <span className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black
+            text-[11px] font-black px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+            💰 {PRICE} only
+          </span>
+        </div>
+
+        {/* ── Slide body ── */}
         <div
-          className={`
-            relative z-10 flex flex-col md:flex-row items-center gap-5 p-5 md:p-6
-            transition-all duration-250
-            ${isVisible
-              ? 'opacity-100 translate-x-0'
-              : animDir === 'right'
-                ? 'opacity-0 -translate-x-4'
-                : 'opacity-0 translate-x-4'
-            }
-          `}
-          style={{ transition: 'opacity 0.25s ease, transform 0.25s ease' }}
+          className="relative z-10 flex flex-col sm:flex-row items-center gap-4 px-5 pt-5 pb-3"
+          style={{
+            opacity:   visible ? 1 : 0,
+            transform: visible ? 'translateX(0)' : dir === 'right' ? 'translateX(-14px)' : 'translateX(14px)',
+            transition: 'opacity 0.22s ease, transform 0.22s ease'
+          }}
         >
-
-          {/* Icon column */}
-          <div className="flex-shrink-0 flex flex-col items-center gap-2">
-            <div className={`
-              w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center
-              bg-white/8 border border-white/10
-            `}>
-              <Icon className={`w-8 h-8 ${slide.iconColor}`} strokeWidth={1.5} />
+          {/* Icon */}
+          <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
+            <div className="w-14 h-14 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center">
+              <s.Icon className={`w-7 h-7 ${s.iconCls}`} strokeWidth={1.5} />
             </div>
-            {/* Badge */}
-            <span className={`
-              text-[10px] font-bold px-2 py-0.5 rounded-lg border whitespace-nowrap
-              ${slide.badgeCss}
-            `}>
-              {slide.badge}
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${s.badgeCls}`}>
+              {s.badge}
             </span>
           </div>
 
-          {/* Text column */}
-          <div className="flex-1 min-w-0 text-center md:text-left">
-            <h3 className="text-base md:text-lg font-black text-white leading-tight">
-              {slide.title}
-            </h3>
-            <p className="text-purple-300/80 text-xs font-semibold mt-0.5 mb-2">
-              {slide.titleAm}
+          {/* Text */}
+          <div className="flex-1 min-w-0 text-center sm:text-left">
+            <p className="text-base md:text-lg font-black text-white leading-tight pr-16 sm:pr-0">
+              {s.en}
             </p>
-            <p className="text-slate-400 text-xs md:text-sm leading-relaxed hidden md:block">
-              {slide.desc}
-            </p>
-            {/* Highlights — pill tags */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-1.5 mt-2">
-              {slide.highlights.map(h => (
-                <span key={h}
-                  className="text-[10px] font-semibold bg-white/8 border border-white/10
+            <p className="text-purple-300/80 text-xs font-semibold mt-0.5 mb-1.5">{s.am}</p>
+            <p className="text-slate-400 text-xs leading-relaxed hidden md:block mb-2">{s.desc}</p>
+            <div className="flex flex-wrap justify-center sm:justify-start gap-1.5">
+              {s.pills.map(p => (
+                <span key={p} className="text-[10px] font-semibold bg-white/8 border border-white/10
                   text-slate-300 px-2 py-0.5 rounded-lg whitespace-nowrap">
-                  {h}
+                  {p}
                 </span>
               ))}
             </div>
           </div>
 
-          {/* CTA button */}
-          <div className="flex-shrink-0 flex flex-col items-center gap-2">
+          {/* CTA */}
+          <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
             <button
               onClick={() => navigate('/subscription')}
-              className="
-                flex items-center gap-2 px-5 py-3 rounded-xl
+              className="flex items-center gap-2 px-5 py-3 rounded-xl font-black text-sm
                 bg-gradient-to-r from-blue-600 to-purple-600
                 hover:from-blue-500 hover:to-purple-500
-                text-white font-black text-sm
-                shadow-lg shadow-purple-900/30
-                transition-all duration-200
-                whitespace-nowrap
-              "
+                text-white shadow-lg shadow-purple-900/30 transition-all whitespace-nowrap"
             >
               <Zap className="w-4 h-4" />
               Get Full Access
             </button>
-            <span className="text-slate-500 text-[10px]">ሁሉም ኮርሶች 🔓</span>
+            <span className="text-yellow-400/80 text-[11px] font-bold">{PRICE} ለሁሉም 🔓</span>
           </div>
-
         </div>
 
-        {/* ── Bottom nav: dots + arrows ─────────────────────────────────── */}
-        <div className="relative z-10 flex items-center justify-between px-5 pb-4 -mt-1">
-
-          {/* Prev arrow */}
+        {/* ── Offline download nudge bar ── */}
+        <div className="relative z-10 mx-5 mb-3 flex items-center gap-2
+          bg-white/5 border border-white/8 rounded-xl px-3 py-2">
+          <Download className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+          <Wifi className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+          <p className="text-[11px] text-slate-300 flex-1">
+            <span className="text-green-300 font-bold">Offline Download included</span>
+            {' '}— አንዴ ከፍለው ሁሉም ቪዲዮዎች offline ይሠሩሉ (internet ሳያስፈልግ)
+          </p>
           <button
-            onClick={prev}
-            className="w-7 h-7 flex items-center justify-center rounded-lg
-              bg-white/6 hover:bg-white/12 border border-white/8
-              text-slate-400 hover:text-white transition-all"
-            aria-label="Previous slide"
+            onClick={() => navigate('/subscription')}
+            className="flex-shrink-0 text-[10px] font-bold text-green-400
+              bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-lg
+              hover:bg-green-500/20 transition-all whitespace-nowrap"
           >
+            Download Now →
+          </button>
+        </div>
+
+        {/* ── Nav row ── */}
+        <div className="relative z-10 flex items-center justify-between px-5 pb-3">
+          <button onClick={prev} aria-label="Previous"
+            className="w-7 h-7 flex items-center justify-center rounded-lg
+              bg-white/6 hover:bg-white/12 border border-white/8 text-slate-400 hover:text-white transition-all">
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          {/* Dot indicators */}
+          {/* Dots */}
           <div className="flex items-center gap-2">
-            {SLIDES.map((s, i) => (
-              <button
-                key={s.id}
-                onClick={() => goTo(i, i > active ? 'right' : 'left')}
-                aria-label={`Go to slide ${i + 1}`}
-                className="transition-all duration-300"
-              >
-                <div className={`
-                  rounded-full transition-all duration-300
-                  ${i === active
+            {SLIDES.map((sl, i) => (
+              <button key={sl.id} onClick={() => goTo(i, i > active ? 'right' : 'left')}
+                aria-label={`Slide ${i + 1}`} className="transition-all duration-300">
+                <div className={`rounded-full transition-all duration-300 ${
+                  i === active
                     ? 'w-6 h-2 bg-gradient-to-r from-blue-500 to-purple-500'
-                    : 'w-2 h-2 bg-white/20 hover:bg-white/40'}
-                `} />
+                    : 'w-2 h-2 bg-white/20 hover:bg-white/40'
+                }`} />
               </button>
             ))}
           </div>
 
-          {/* Progress bar + Next arrow */}
+          {/* Progress + next */}
           <div className="flex items-center gap-2">
-            {/* Auto-play progress bar */}
-            {!isPaused && (
-              <div className="w-14 h-1 bg-white/10 rounded-full overflow-hidden hidden sm:block">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
-                  style={{
-                    animation: `slideProgress ${INTERVAL_MS}ms linear infinite`,
-                    width: '100%',
-                    transformOrigin: 'left'
-                  }}
-                />
+            {!paused && (
+              <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden hidden sm:block">
+                <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                  key={active}
+                  style={{ animation: `swpProg ${INTERVAL}ms linear forwards`, transformOrigin: 'left' }} />
               </div>
             )}
-            <button
-              onClick={next}
+            <button onClick={next} aria-label="Next"
               className="w-7 h-7 flex items-center justify-center rounded-lg
-                bg-white/6 hover:bg-white/12 border border-white/8
-                text-slate-400 hover:text-white transition-all"
-              aria-label="Next slide"
-            >
+                bg-white/6 hover:bg-white/12 border border-white/8 text-slate-400 hover:text-white transition-all">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-
         </div>
       </div>
 
-      {/* Progress bar animation keyframe */}
       <style>{`
-        @keyframes slideProgress {
+        @keyframes swpProg {
           from { transform: scaleX(0); }
           to   { transform: scaleX(1); }
         }
