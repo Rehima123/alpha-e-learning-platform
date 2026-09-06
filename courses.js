@@ -328,7 +328,7 @@ function renderCourses() {
                     <div class="course-instructor"><span>👤 ${instructorName}</span></div>
                     <div class="course-rating">
                         <span class="stars">${'⭐'.repeat(Math.floor(course.rating || 0))}</span>
-                        <span>${(course.rating || 0).toFixed(1)} (${enrolledCount > 0 ? enrolledCount.toLocaleString() + ' students' : 'Be the first!'})</span>
+                        <span>${(course.rating || 0).toFixed(1)}</span>
                     </div>
                     <div class="course-meta">
                         <span>📚 ${totalLessons} lessons</span> |

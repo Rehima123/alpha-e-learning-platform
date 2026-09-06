@@ -293,7 +293,6 @@ function renderCourseHeader() {
                         <span>👤 ${c.instructorName || 'Unknown'}</span>
                         <span>📚 ${totalChapters} chapters · ${totalLessons} lessons</span>
                         <span>⭐ ${(c.rating||0).toFixed(1)}</span>
-                        <span>👥 ${(c.enrolledStudents||0).toLocaleString()} students</span>
                         <span>⏱️ ${c.duration}</span>
                     </div>
 
