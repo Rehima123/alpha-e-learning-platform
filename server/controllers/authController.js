@@ -217,6 +217,22 @@ exports.getMe = async (req, res, next) => {
     }
 };
 
+// @desc    Get payment status for current user
+exports.getPaymentStatus = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id)
+            .select('paymentStatus enrolledPackage');
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        res.json({
+            success: true,
+            paymentStatus:  user.paymentStatus  || 'UNPAID',
+            enrolledPackage: user.enrolledPackage || 'None'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 // @desc    Update profile
 exports.updateProfile = async (req, res, next) => {
     try {

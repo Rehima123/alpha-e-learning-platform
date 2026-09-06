@@ -313,6 +313,10 @@ class APIService {
         return this.request('/auth/me');
     }
 
+    async getPaymentStatus() {
+        return this.request('/auth/payment-status');
+    }
+
     async logout() {
         return this.request('/auth/logout', { method: 'POST' });
     }

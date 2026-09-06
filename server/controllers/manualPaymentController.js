@@ -83,6 +83,11 @@ exports.submitManualReceipt = async (req, res) => {
             status:          'pending_verification'
         });
 
+        // Mark user payment status as PENDING
+        if (/^[a-f\d]{24}$/i.test(studentId)) {
+            await User.findByIdAndUpdate(studentId, { paymentStatus: 'PENDING' });
+        }
+
         // ── Send email to owner ───────────────────────────────────────────────
         try {
             const adminDashboardUrl = `${CLIENT_URL}/admin-dashboard.html?tab=manual-payments`;
@@ -321,17 +326,17 @@ exports.approveReceipt = async (req, res) => {
             reviewedAt: new Date()
         });
 
-        // Assign package to student if present
+        // Assign package to student if present + set paymentStatus APPROVED
+        const updateFields = { paymentStatus: 'APPROVED' };
         if (payment.enrolledPackage && payment.enrolledPackage !== 'None') {
             const validPackages = ['1st Semester Natural', '1st Semester Social',
                                    '2nd Semester Natural', '2nd Semester Social'];
-            if (validPackages.includes(payment.enrolledPackage) &&
-                /^[a-f\d]{24}$/i.test(studentId)) {
-                try {
-                    await User.findByIdAndUpdate(studentId,
-                        { enrolledPackage: payment.enrolledPackage });
-                } catch (_) {}
+            if (validPackages.includes(payment.enrolledPackage)) {
+                updateFields.enrolledPackage = payment.enrolledPackage;
             }
+        }
+        if (/^[a-f\d]{24}$/i.test(studentId)) {
+            await User.findByIdAndUpdate(studentId, updateFields);
         }
 
         // Create or update enrollment (only if course is a valid ObjectId)

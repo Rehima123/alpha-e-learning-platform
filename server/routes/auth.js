@@ -62,6 +62,11 @@ router.post('/reset-password/:token', [
 // @access  Private
 router.post('/logout', protect, authController.logout);
 
+// @route   GET /api/auth/payment-status
+// @desc    Get current user's payment status
+// @access  Private
+router.get('/payment-status', protect, authController.getPaymentStatus);
+
 // @route   POST /api/auth/sync-user
 // @desc    Sync Firebase user to MongoDB (called after Google/Firebase login)
 // @access  Public (Firebase token verified client-side before calling)

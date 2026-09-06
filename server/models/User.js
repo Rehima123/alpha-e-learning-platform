@@ -103,6 +103,13 @@ const userSchema = new mongoose.Schema({
         enum:    ['None', '1st Semester Natural', '1st Semester Social',
                   '2nd Semester Natural', '2nd Semester Social'],
         default: 'None'
+    },
+
+    // ── Payment status (3-state) ──────────────────────────────────────────────
+    paymentStatus: {
+        type:    String,
+        enum:    ['UNPAID', 'PENDING', 'APPROVED'],
+        default: 'UNPAID'
     }
 
 }, { timestamps: true });   // adds createdAt + updatedAt automatically
