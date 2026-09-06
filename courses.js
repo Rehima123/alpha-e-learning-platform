@@ -107,7 +107,7 @@ const STATIC_COURSES = [
         description: 'Microeconomics and macroeconomics fundamentals. Supply, demand, markets, GDP, inflation and monetary policy.',
         level: 'Beginner', category: 'social', duration: '14 weeks',
         instructor: { fullName: 'Dr. Temesgen Alemu' }, instructorName: 'Dr. Temesgen Alemu',
-        rating: 4.7, enrolledStudents: 1010, totalLessons: 26, isPremium: true, price: 120,
+        rating: 4.7, enrolledStudents: 1010, totalLessons: 26, isPremium: true, price: 1000,
         isFreePreview: true, createdAt: '2024-01-13'
     },
     {
@@ -115,7 +115,7 @@ const STATIC_COURSES = [
         description: 'Cell biology, genetics, evolution, ecology and physiology. Foundation course for Medicine and Natural Science students.',
         level: 'Intermediate', category: 'natural', duration: '16 weeks',
         instructor: { fullName: 'Dr. Emebet Tadesse' }, instructorName: 'Dr. Emebet Tadesse',
-        rating: 4.8, enrolledStudents: 1180, totalLessons: 32, isPremium: true, price: 150,
+        rating: 4.8, enrolledStudents: 1180, totalLessons: 32, isPremium: true, price: 1000,
         isFreePreview: true, createdAt: '2024-01-14'
     },
     {
@@ -123,7 +123,7 @@ const STATIC_COURSES = [
         description: 'Atomic structure, chemical bonding, reactions, stoichiometry and thermochemistry for science stream students.',
         level: 'Intermediate', category: 'natural', duration: '16 weeks',
         instructor: { fullName: 'Prof. Dawit Hailu' }, instructorName: 'Prof. Dawit Hailu',
-        rating: 4.6, enrolledStudents: 890, totalLessons: 30, isPremium: true, price: 150,
+        rating: 4.6, enrolledStudents: 890, totalLessons: 30, isPremium: true, price: 1000,
         isFreePreview: true, createdAt: '2024-01-15'
     },
     {
@@ -131,7 +131,7 @@ const STATIC_COURSES = [
         description: 'Differential equations, linear algebra, vector calculus and complex analysis for engineering and science majors.',
         level: 'Advanced', category: 'natural', duration: '16 weeks',
         instructor: { fullName: 'Prof. Bekele Tadesse' }, instructorName: 'Prof. Bekele Tadesse',
-        rating: 4.5, enrolledStudents: 640, totalLessons: 34, isPremium: true, price: 5,
+        rating: 4.5, enrolledStudents: 640, totalLessons: 34, isPremium: true, price: 1000,
         createdAt: '2024-01-16'
     },
     {
@@ -163,7 +163,7 @@ const STATIC_COURSES = [
         description: 'Complete exam preparation with past papers, mock tests and AI-powered practice questions for all freshman subjects.',
         level: 'Intermediate', category: 'natural', duration: '6 weeks',
         instructor: { fullName: 'Alpha Tutorial Team' }, instructorName: 'Alpha Tutorial Team',
-        rating: 4.9, enrolledStudents: 2100, totalLessons: 20, isPremium: true, price: 8,
+        rating: 4.9, enrolledStudents: 2100, totalLessons: 20, isPremium: true, price: 1000,
         createdAt: '2024-01-20'
     },
     {
@@ -179,7 +179,7 @@ const STATIC_COURSES = [
         description: 'Fundamentals of Ethiopian legal system, constitutional law, human rights and access to justice for social science students.',
         level: 'Intermediate', category: 'social', duration: '14 weeks',
         instructor: { fullName: 'Adv. Selam Worku' }, instructorName: 'Adv. Selam Worku',
-        rating: 4.7, enrolledStudents: 560, totalLessons: 26, isPremium: true, price: 120,
+        rating: 4.7, enrolledStudents: 560, totalLessons: 26, isPremium: true, price: 1000,
         isFreePreview: true, createdAt: '2024-01-22'
     }
 ];
@@ -301,7 +301,8 @@ function renderCourses() {
         const totalLessons   = course.totalLessons || course.lessons?.length || 0;
         const enrolledCount  = course.enrolledStudents || 0;
         const isFree = !course.isPremium || course.price === 0;
-        const priceETB = Math.round(course.price * 56);
+        // Price is stored directly in ETB — no conversion needed
+        const priceETB = course.price || 0;
 
         let btnLabel = isFree ? '🎓 Enroll Free' : '👁 View Course';
         let btnClass = 'btn';
@@ -327,7 +328,7 @@ function renderCourses() {
                     <div class="course-instructor"><span>👤 ${instructorName}</span></div>
                     <div class="course-rating">
                         <span class="stars">${'⭐'.repeat(Math.floor(course.rating || 0))}</span>
-                        <span>${(course.rating || 0).toFixed(1)} (${enrolledCount.toLocaleString()} students)</span>
+                        <span>${(course.rating || 0).toFixed(1)} (${enrolledCount > 0 ? enrolledCount.toLocaleString() + ' students' : 'Be the first!'})</span>
                     </div>
                     <div class="course-meta">
                         <span>📚 ${totalLessons} lessons</span> |

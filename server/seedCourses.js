@@ -740,8 +740,18 @@ async function seed() {
     for (const c of COURSES) {
       const totalLessons = c.chapters.reduce((s, ch) => s + ch.lessons.length, 0);
 
+      // Natural & Social stream courses → 1000 ETB premium
+      // Common stream courses           → free
+      const isPremium = c.stream !== 'Common';
+      const price     = isPremium ? 1000 : 0;
+      const isLocked  = isPremium;
+
       await Course.create({
         ...c,
+        price,
+        isPremium,
+        isLocked,
+        isFreePreview: isPremium,   // show 1 free lesson preview for paid courses
         instructor:     admin._id,
         instructorName: admin.fullName || 'Alpha Freshman Tutorial',
         status:         'approved',
@@ -751,8 +761,9 @@ async function seed() {
                     c.stream === 'Social'  ? `Semester ${c.semester} – Social Science` : ''
       });
 
+      const tag = isPremium ? '🔒 1000 ETB' : '🔓 FREE';
       summary[c.stream]++;
-      console.log(`  ✅ [Sem ${c.semester}][${c.stream.padEnd(7)}] ${c.courseCode} – ${c.title}`);
+      console.log(`  ✅ [Sem ${c.semester}][${c.stream.padEnd(7)}] ${c.courseCode} – ${c.title}  ${tag}`);
       count++;
     }
 
@@ -760,9 +771,9 @@ async function seed() {
     console.log('📊 Breakdown:');
     console.log(`   Semester 1: ${COURSES.filter(c => c.semester === 1).length} courses`);
     console.log(`   Semester 2: ${COURSES.filter(c => c.semester === 2).length} courses`);
-    console.log(`   Common:     ${summary.Common} courses`);
-    console.log(`   Natural:    ${summary.Natural} courses`);
-    console.log(`   Social:     ${summary.Social} courses`);
+    console.log(`   Common (FREE):     ${summary.Common} courses`);
+    console.log(`   Natural (1000 ETB): ${summary.Natural} courses`);
+    console.log(`   Social  (1000 ETB): ${summary.Social} courses`);
     console.log('\n🔍 Test filtering:');
     console.log('   GET /api/courses?stream=Natural&semester=1');
     console.log('   GET /api/courses?stream=Common&semester=2');
