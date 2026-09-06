@@ -262,10 +262,15 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
             // "Firebase not configured" — show friendly message
             if (err.message?.includes('Firebase not configured')) {
                 showError('⚠️ Phone OTP አሁን አይሰራም። ✉️ Email tab ይጠቀሙ።');
+            } else if (err.code === 'auth/operation-not-allowed') {
+                // Firebase Phone Auth not enabled in console — switch to email tab
+                showError('📵 Phone OTP አሁን አይሰራም። <strong>✉️ Email tab</strong> ይጠቀሙ።');
+                // Auto-switch to email tab after 2 seconds
+                setTimeout(() => switchTab('email'), 2000);
             } else if (err.code) {
                 showError(msgs[err.code] || ('OTP መላክ አልተሳካም: ' + err.message));
             } else {
-                showError('OTP መላክ አልተሳካም። ደግሞ ይሞክሩ ወይም ✉️ Email tab ይጠቀሙ።');
+                showError('OTP መላክ አልተሳካም። ✉️ Email tab ይጠቀሙ።');
             }
             // Reset reCAPTCHA on error
             if (recaptchaVerifier) {
@@ -549,5 +554,18 @@ document.getElementById('googleSignupBtn')?.addEventListener('click', async () =
     }
 });
 
-// ── Init: default to phone tab ────────────────────────────────────────────────
-switchTab('phone');
+// ── Init: check Firebase Phone Auth availability, default to best tab ─────────
+(async function initDefaultTab() {
+    try {
+        const cfg = window.FIREBASE_CONFIG;
+        if (!cfg || cfg.apiKey === 'YOUR_API_KEY') {
+            // No Firebase — default to email
+            switchTab('email');
+            return;
+        }
+        // Default to phone (Firebase is configured — user must enable Phone in Console)
+        switchTab('phone');
+    } catch {
+        switchTab('email');
+    }
+})();
