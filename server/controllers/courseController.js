@@ -149,7 +149,7 @@ exports.updateCourse = async (req, res, next) => {
     }
 };
 
-// @desc    Delete course
+// @desc    Delete course — admin only
 exports.deleteCourse = async (req, res, next) => {
     try {
         const course = await Course.findById(req.params.id);
@@ -161,11 +161,12 @@ exports.deleteCourse = async (req, res, next) => {
             });
         }
 
-        // Check ownership
-        if (course.instructor.toString() !== req.user.id && req.user.role !== 'admin') {
+        // Only admins can delete — instructors cannot
+        const adminRoles = ['admin', 'super_admin', 'content_admin'];
+        if (!adminRoles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                message: 'Not authorized to delete this course'
+                message: 'Only admins can delete courses'
             });
         }
 

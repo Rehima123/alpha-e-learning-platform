@@ -1,5 +1,5 @@
 const ETB_RATE = 56;
-const TAX_RATE = 0.15;
+const TAX_RATE = 0;   // No tax — flat 1000 ETB price includes everything
 
 // ── FLAT PRICE: 1000 ETB for everything ───────────────────────────────────────
 const FLAT_PRICE_ETB = 1000;
@@ -52,12 +52,14 @@ async function init() {
 
 function updateTotals() {
     const afterDiscount = subtotal - discount;
-    const tax   = Math.round(afterDiscount * TAX_RATE);
-    const total = afterDiscount + tax;
+    const total = afterDiscount; // No tax — flat 1000 ETB
 
     document.getElementById('subtotalDisplay').textContent = `${subtotal.toLocaleString()} ETB`;
-    document.getElementById('taxDisplay').textContent      = `${tax.toLocaleString()} ETB`;
     document.getElementById('totalDisplay').textContent    = `${total.toLocaleString()} ETB`;
+
+    // Hide tax row completely
+    const taxRow = document.getElementById('taxRow');
+    if (taxRow) taxRow.style.display = 'none';
 
     if (discount > 0) {
         document.getElementById('discountRow').style.display = 'flex';
