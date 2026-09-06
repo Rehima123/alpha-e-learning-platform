@@ -70,9 +70,14 @@ app.get('/api/seed-admin', async (req, res) => {
     try {
         const User  = require('../server/models/User');
         const email = req.query.email || 'supportalphafreshman@gmail.com';
+        const name  = req.query.name  || null;
+
+        const updateFields = { role: 'admin', isActive: true };
+        if (name) updateFields.fullName = name;
+
         const user  = await User.findOneAndUpdate(
             { email },
-            { role: 'admin', isActive: true },
+            updateFields,
             { new: true }
         );
         if (!user) {
