@@ -194,7 +194,9 @@ exports.login = async (req, res, next) => {
                 email: user.email,
                 phoneNumber: user.phoneNumber,
                 role: user.role,
-                avatar: user.avatar
+                avatar: user.avatar,
+                paymentStatus:   user.paymentStatus   || 'UNPAID',
+                enrolledPackage: user.enrolledPackage  || 'None'
             }
         });
     } catch (error) {
@@ -210,7 +212,18 @@ exports.getMe = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            user
+            user: {
+                id:              user._id,
+                fullName:        user.fullName,
+                email:           user.email,
+                phoneNumber:     user.phoneNumber,
+                role:            user.role,
+                avatar:          user.avatar,
+                paymentStatus:   user.paymentStatus   || 'UNPAID',
+                enrolledPackage: user.enrolledPackage  || 'None',
+                subscription:    user.subscription,
+                enrolledCourses: user.enrolledCourses
+            }
         });
     } catch (error) {
         next(error);
