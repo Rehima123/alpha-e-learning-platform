@@ -76,8 +76,14 @@ function _extractYTId(url) {
 function _buildEmbedUrl(videoId, autoplay) {
     const origin = encodeURIComponent(window.location.origin);
     return `https://www.youtube.com/embed/${videoId}` +
-           `?rel=0&modestbranding=1&disablekb=1&fs=0` +
-           `&iv_load_policy=3&origin=${origin}&enablejsapi=1` +
+           `?controls=1` +           // Show pause/play/scrub/quality/speed controls
+           `&fs=1` +                  // Allow fullscreen
+           `&rel=0` +                 // No related videos from other channels
+           `&modestbranding=1` +      // Minimal YouTube branding
+           `&enablejsapi=1` +         // JS API for watermark interactions
+           `&origin=${origin}` +      // Security origin
+           `&playsinline=1` +         // Mobile inline play
+           `&iv_load_policy=3` +      // No annotations
            (autoplay ? '&autoplay=1' : '');
 }
 
@@ -276,6 +282,13 @@ async function buildSecurePlayer(lesson, user, container, opts = {}) {
             <div style="flex-shrink:0">
                 <span style="color:#334155;font-size:9px;font-family:monospace;user-select:none">${_escHtml(wmText)}</span>
             </div>
+        </div>
+
+        <!-- Quality / Speed hint -->
+        <div style="background:#0a0f1e;padding:5px 14px;display:flex;align-items:center;justify-content:flex-end">
+            <span style="color:#64748b;font-size:10px;font-family:sans-serif">
+                ⚙️ Setting ላይ በመንካት <strong style="color:#94a3b8">Quality</strong> እና <strong style="color:#94a3b8">Speed</strong> ማስተካከል ይቻላል
+            </span>
         </div>
 
         <!-- Progress bar (hidden by default) -->
