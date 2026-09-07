@@ -82,110 +82,47 @@
         width:100%;
         background:linear-gradient(90deg,#f59e0b,#ea580c,#4f46e5);
         color:white;
-        padding:12px 16px;
-        overflow:hidden;
-        box-shadow:0 4px 16px rgba(0,0,0,0.25);
+        padding:8px 8px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.2);
         border-top:1px solid rgba(255,255,255,0.15);
         border-bottom:1px solid rgba(255,255,255,0.15);
         position:relative;
-        z-index:10">
-        <style>
-            @keyframes ticker-scroll {
-                0%   { transform: translateX(100%); }
-                100% { transform: translateX(-100%); }
-            }
-            @keyframes ticker-scroll2 {
-                0%   { transform: translateX(0%); }
-                100% { transform: translateX(-200%); }
-            }
-            .ticker-track1 { animation: ticker-scroll  22s linear infinite; }
-            .ticker-track2 { animation: ticker-scroll2 22s linear infinite; }
-            @keyframes pulse-btn {
-                0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.5); }
-                50%      { box-shadow: 0 0 0 8px rgba(251,191,36,0); }
-            }
-            .ticker-register-btn { animation: pulse-btn 2s ease-in-out infinite; }
-        </style>
-        <div style="display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto;gap:12px">
-
-            <!-- Scrolling text -->
-            <div style="position:relative;flex:1;overflow:hidden;height:28px;display:flex;align-items:center">
-                <!-- Track 1 -->
-                <div class="ticker-track1" style="position:absolute;white-space:nowrap;display:flex;align-items:center;gap:24px;font-size:0.88rem;font-weight:700;letter-spacing:0.03em">
-                    <span style="background:white;color:#1e293b;padding:2px 10px;border-radius:6px;font-size:0.78rem;font-weight:900">1,000 ETB ብቻ!</span>
-                    <span>💥 በአንድ ክፍያ ሁሉም Freshman ኮርሶች — ቪዲዮ፣ ማጠቃለያ፣ ጥያቄዎች</span>
-                    <span style="opacity:0.5">•</span>
-                    <span>🎓 አሁኑኑ ተመዝግበው ትምህርት ይጀምሩ</span>
-                    <span style="opacity:0.5">•</span>
-                    <span>✨ Alpha Freshman Tutorial — Way to Success</span>
-                    <span style="opacity:0.5">•</span>
-                    <span style="background:white;color:#1e293b;padding:2px 10px;border-radius:6px;font-size:0.78rem;font-weight:900">1,000 ETB ብቻ!</span>
-                    <span>💥 በአንድ ክፍያ ሁሉም Freshman ኮርሶች — ቪዲዮ፣ ማጠቃለያ፣ ጥያቄዎች</span>
-                    <span style="opacity:0.5">•</span>
-                    <span>🎓 አሁኑኑ ተመዝግበው ትምህርት ይጀምሩ</span>
-                    <span style="opacity:0.5">•</span>
-                    <span>✨ Alpha Freshman Tutorial — Way to Success</span>
-                    <span style="opacity:0.5">•</span>
-                </div>
-                <!-- Track 2 (looping copy) -->
-                <div class="ticker-track2" style="position:absolute;white-space:nowrap;display:flex;align-items:center;gap:24px;font-size:0.88rem;font-weight:700;letter-spacing:0.03em">
-                    <span style="background:white;color:#1e293b;padding:2px 10px;border-radius:6px;font-size:0.78rem;font-weight:900">1,000 ETB ብቻ!</span>
-                    <span>💥 በአንድ ክፍያ ሁሉም Freshman ኮርሶች — ቪዲዮ፣ ማጠቃለያ፣ ጥያቄዎች</span>
-                    <span style="opacity:0.5">•</span>
-                    <span>🎓 አሁኑኑ ተመዝግበው ትምህርት ይጀምሩ</span>
-                    <span style="opacity:0.5">•</span>
-                    <span>✨ Alpha Freshman Tutorial — Way to Success</span>
-                    <span style="opacity:0.5">•</span>
-                    <span style="background:white;color:#1e293b;padding:2px 10px;border-radius:6px;font-size:0.78rem;font-weight:900">1,000 ETB ብቻ!</span>
-                    <span>💥 በአንድ ክፍያ ሁሉም Freshman ኮርሶች — ቪዲዮ፣ ማጠቃለያ፣ ጥያቄዎች</span>
-                    <span style="opacity:0.5">•</span>
-                    <span>🎓 አሁኑኑ ተመዝግበው ትምህርት ይጀምሩ</span>
-                    <span style="opacity:0.5">•</span>
-                    <span>✨ Alpha Freshman Tutorial — Way to Success</span>
-                    <span style="opacity:0.5">•</span>
-                </div>
+        z-index:20;
+        display:block">
+        <!-- Scrolling text using native marquee (PWA/standalone compatible) -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;max-width:1200px;margin:0 auto">
+            <div style="flex:1;overflow:hidden;min-width:0;display:flex;align-items:center">
+                <marquee behavior="scroll" direction="left" scrollamount="5"
+                    style="font-size:0.82rem;font-weight:700;letter-spacing:0.03em;line-height:1.4;display:block;width:100%">
+                    <span style="background:white;color:#1e293b;padding:2px 8px;border-radius:6px;font-size:0.75rem;font-weight:900;margin-right:8px;display:inline-block">1,000 ETB ብቻ!</span>
+                    💥 በአንድ ክፍያ ሁሉም Freshman ኮርሶች — ቪዲዮ፣ ማጠቃለያ፣ ጥያቄዎች
+                    &nbsp;&nbsp;•&nbsp;&nbsp;
+                    🎓 አሁኑኑ ተመዝግበው ትምህርት ይጀምሩ
+                    &nbsp;&nbsp;•&nbsp;&nbsp;
+                    ✨ Alpha Freshman Tutorial
+                    &nbsp;&nbsp;•&nbsp;&nbsp;
+                </marquee>
             </div>
-
-            <!-- Register / Payment button (smart: login check) -->
-            <button onclick="tickerHandleClick()" class="ticker-register-btn" style="
-                flex-shrink:0;
-                background:#0f172a;
-                color:#fbbf24;
-                font-weight:900;
-                font-size:0.78rem;
-                padding:8px 16px;
-                border-radius:50px;
-                border:1.5px solid rgba(251,191,36,0.5);
-                display:flex;align-items:center;gap:6px;
-                transition:background 0.2s,transform 0.15s;
-                cursor:pointer;white-space:nowrap"
+            <button onclick="tickerHandleClick()"
+                style="flex-shrink:0;background:#0f172a;color:#fbbf24;font-weight:900;font-size:0.75rem;padding:6px 14px;border-radius:50px;border:1.5px solid rgba(251,191,36,0.5);white-space:nowrap;cursor:pointer;z-index:30;transition:background 0.2s,transform 0.15s"
                 onmouseover="this.style.background='#000';this.style.transform='scale(1.05)'"
                 onmouseout="this.style.background='#0f172a';this.style.transform='scale(1)'">
-                <span id="tickerBtnLabel">1,000 ETB | አሁን ይጀምሩ →</span>
+                <span id="tickerBtnLabel">1,000 ETB | ይመዝገቡ →</span>
             </button>
-            <script>
-            // Smart ticker button: logged-in → payment.html, guest → login then redirect
-            function tickerHandleClick() {
-                const user = (() => { try { return JSON.parse(localStorage.getItem('currentUser')); } catch { return null; } })();
-                if (user && user.id) {
-                    // Logged in → go straight to payment
-                    window.location.href = 'payment.html?method=manual';
-                } else {
-                    // Not logged in → go to login, redirect back to payment after
-                    window.location.href = 'auth-login.html?redirect=' + encodeURIComponent('payment.html?method=manual');
-                }
-            }
-            // Update button label based on login state
-            (function() {
-                const user = (() => { try { return JSON.parse(localStorage.getItem('currentUser')); } catch { return null; } })();
-                const el = document.getElementById('tickerBtnLabel');
-                if (el && user && user.id) {
-                    el.textContent = '1,000 ETB | ክፍያ ፈጽሙ →';
-                }
-            })();
-            </script>
         </div>
     </div>
+    <script>
+    function tickerHandleClick() {
+        var user = null; try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
+        if (user && user.id) { window.location.href = 'payment.html?method=manual'; }
+        else { window.location.href = 'auth-login.html?redirect=' + encodeURIComponent('payment.html?method=manual'); }
+    }
+    (function() {
+        var user = null; try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
+        var el = document.getElementById('tickerBtnLabel');
+        if (el && user && user.id) el.textContent = '1,000 ETB | ክፍያ ፈጽሙ →';
+    })();
+    </script>
 
     <section class="features">
         <div class="container">
