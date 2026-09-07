@@ -179,6 +179,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 });
 
 function redirectByRole(user) {
+    // Check if there's a redirect param from ticker/promo button
+    const redirectTo = new URLSearchParams(window.location.search).get('redirect');
+    if (redirectTo) {
+        window.location.href = decodeURIComponent(redirectTo);
+        return;
+    }
     const adminRoles = ['admin','super_admin','content_admin','finance_admin','support_admin'];
     if (adminRoles.includes(user.role)) {
         window.location.href = 'admin-dashboard.html';
