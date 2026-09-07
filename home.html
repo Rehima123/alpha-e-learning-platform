@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -76,6 +76,97 @@
             </div>
         </div>
     </section>
+
+    <!-- ── Promo Ticker Banner ──────────────────────────────────────────────── -->
+    <div id="promoTicker" style="
+        width:100%;
+        background:linear-gradient(90deg,#f59e0b,#ea580c,#4f46e5);
+        color:white;
+        padding:12px 16px;
+        overflow:hidden;
+        box-shadow:0 4px 16px rgba(0,0,0,0.25);
+        border-top:1px solid rgba(255,255,255,0.15);
+        border-bottom:1px solid rgba(255,255,255,0.15);
+        position:relative;
+        z-index:10">
+        <style>
+            @keyframes ticker-scroll {
+                0%   { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+            }
+            @keyframes ticker-scroll2 {
+                0%   { transform: translateX(0%); }
+                100% { transform: translateX(-200%); }
+            }
+            .ticker-track1 { animation: ticker-scroll  22s linear infinite; }
+            .ticker-track2 { animation: ticker-scroll2 22s linear infinite; }
+            @keyframes pulse-btn {
+                0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.5); }
+                50%      { box-shadow: 0 0 0 8px rgba(251,191,36,0); }
+            }
+            .ticker-register-btn { animation: pulse-btn 2s ease-in-out infinite; }
+        </style>
+        <div style="display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto;gap:12px">
+
+            <!-- Scrolling text -->
+            <div style="position:relative;flex:1;overflow:hidden;height:28px;display:flex;align-items:center">
+                <!-- Track 1 -->
+                <div class="ticker-track1" style="position:absolute;white-space:nowrap;display:flex;align-items:center;gap:24px;font-size:0.88rem;font-weight:700;letter-spacing:0.03em">
+                    <span style="background:white;color:#1e293b;padding:2px 10px;border-radius:6px;font-size:0.78rem;font-weight:900">1,000 ETB ብቻ!</span>
+                    <span>💥 በአንድ ክፍያ ሁሉም Freshman ኮርሶች — ቪዲዮ፣ ማጠቃለያ፣ ጥያቄዎች</span>
+                    <span style="opacity:0.5">•</span>
+                    <span>🎓 አሁኑኑ ተመዝግበው ትምህርት ይጀምሩ</span>
+                    <span style="opacity:0.5">•</span>
+                    <span>✨ Alpha Freshman Tutorial — Way to Success</span>
+                    <span style="opacity:0.5">•</span>
+                    <span style="background:white;color:#1e293b;padding:2px 10px;border-radius:6px;font-size:0.78rem;font-weight:900">1,000 ETB ብቻ!</span>
+                    <span>💥 በአንድ ክፍያ ሁሉም Freshman ኮርሶች — ቪዲዮ፣ ማጠቃለያ፣ ጥያቄዎች</span>
+                    <span style="opacity:0.5">•</span>
+                    <span>🎓 አሁኑኑ ተመዝግበው ትምህርት ይጀምሩ</span>
+                    <span style="opacity:0.5">•</span>
+                    <span>✨ Alpha Freshman Tutorial — Way to Success</span>
+                    <span style="opacity:0.5">•</span>
+                </div>
+                <!-- Track 2 (looping copy) -->
+                <div class="ticker-track2" style="position:absolute;white-space:nowrap;display:flex;align-items:center;gap:24px;font-size:0.88rem;font-weight:700;letter-spacing:0.03em">
+                    <span style="background:white;color:#1e293b;padding:2px 10px;border-radius:6px;font-size:0.78rem;font-weight:900">1,000 ETB ብቻ!</span>
+                    <span>💥 በአንድ ክፍያ ሁሉም Freshman ኮርሶች — ቪዲዮ፣ ማጠቃለያ፣ ጥያቄዎች</span>
+                    <span style="opacity:0.5">•</span>
+                    <span>🎓 አሁኑኑ ተመዝግበው ትምህርት ይጀምሩ</span>
+                    <span style="opacity:0.5">•</span>
+                    <span>✨ Alpha Freshman Tutorial — Way to Success</span>
+                    <span style="opacity:0.5">•</span>
+                    <span style="background:white;color:#1e293b;padding:2px 10px;border-radius:6px;font-size:0.78rem;font-weight:900">1,000 ETB ብቻ!</span>
+                    <span>💥 በአንድ ክፍያ ሁሉም Freshman ኮርሶች — ቪዲዮ፣ ማጠቃለያ፣ ጥያቄዎች</span>
+                    <span style="opacity:0.5">•</span>
+                    <span>🎓 አሁኑኑ ተመዝግበው ትምህርት ይጀምሩ</span>
+                    <span style="opacity:0.5">•</span>
+                    <span>✨ Alpha Freshman Tutorial — Way to Success</span>
+                    <span style="opacity:0.5">•</span>
+                </div>
+            </div>
+
+            <!-- Register button -->
+            <a href="auth-register.html" class="ticker-register-btn" style="
+                flex-shrink:0;
+                background:#0f172a;
+                color:#fbbf24;
+                font-weight:900;
+                font-size:0.78rem;
+                padding:8px 16px;
+                border-radius:50px;
+                text-decoration:none;
+                white-space:nowrap;
+                border:1.5px solid rgba(251,191,36,0.5);
+                display:flex;align-items:center;gap:6px;
+                transition:background 0.2s,transform 0.15s;
+                cursor:pointer"
+                onmouseover="this.style.background='#000';this.style.transform='scale(1.05)'"
+                onmouseout="this.style.background='#0f172a';this.style.transform='scale(1)'">
+                <span>1,000 ETB | አሁን ተመዝግቡ →</span>
+            </a>
+        </div>
+    </div>
 
     <section class="features">
         <div class="container">
