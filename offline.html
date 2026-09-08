@@ -400,34 +400,269 @@
         }).join('');
     }
 
-    // ── Render saved videos ───────────────────────────────────────────────────
-    async function renderSaved() {
-        const all  = await dbGetAll();
-        const list = document.getElementById('savedList');
-        document.getElementById('savedCount').textContent = all.length;
+    // ── AlphaOfflineDB helpers (lesson-download.js store) ────────────────────
+    let _alphaDb = null;
+    function _openAlphaDB() {
+        if (_alphaDb) return Promise.resolve(_alphaDb);
+        return new Promise((res, rej) => {
+            const req = indexedDB.open('AlphaOfflineDB', 2);
+            req.onupgradeneeded = e => {
+                const d = e.target.result;
+                if (!d.objectStoreNames.contains('videos'))  d.createObjectStore('videos');
+                if (!d.objectStoreNames.contains('lessons')) d.createObjectStore('lessons');
+            };
+            req.onsuccess = () => { _alphaDb = req.result; res(_alphaDb); };
+            req.onerror   = () => rej(req.error);
+        });
+    }
+    async function alphaDbGetAll() {
+        const d = await _openAlphaDB();
+        return new Promise((res, rej) => {
+            const req = d.transaction('videos','readonly').objectStore('videos').getAll();
+            req.onsuccess = () => res(req.result || []);
+            req.onerror   = () => rej(req.error);
+        });
+    }
+    async function alphaDbDelete(key) {
+        const d = await _openAlphaDB();
+        return new Promise((res, rej) => {
+            const tx = d.transaction('videos','readwrite');
+            tx.objectStore('videos').delete(key);
+            tx.oncomplete = () => res(true);
+            tx.onerror    = () => rej(tx.error);
+        });
+    }
 
-        if (all.length === 0) {
+    // ── Group helpers ─────────────────────────────────────────────────────────
+    function groupBySemesterAndCourse(rawItems) {
+        return rawItems.reduce((acc, item) => {
+            const semLabel = item.semester || item.department || item.course || 'Saved Videos';
+            const courseTitle = item.courseTitle || item.course || 'General';
+            let semObj = acc.find(s => s.semester === semLabel);
+            if (!semObj) { semObj = { semester: semLabel, courses: [] }; acc.push(semObj); }
+            let courseObj = semObj.courses.find(c => c.title === courseTitle);
+            if (!courseObj) { courseObj = { title: courseTitle, items: [] }; semObj.courses.push(courseObj); }
+            courseObj.items.push(item);
+            return acc;
+        }, []);
+    }
+
+    // Track open accordions
+    const openAccordions = new Set();
+
+    function toggleAccordion(key) {
+        if (openAccordions.has(key)) openAccordions.delete(key);
+        else openAccordions.add(key);
+        renderSaved();
+    }
+
+    // ── Render saved videos ── upgraded with grouped view ─────────────────────
+    async function renderSaved() {
+        const list = document.getElementById('savedList');
+        list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">⏳ Loading...</div>';
+
+        // Load from both DBs
+        const [legacyItems, alphaItems] = await Promise.all([
+            dbGetAll().catch(() => []),
+            alphaDbGetAll().catch(() => [])
+        ]);
+
+        // Normalise legacy items (alpha-offline-db/videos) → add semester label
+        const normLegacy = legacyItems.map(v => ({
+            _source:     'legacy',
+            id:          v.id,
+            title:       v.title,
+            courseTitle: v.course || '',
+            course:      v.course || '',
+            semester:    v.course || 'Saved Videos',
+            youtubeId:   v.youtubeId,
+            thumbnail:   v.thumbnail || '🎬',
+            savedAt:     v.savedAt,
+            type:        'video',
+            duration:    v.duration || '',
+        }));
+
+        // Normalise AlphaOfflineDB items (lesson-download.js)
+        const normAlpha = alphaItems.map(v => ({
+            _source:     'alpha',
+            id:          v.lessonId || v.id || String(v.savedAt),
+            title:       v.lessonTitle || v.title || 'Lesson',
+            courseTitle: v.courseTitle || v.course || '',
+            course:      v.courseTitle || v.course || '',
+            semester:    v.department || v.courseTitle || v.course || 'Saved Videos',
+            youtubeId:   v.youtubeId,
+            thumbnail:   '🎬',
+            savedAt:     v.savedAt,
+            type:        'video',
+            duration:    '',
+        }));
+
+        // Deduplicate: alpha takes precedence for same lesson
+        const alphaIds = new Set(normAlpha.map(v => v.id));
+        const merged   = [...normAlpha, ...normLegacy.filter(v => !alphaIds.has(v.id))];
+
+        // Update badge count
+        document.getElementById('savedCount').textContent = merged.length;
+
+        if (merged.length === 0) {
             list.innerHTML = `
-                <div class="empty-state">
-                    <div class="icon">📭</div>
-                    <p>No videos saved for offline viewing.</p>
-                    <button class="btn" style="margin-top:1rem" onclick="switchTab('available')">Browse Available →</button>
+                <div style="background:#0f172a;border:1px solid rgba(99,102,241,0.25);border-radius:24px;
+                    padding:48px 24px;text-align:center">
+                    <div style="font-size:3.5rem;margin-bottom:12px">📁</div>
+                    <p style="color:#64748b;font-size:0.9rem;margin:0 0 16px">ምንም የወረደ ፋይል የለም።</p>
+                    <button class="btn" style="margin-top:0" onclick="switchTab('available')">
+                        🎬 Browse Available Videos →
+                    </button>
                 </div>`;
             return;
         }
 
-        list.innerHTML = all.map(v => `
-            <div class="video-card">
-                <div class="thumb">${v.thumbnail || '🎬'}</div>
-                <div class="info">
-                    <h4>${v.title}</h4>
-                    <p>${v.course || ''}${v.savedAt ? ' · Saved ' + new Date(v.savedAt).toLocaleDateString() : ''}</p>
+        // Group by semester → course
+        const grouped = groupBySemesterAndCourse(merged);
+
+        let html = `<div style="
+            max-width:900px;margin:0 auto;
+            background:#0f172a;border:1px solid rgba(99,102,241,0.25);
+            border-radius:24px;padding:24px 20px">
+
+            <!-- Header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.07)">
+                <div>
+                    <h2 style="color:white;font-size:1.2rem;font-weight:900;margin:0 0 4px;
+                        display:flex;align-items:center;gap:10px">
+                        📥 Offline Library
+                    </h2>
+                    <p style="color:#64748b;font-size:0.8rem;margin:0">
+                        Access your downloaded videos anytime without internet.
+                    </p>
                 </div>
-                <div class="actions">
-                    <button class="btn btn-play" onclick="playVideo('${v.id}','${v.youtubeId}','${v.title}','${v.course||''}')">▶ Watch</button>
-                    <button class="btn btn-remove" onclick="removeVideo('${v.id}')">🗑️</button>
+                <span style="padding:5px 14px;border-radius:50px;
+                    background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);
+                    color:#10b981;font-size:11px;font-weight:700;white-space:nowrap">
+                    ● Offline Ready
+                </span>
+            </div>`;
+
+        grouped.forEach((semObj, si) => {
+            html += `
+            <div style="margin-bottom:28px">
+                <!-- Semester label -->
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                    <span style="width:8px;height:8px;border-radius:50%;
+                        background:#f59e0b;display:inline-block;flex-shrink:0"></span>
+                    <h3 style="color:#f59e0b;font-size:11px;font-weight:900;text-transform:uppercase;
+                        letter-spacing:0.08em;margin:0">${escHtml(semObj.semester)}</h3>
                 </div>
-            </div>`).join('');
+                <div style="display:flex;flex-direction:column;gap:10px">`;
+
+            semObj.courses.forEach((courseObj) => {
+                const accKey  = `${si}_${courseObj.title}`;
+                const isOpen  = openAccordions.has(accKey);
+                const count   = courseObj.items.length;
+
+                html += `
+                <div style="background:rgba(30,41,59,0.6);border:1px solid rgba(71,85,105,0.6);
+                    border-radius:16px;overflow:hidden;transition:all 0.2s">
+                    <!-- Course header / accordion trigger -->
+                    <button onclick="toggleAccordion('${accKey}')"
+                        style="width:100%;padding:16px 20px;background:transparent;border:none;
+                        display:flex;align-items:center;justify-content:space-between;
+                        cursor:pointer;text-align:left;transition:background 0.2s"
+                        onmouseover="this.style.background='rgba(99,102,241,0.07)'"
+                        onmouseout="this.style.background='transparent'">
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <span style="font-size:1.3rem">📚</span>
+                            <div>
+                                <h4 style="color:white;font-size:0.9rem;font-weight:700;margin:0 0 2px">
+                                    ${escHtml(courseObj.title)}
+                                </h4>
+                                <p style="color:#64748b;font-size:11px;margin:0">
+                                    ${count} Downloaded Video${count !== 1 ? 's' : ''}
+                                </p>
+                            </div>
+                        </div>
+                        <span style="color:#64748b;font-size:0.75rem;
+                            transform:${isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
+                            transition:transform 0.2s;display:inline-block">▼</span>
+                    </button>`;
+
+                if (isOpen) {
+                    html += `
+                    <div style="border-top:1px solid rgba(71,85,105,0.4);
+                        background:rgba(15,23,42,0.4)">`;
+
+                    courseObj.items.forEach((item, idx) => {
+                        const isLast = idx === courseObj.items.length - 1;
+                        const savedDate = item.savedAt
+                            ? new Date(item.savedAt).toLocaleDateString() : '';
+                        html += `
+                        <div style="padding:12px 20px;display:flex;align-items:center;
+                            justify-content:space-between;gap:12px;
+                            ${!isLast ? 'border-bottom:1px solid rgba(71,85,105,0.3)' : ''}">
+                            <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
+                                <span style="font-size:1.1rem;flex-shrink:0">${item.thumbnail}</span>
+                                <div style="min-width:0">
+                                    <h5 style="color:#e2e8f0;font-size:0.85rem;font-weight:600;
+                                        margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                        ${escHtml(item.title)}
+                                    </h5>
+                                    <span style="color:#64748b;font-size:10px;text-transform:uppercase">
+                                        video${item.duration ? ' · ' + item.duration : ''}${savedDate ? ' · ' + savedDate : ''}
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                                ${item.youtubeId ? `
+                                <button onclick="playVideo('${escHtml(item.id)}','${item.youtubeId}','${escHtml(item.title)}','${escHtml(item.courseTitle)}')"
+                                    style="padding:6px 14px;background:#4f46e5;color:white;border:none;
+                                    border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
+                                    transition:background 0.2s"
+                                    onmouseover="this.style.background='#4338ca'"
+                                    onmouseout="this.style.background='#4f46e5'">
+                                    ▶ Watch
+                                </button>` : `
+                                <span style="color:#64748b;font-size:11px">No video</span>`}
+                                <button onclick="removeSavedItem('${escHtml(item.id)}','${item._source}')"
+                                    style="padding:6px 8px;background:transparent;color:#64748b;border:none;
+                                    font-size:0.9rem;cursor:pointer;border-radius:8px;transition:color 0.2s"
+                                    onmouseover="this.style.color='#f87171'"
+                                    onmouseout="this.style.color='#64748b'"
+                                    title="Delete">🗑️</button>
+                            </div>
+                        </div>`;
+                    });
+
+                    html += `</div>`; // close items container
+                }
+
+                html += `</div>`; // close course accordion
+            });
+
+            html += `</div></div>`; // close courses list + semester block
+        });
+
+        html += `</div>`; // close main container
+        list.innerHTML = html;
+    }
+
+    // ── Remove item from either DB ────────────────────────────────────────────
+    async function removeSavedItem(id, source) {
+        if (!confirm('ይህን ቪዲዮ ከ Offline ላይ ማጥፋት ይፈልጋሉ?')) return;
+        if (source === 'alpha') {
+            await alphaDbDelete(id).catch(() => {});
+        } else {
+            await dbDelete(id).catch(() => {});
+            savedIds.delete(id);
+        }
+        renderSaved();
+        if (typeof toast !== 'undefined') toast.success('🗑️ Removed from offline storage.');
+    }
+
+    // ── HTML escape helper ────────────────────────────────────────────────────
+    function escHtml(str) {
+        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
     // ── Save video for offline ────────────────────────────────────────────────
@@ -474,7 +709,7 @@
         }
     }
 
-    // ── Remove video ──────────────────────────────────────────────────────────
+    // ── Remove video (legacy) ─────────────────────────────────────────────────
     async function removeVideo(id) {
         if (!confirm('Remove this video from offline storage?')) return;
         await dbDelete(id);
@@ -618,7 +853,12 @@
     async function init() {
         const all = await dbGetAll();
         savedIds  = new Set(all.map(v => v.id));
-        document.getElementById('savedCount').textContent = savedIds.size;
+        // Also count from AlphaOfflineDB for the badge
+        const alphaAll = await alphaDbGetAll().catch(() => []);
+        const alphaIds = new Set(alphaAll.map(v => v.lessonId || v.id || String(v.savedAt)));
+        // Merge count (deduplicated)
+        const totalUnique = savedIds.size + alphaAll.filter(v => !savedIds.has(v.lessonId || v.id || String(v.savedAt))).length;
+        document.getElementById('savedCount').textContent = totalUnique;
         renderAvailable();
     }
 
