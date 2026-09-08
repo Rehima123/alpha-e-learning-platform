@@ -125,33 +125,172 @@
     })();
     </script>
 
-    <section class="features">
+    <section class="features" id="freshmanStructureSection" style="padding:3rem 0">
         <div class="container">
-            <h2>Ethiopian Freshman Year Structure</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">📚</div>
-                    <h3>First Semester</h3>
-                    <p>Common foundation courses: English, Critical Thinking, Math, Geography, Psychology, Physical Fitness, and Physics</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎓</div>
-                    <h3>Second Semester</h3>
-                    <p>Continuation courses: Advanced English, Anthropology, ICT, Entrepreneurship, History, Civic Education, Global Affairs, Economics, and Inclusiveness</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔬</div>
-                    <h3>Natural Science Stream</h3>
-                    <p>Focus on Physics, Biology, Chemistry, and Advanced Math - leads to Engineering, Medicine, and Natural Sciences</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🌍</div>
-                    <h3>Social Science Stream</h3>
-                    <p>Focus on Economics, Geography, History, and Communication - leads to Law, Social Sciences, Education, and Business</p>
-                </div>
-            </div>
+            <h2 style="text-align:center;margin-bottom:0.4rem">Ethiopian Freshman &amp; Health Science Structure</h2>
+            <p style="text-align:center;color:var(--text-secondary);font-size:0.88rem;margin-bottom:2rem">
+                ምድቡን በመጫን ያሉትን ኮርሶች እና የ CoC ፈተና ስብስቦችን ይመልከቱ
+            </p>
+
+            <!-- 5 category cards -->
+            <div id="catGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:1.5rem"></div>
+
+            <!-- Expandable course drawer -->
+            <div id="catDrawer" style="display:none;background:#0f172a;color:white;border-radius:20px;
+                padding:24px;border:1px solid rgba(99,102,241,0.3);margin-top:8px"></div>
         </div>
     </section>
+
+    <script>
+    (function() {
+        var CATS = [
+            {
+                id:'sem1', icon:'📚', title:'First Semester',
+                gradient:'linear-gradient(135deg,#f59e0b,#ea580c)',
+                desc:'Common foundation courses for all freshman students',
+                courses:[
+                    {id:'FLEN1011',name:'Communicative English Skills I'},
+                    {id:'MATH1011',name:'Applied Mathematics I'},
+                    {id:'LOCT1011',name:'Critical Thinking (Logic)'},
+                    {id:'PHYS1011',name:'General Physics'},
+                    {id:'PSYC1011',name:'General Psychology'},
+                    {id:'HPED1011',name:'Physical Fitness & Health'},
+                ]
+            },
+            {
+                id:'sem2', icon:'🎓', title:'Second Semester',
+                gradient:'linear-gradient(135deg,#3b82f6,#4f46e5)',
+                desc:'Continuation courses for second semester',
+                courses:[
+                    {id:'FLEN1012',name:'Academic Writing (English II)'},
+                    {id:'ANTH1011',name:'Social Anthropology'},
+                    {id:'EMTE1012',name:'Emerging Technologies / ICT'},
+                    {id:'MCED1012',name:'Moral and Civic Education'},
+                    {id:'INCL1011',name:'Inclusiveness'},
+                    {id:'GLTR1012',name:'Global Trends'},
+                ]
+            },
+            {
+                id:'nat', icon:'🔬', title:'Natural Science Stream',
+                gradient:'linear-gradient(135deg,#10b981,#0d9488)',
+                desc:'Engineering, Medicine & Natural Sciences stream courses',
+                courses:[
+                    {id:'CHEM1011',name:'General Chemistry'},
+                    {id:'BIOL1012',name:'General Biology'},
+                    {id:'MATH1021',name:'Applied Mathematics II (Calculus)'},
+                ]
+            },
+            {
+                id:'soc', icon:'🌍', title:'Social Science Stream',
+                gradient:'linear-gradient(135deg,#8b5cf6,#ec4899)',
+                desc:'Business, Economics, Law & Social Sciences stream courses',
+                courses:[
+                    {id:'ECON1011',name:'Introduction to Economics'},
+                    {id:'GEEHO1011',name:'Geography of Ethiopia and the Horn'},
+                    {id:'MGMT1012',name:'Entrepreneurship'},
+                    {id:'STAT1012',name:'Basic Statistics'},
+                ]
+            },
+            {
+                id:'coc', icon:'🩺', title:'CoC for Health Science',
+                gradient:'linear-gradient(135deg,#f43f5e,#dc2626)',
+                desc:'CoC Exam Preparation & Practice Tests for Medical/Health Students',
+                isHot: true,
+                courses:[
+                    {id:'COC_MED',name:'Medicine CoC Review & Model Questions'},
+                    {id:'COC_NURS',name:'Nursing CoC Model Exams & Answers'},
+                    {id:'COC_PHARM',name:'Pharmacy CoC Competency Practice'},
+                    {id:'COC_PH',name:'Public Health (HO) CoC Preparation'},
+                    {id:'COC_LAB',name:'Medical Lab Technology CoC Tests'},
+                ]
+            }
+        ];
+
+        var selectedId = null;
+
+        function getUser() {
+            try { return JSON.parse(localStorage.getItem('currentUser')); } catch(e) { return null; }
+        }
+
+        function isPaid() {
+            var u = getUser();
+            return u && (u.paymentStatus === 'APPROVED' || u.role === 'admin');
+        }
+
+        function renderCards() {
+            var grid = document.getElementById('catGrid');
+            if (!grid) return;
+            grid.innerHTML = CATS.map(function(cat) {
+                var isSelected = cat.id === selectedId;
+                return '<div onclick="selectCat(\'' + cat.id + '\')" style="' +
+                    'cursor:pointer;border-radius:20px;padding:20px 12px;text-align:center;' +
+                    'border:2px solid ' + (isSelected ? '#6366f1' : 'var(--border-color)') + ';' +
+                    'background:' + (isSelected ? 'rgba(99,102,241,0.08)' : 'var(--bg-secondary)') + ';' +
+                    'box-shadow:' + (isSelected ? '0 0 0 3px rgba(99,102,241,0.3)' : '0 2px 8px var(--shadow)') + ';' +
+                    'transition:all 0.2s;position:relative">' +
+                    (cat.isHot ? '<span style="position:absolute;top:-8px;right:-8px;background:#dc2626;color:white;font-size:9px;font-weight:900;padding:2px 7px;border-radius:20px;text-transform:uppercase;animation:bounce 1s infinite">NEW / CoC</span>' : '') +
+                    '<div style="width:60px;height:60px;border-radius:50%;background:' + cat.gradient + ';display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 12px;box-shadow:0 4px 12px rgba(0,0,0,0.2)">' + cat.icon + '</div>' +
+                    '<h3 style="font-size:0.88rem;font-weight:800;color:var(--text-primary);margin:0 0 8px;line-height:1.3">' + cat.title + '</h3>' +
+                    '<span style="font-size:10px;font-weight:700;color:#6366f1;background:rgba(99,102,241,0.1);padding:3px 10px;border-radius:20px">' +
+                    (isSelected ? 'ዝጋ ▲' : 'ኮርሶችን እይ ▼') + '</span>' +
+                    '</div>';
+            }).join('');
+        }
+
+        function renderDrawer(cat) {
+            var drawer = document.getElementById('catDrawer');
+            if (!cat) { drawer.style.display = 'none'; return; }
+            var paid = isPaid();
+            drawer.style.display = 'block';
+            drawer.innerHTML =
+                '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
+                    '<div>' +
+                        '<div style="display:flex;align-items:center;gap:10px">' +
+                            '<span style="font-size:2rem">' + cat.icon + '</span>' +
+                            '<h3 style="margin:0;font-size:1.2rem;font-weight:900;color:#fbbf24">' + cat.title + '</h3>' +
+                        '</div>' +
+                        '<p style="margin:4px 0 0;font-size:0.78rem;color:#94a3b8">' + cat.desc + '</p>' +
+                    '</div>' +
+                    '<button onclick="selectCat(null)" style="background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer">✕ ዝጋ</button>' +
+                '</div>' +
+                '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">' +
+                cat.courses.map(function(c) {
+                    return '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px">' +
+                        '<h4 style="margin:0;font-size:0.82rem;font-weight:700;color:#f1f5f9;line-height:1.4">' + c.name + '</h4>' +
+                        '<button onclick="handleCourseClick(\'' + c.id + '\')" style="' +
+                            'padding:8px;border-radius:10px;border:none;font-weight:800;font-size:11px;cursor:pointer;' +
+                            (paid
+                                ? 'background:#16a34a;color:white'
+                                : 'background:linear-gradient(135deg,#f59e0b,#ea580c);color:white') + '">' +
+                            (paid ? 'Continue Learning →' : '🔒 View Course') +
+                        '</button>' +
+                    '</div>';
+                }).join('') +
+                '</div>';
+        }
+
+        window.selectCat = function(id) {
+            selectedId = (selectedId === id) ? null : id;
+            renderCards();
+            var cat = id ? CATS.find(function(c){ return c.id === id; }) : null;
+            renderDrawer(selectedId ? cat : null);
+            if (selectedId) {
+                document.getElementById('catDrawer').scrollIntoView({behavior:'smooth',block:'nearest'});
+            }
+        };
+
+        window.handleCourseClick = function(courseId) {
+            var paid = isPaid();
+            if (paid) {
+                window.location.href = 'course-detail.html?id=' + courseId;
+            } else {
+                window.location.href = 'payment.html?method=manual';
+            }
+        };
+
+        renderCards();
+    })();
+    </script>
 
     <section class="features" style="background: var(--bg-primary);">
         <div class="container">
