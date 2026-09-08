@@ -1471,3 +1471,91 @@ document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
         }
     }
 })();
+
+// ── Bulk SMS (AfroMessage) ────────────────────────────────────────────────────
+function openBulkSMSModal() {
+    const existing = document.getElementById('bulkSMSModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'bulkSMSModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.innerHTML = `
+        <div style="background:var(--bg-primary,#fff);border-radius:16px;padding:32px;width:100%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative">
+            <button onclick="document.getElementById('bulkSMSModal').remove()"
+                style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-secondary)">✕</button>
+            <h2 style="margin:0 0 8px;color:var(--text-primary)">📱 Bulk SMS ላክ</h2>
+            <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 20px">
+                ሁሉም registered students ስልክ ቁጥር ላይ SMS ይላካል (AfroMessage API)
+            </p>
+            <div style="margin-bottom:16px">
+                <label style="display:block;font-weight:600;font-size:0.9rem;margin-bottom:6px">
+                    የመልእክት ይዘት <span style="color:#e74c3c">*</span>
+                </label>
+                <textarea id="smsMessage" rows="5"
+                    placeholder="ለምሳሌ: Alpha Freshman Tutorial — አዲስ ኮርሶች ተጨምረዋል! ዛሬ ይግቡ..."
+                    style="width:100%;padding:12px;border:1px solid var(--border-color);border-radius:8px;
+                    background:var(--bg-secondary);color:var(--text-primary);font-size:0.9rem;resize:vertical;box-sizing:border-box"></textarea>
+                <div id="smsCharCount" style="text-align:right;font-size:0.75rem;color:var(--text-secondary);margin-top:4px">0 / 160 chars</div>
+            </div>
+            <div id="smsResult" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:0.85rem"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+                <button onclick="document.getElementById('bulkSMSModal').remove()"
+                    style="padding:10px 20px;border-radius:8px;border:1px solid var(--border-color);background:none;cursor:pointer;color:var(--text-primary)">
+                    ሰርዝ
+                </button>
+                <button id="smsSendBtn" onclick="submitBulkSMS()"
+                    style="padding:10px 24px;border-radius:8px;border:none;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:700;cursor:pointer;font-size:0.95rem">
+                    📤 SMS ላክ
+                </button>
+            </div>
+        </div>`;
+
+    document.body.appendChild(modal);
+
+    // Char counter
+    document.getElementById('smsMessage')?.addEventListener('input', (e) => {
+        const len = e.target.value.length;
+        const el = document.getElementById('smsCharCount');
+        if (el) el.textContent = `${len} / 160 chars`;
+    });
+}
+
+async function submitBulkSMS() {
+    const message = document.getElementById('smsMessage')?.value?.trim();
+    const btn     = document.getElementById('smsSendBtn');
+    const result  = document.getElementById('smsResult');
+
+    if (!message) { toast?.error('እባክዎን የመልእክት ይዘት ያስገቡ'); return; }
+    if (!confirm(`"${message.substring(0, 60)}..." — ይህን SMS ለሁሉም ተማሪዎች ልኩ?`)) return;
+
+    btn.disabled = true; btn.textContent = '⏳ Sending...';
+    if (result) { result.style.display = 'none'; }
+
+    try {
+        const res = await api.sendBulkSMS(message);
+        if (res.success) {
+            if (result) {
+                result.style.display = 'block';
+                result.style.background = 'rgba(39,174,96,0.1)';
+                result.style.border = '1px solid #27ae60';
+                result.style.color = '#27ae60';
+                result.textContent = `✅ ${res.message}`;
+            }
+            toast?.success(res.message);
+            btn.textContent = '✅ Sent!';
+        } else {
+            throw new Error(res.error || 'Failed to send SMS');
+        }
+    } catch (e) {
+        if (result) {
+            result.style.display = 'block';
+            result.style.background = 'rgba(231,76,60,0.1)';
+            result.style.border = '1px solid #e74c3c';
+            result.style.color = '#e74c3c';
+            result.textContent = `❌ ${e.message}`;
+        }
+        toast?.error(e.message || 'Failed to send SMS');
+        btn.disabled = false; btn.textContent = '📤 SMS ላክ';
+    }
+}

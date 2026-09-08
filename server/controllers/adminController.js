@@ -381,8 +381,57 @@ exports.replyTicket = async (req, res, next) => {
     }
 };
 
-// @desc    Create course (content_admin)
-exports.createCourse = async (req, res, next) => {
+// @desc    Send Bulk SMS to all students (AfroMessage API)
+exports.sendBulkSMS = async (req, res, next) => {
+    try {
+        const { message } = req.body;
+        if (!message || message.trim() === '') {
+            return res.status(400).json({ success: false, error: 'እባክዎን የመልእክት ይዘት ያስገቡ።' });
+        }
+
+        // Get all registered students with phone numbers
+        const students = await User.find(
+            { phoneNumber: { $exists: true, $ne: null, $ne: '' } },
+            'phoneNumber fullName'
+        );
+
+        if (students.length === 0) {
+            return res.status(404).json({ success: false, error: 'ምንም የተመዘገበ የስልክ ቁጥር አልተገኘም።' });
+        }
+
+        const recipientNumbers = students.map(s => s.phoneNumber).filter(Boolean);
+
+        const AFROMESSAGE_API_KEY  = process.env.AFROMESSAGE_API_KEY  || '';
+        const AFROMESSAGE_SENDER_ID = process.env.AFROMESSAGE_SENDER_ID || '';
+
+        if (!AFROMESSAGE_API_KEY) {
+            return res.status(500).json({ success: false, error: 'AFROMESSAGE_API_KEY is not configured.' });
+        }
+
+        const axios = require('axios');
+        const afroResponse = await axios.post(
+            'https://api.afromessage.com/api/send-bulk',
+            { to: recipientNumbers, message, from: AFROMESSAGE_SENDER_ID },
+            { headers: { 'Authorization': `Bearer ${AFROMESSAGE_API_KEY}`, 'Content-Type': 'application/json' } }
+        );
+
+        if (afroResponse.data && afroResponse.data.acknowledge === 'success') {
+            return res.status(200).json({
+                success: true,
+                totalSent: recipientNumbers.length,
+                message: `${recipientNumbers.length} ለሚሆኑ ተማሪዎች ኤስኤምኤሱ በስኬት ተላኳል!`
+            });
+        } else {
+            return res.status(500).json({ success: false, error: 'ከ AfroMessage በኩል ስህተት አጋጥሟል።', raw: afroResponse.data });
+        }
+    } catch (error) {
+        console.error('[sendBulkSMS]', error.response?.data || error.message);
+        return res.status(500).json({
+            success: false,
+            error: error.response?.data?.message || 'ኤስኤምኤስ ሲላክ የሲስተም ስህተት አጋጥሟል።'
+        });
+    }
+};
     try {
         const course = await Course.create({
             ...req.body,
@@ -394,5 +443,58 @@ exports.createCourse = async (req, res, next) => {
         res.status(201).json({ success: true, message: 'Course created', course });
     } catch (error) {
         next(error);
+    }
+};
+
+// @desc    Send Bulk SMS to all students (AfroMessage API)
+// @route   POST /api/admin/send-bulk-sms
+exports.sendBulkSMS = async (req, res, next) => {
+    try {
+        const { message } = req.body;
+        if (!message || message.trim() === '') {
+            return res.status(400).json({ success: false, error: 'እባክዎን የመልእክት ይዘት ያስገቡ።' });
+        }
+
+        // Get all students with phone numbers
+        const students = await User.find(
+            { phoneNumber: { $exists: true, $ne: null } },
+            'phoneNumber fullName'
+        ).lean();
+
+        const recipientNumbers = students.map(s => s.phoneNumber).filter(Boolean);
+
+        if (recipientNumbers.length === 0) {
+            return res.status(404).json({ success: false, error: 'ምንም የተመዘገበ የስልክ ቁጥር አልተገኘም።' });
+        }
+
+        const AFROMESSAGE_API_KEY   = process.env.AFROMESSAGE_API_KEY   || '';
+        const AFROMESSAGE_SENDER_ID = process.env.AFROMESSAGE_SENDER_ID || '';
+
+        if (!AFROMESSAGE_API_KEY) {
+            return res.status(500).json({ success: false, error: 'AFROMESSAGE_API_KEY is not set in environment variables.' });
+        }
+
+        const axios = require('axios');
+        const afroResponse = await axios.post(
+            'https://api.afromessage.com/api/send-bulk',
+            { to: recipientNumbers, message, from: AFROMESSAGE_SENDER_ID },
+            { headers: { Authorization: `Bearer ${AFROMESSAGE_API_KEY}`, 'Content-Type': 'application/json' } }
+        );
+
+        if (afroResponse.data && afroResponse.data.acknowledge === 'success') {
+            return res.status(200).json({
+                success: true,
+                totalSent: recipientNumbers.length,
+                message: `${recipientNumbers.length} ለሚሆኑ ተማሪዎች ኤስኤምኤሱ በስኬት ተላኳል!`
+            });
+        } else {
+            return res.status(500).json({ success: false, error: 'ከ AfroMessage በኩል ስህተት አጋጥሟል።', raw: afroResponse.data });
+        }
+    } catch (error) {
+        console.error('[sendBulkSMS]', error.response?.data || error.message);
+        return res.status(500).json({
+            success: false,
+            error: error.response?.data?.message || 'ኤስኤምኤስ ሲላክ የሲስተም ስህተት አጋጥሟል።'
+        });
     }
 };

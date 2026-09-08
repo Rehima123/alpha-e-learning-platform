@@ -60,4 +60,7 @@ router.put('/users/:id/package',     isAnyAdmin,     async (req, res, next) => {
     } catch (err) { next(err); }
 });
 
+// ── Bulk SMS (all admins) ─────────────────────────────────────────────────────
+router.post('/send-bulk-sms',        isAnyAdmin,     adminController.sendBulkSMS);
+
 module.exports = router;

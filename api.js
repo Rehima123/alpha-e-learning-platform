@@ -385,6 +385,9 @@ class APIService {
     async assignPackage(userId, enrolledPackage) {
         return this.request(`/admin/users/${userId}/package`, { method: 'PUT', body: JSON.stringify({ enrolledPackage }) });
     }
+    async sendBulkSMS(message) {
+        return this.request('/admin/send-bulk-sms', { method: 'POST', body: JSON.stringify({ message }) });
+    }
     async updateProgress(enrollmentId, progressData) {
         return this.request(`/enrollments/${enrollmentId}/progress`, { method: 'PUT', body: JSON.stringify(progressData) });
     }
