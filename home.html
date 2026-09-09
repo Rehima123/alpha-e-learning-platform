@@ -486,7 +486,7 @@
             'coc_apt':'📝 Aptitude', 'coc_model_1':'📝 Model Exam', 'coc_model_2':'📝 Model Exam'
         };
 
-        // ── 3D icon card with subject tag badge ───────────────────────────────
+        // ── 3D icon card - refined (h-44 area, h-32 icon, amber hover border) ──
         function courseCard(c, accentColor){
             var paid   = isPaid();
             var img    = COURSE_IMGS[c.id] || FALLBACK_IMG;
@@ -495,35 +495,38 @@
             var btnBg  = paid ? '#16a34a' : accent;
             var btnColor = paid ? 'white' : '#0f172a';
             var btnLabel = paid ? 'Continue Learning &rarr;' : '&#128274; View Course';
+            var hoverBorder = accentColor === '#f43f5e' ? 'rgba(244,63,94,0.5)' : 'rgba(245,158,11,0.5)';
             return '<div onclick="handleCourseClick(\''+c.id+'\')" ' +
                 'style="background:#111625;border:1px solid rgba(30,41,59,0.8);border-radius:18px;overflow:hidden;' +
                 'display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;' +
-                'transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s" ' +
-                'onmouseover="this.style.borderColor=\'#334155\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 12px 32px rgba(0,0,0,0.5)\'" ' +
+                'transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s" ' +
+                'onmouseover="this.style.borderColor=\''+hoverBorder+'\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 16px 40px rgba(0,0,0,0.5)\'" ' +
                 'onmouseout="this.style.borderColor=\'rgba(30,41,59,0.8)\';this.style.transform=\'translateY(0)\';this.style.boxShadow=\'none\'">' +
-                // Image area with tag
-                '<div style="height:160px;background:#171d2f;display:flex;align-items:center;justify-content:center;' +
+                // Image area: 176px, #171d2f, centered icon
+                '<div style="height:176px;background:#171d2f;display:flex;align-items:center;justify-content:center;' +
                 'flex-shrink:0;overflow:hidden;position:relative;padding:16px">' +
-                (tag ? '<span style="position:absolute;top:10px;left:10px;background:rgba(15,23,42,0.9);' +
-                'color:#e2e8f0;font-size:10px;font-weight:700;padding:3px 10px;border-radius:6px;' +
-                'border:1px solid rgba(71,85,105,0.6);z-index:10">'+tag+'</span>' : '') +
+                (tag ? '<span style="position:absolute;top:12px;left:12px;background:rgba(15,23,42,0.9);' +
+                'color:#e2e8f0;font-size:10px;font-weight:600;padding:3px 10px;border-radius:8px;' +
+                'border:1px solid rgba(71,85,105,0.6);z-index:10;display:flex;align-items:center;gap:4px">'+tag+'</span>' : '') +
                 '<img src="'+img+'" alt="'+c.name+'" loading="lazy" ' +
-                'style="height:112px;width:auto;object-fit:contain;' +
-                'filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5));transition:transform 0.3s" ' +
+                'style="height:128px;width:auto;object-fit:contain;' +
+                'filter:drop-shadow(0 10px 20px rgba(0,0,0,0.5));transition:transform 0.3s" ' +
                 'onmouseover="this.style.transform=\'scale(1.1)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
                 '</div>' +
                 // Title
-                '<div style="padding:12px 14px">' +
+                '<div style="padding:14px 16px 10px">' +
                 '<h4 style="margin:0;font-size:0.82rem;font-weight:700;color:#f1f5f9;line-height:1.4;' +
                 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+c.name+'</h4>' +
                 '</div>' +
                 // Button
-                '<div style="padding:0 14px 14px">' +
+                '<div style="padding:0 16px 16px">' +
                 '<button onclick="event.stopPropagation();handleCourseClick(\''+c.id+'\')" ' +
-                'style="width:100%;padding:9px;border-radius:12px;border:none;font-weight:800;font-size:11px;cursor:pointer;' +
+                'style="width:100%;padding:10px;border-radius:12px;border:none;font-weight:700;font-size:11px;cursor:pointer;' +
                 'background:'+btnBg+';color:'+btnColor+';' +
-                'display:flex;align-items:center;justify-content:center;gap:5px;transition:opacity 0.2s" ' +
-                'onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'">'+btnLabel+'</button>' +
+                'display:flex;align-items:center;justify-content:center;gap:5px;' +
+                'transition:opacity 0.2s,transform 0.1s" ' +
+                'onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'" ' +
+                'onmousedown="this.style.transform=\'scale(0.95)\'" onmouseup="this.style.transform=\'scale(1)\'">'+btnLabel+'</button>' +
                 '</div></div>';
         }
 
