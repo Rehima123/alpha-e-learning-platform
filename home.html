@@ -168,21 +168,22 @@
     <!-- ── Promo Ticker Banner ──────────────────────────────────────────────── -->
     <div id="promoTicker" style="
         width:100%;
-        background:linear-gradient(90deg,#f59e0b,#ea580c,#4f46e5);
+        background:linear-gradient(90deg,#f59e0b,#f43f5e,#4f46e5);
         color:white;
-        padding:8px 8px;
-        box-shadow:0 2px 8px rgba(0,0,0,0.2);
+        padding:10px 8px;
+        box-shadow:0 3px 12px rgba(0,0,0,0.25);
         border-top:1px solid rgba(255,255,255,0.15);
         border-bottom:1px solid rgba(255,255,255,0.15);
         position:relative;
         z-index:20;
         display:block">
-        <!-- Scrolling text using native marquee (PWA/standalone compatible) -->
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;max-width:1200px;margin:0 auto">
-            <div style="flex:1;overflow:hidden;min-width:0;display:flex;align-items:center">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;overflow:hidden">
+                <span style="background:white;color:#0f172a;font-size:0.72rem;font-weight:900;
+                    padding:3px 10px;border-radius:50px;white-space:nowrap;flex-shrink:0;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.2)">399 ETB ብቻ!</span>
                 <marquee behavior="scroll" direction="left" scrollamount="5"
-                    style="font-size:0.82rem;font-weight:700;letter-spacing:0.03em;line-height:1.4;display:block;width:100%">
-                    <span style="background:white;color:#1e293b;padding:2px 8px;border-radius:6px;font-size:0.75rem;font-weight:900;margin-right:8px;display:inline-block">1,000 ETB ብቻ!</span>
+                    style="font-size:0.82rem;font-weight:700;letter-spacing:0.03em;line-height:1.4;display:block">
                     💥 በአንድ ክፍያ ሁሉም Freshman ኮርሶች — ቪዲዮ፣ ማጠቃለያ፣ ጥያቄዎች
                     &nbsp;&nbsp;•&nbsp;&nbsp;
                     🎓 አሁኑኑ ተመዝግበው ትምህርት ይጀምሩ
@@ -192,10 +193,13 @@
                 </marquee>
             </div>
             <button onclick="tickerHandleClick()"
-                style="flex-shrink:0;background:#0f172a;color:#fbbf24;font-weight:900;font-size:0.75rem;padding:6px 14px;border-radius:50px;border:1.5px solid rgba(251,191,36,0.5);white-space:nowrap;cursor:pointer;z-index:30;transition:background 0.2s,transform 0.15s"
+                style="flex-shrink:0;background:#0f172a;color:#fbbf24;font-weight:900;font-size:0.75rem;
+                padding:7px 16px;border-radius:50px;border:1.5px solid rgba(251,191,36,0.5);
+                white-space:nowrap;cursor:pointer;z-index:30;transition:background 0.2s,transform 0.15s;
+                box-shadow:0 2px 8px rgba(0,0,0,0.3)"
                 onmouseover="this.style.background='#000';this.style.transform='scale(1.05)'"
                 onmouseout="this.style.background='#0f172a';this.style.transform='scale(1)'">
-                <span id="tickerBtnLabel">1,000 ETB | ይመዝገቡ →</span>
+                <span id="tickerBtnLabel">399 ETB | ይመዝገቡ →</span>
             </button>
         </div>
     </div>
@@ -208,8 +212,7 @@
     (function() {
         var user = null; try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
         var el = document.getElementById('tickerBtnLabel');
-        if (el && user && user.id) el.textContent = '1,000 ETB | ክፍያ ፈጽሙ →';
-    })();
+        if (el && user && user.id) el.textContent = '399 ETB | ክፍያ ፈጽሙ →';    })();
     </script>
 
     <!-- ── Categories Section (4 Cards) ─────────────────────────────────────────────── -->

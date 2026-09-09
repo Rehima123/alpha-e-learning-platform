@@ -96,7 +96,7 @@ function renderPaymentBanner(status, pkg) {
                 <div style="flex:1;min-width:0">
                     <div style="color:#818cf8;font-weight:800;font-size:0.9rem">ኮርሶችን ለመክፈት ክፍያ ይፈልጋል</div>
                     <div style="color:#64748b;font-size:0.8rem;margin-top:2px">
-                        1,000 ETB ብቻ — ሁሉም Freshman + CoC ኮርሶች
+                        399 ETB ብቻ — ሁሉም Freshman + CoC ኮርሶች
                     </div>
                 </div>
                 <a href="payment.html?method=manual" style="padding:10px 22px;
@@ -243,7 +243,7 @@ function renderDashboard() {
                 <a href="payment.html?method=manual"
                     style="padding:12px 32px;background:linear-gradient(135deg,#f59e0b,#ea580c);
                     color:#0f172a;border-radius:14px;font-weight:900;font-size:0.9rem;text-decoration:none">
-                    💳 ክፍያ ፈጽሙ — 1,000 ETB
+                    💳 ክፍያ ፈጽሙ — 399 ETB
                 </a>
             </div>`;
     }

@@ -1,6 +1,6 @@
 /**
  * PaymentBanner.jsx — Auto-playing carousel, 3.5s interval
- * 3 slides: HD Video | Mid/Final Exam PDF | Full Access 1000 ETB
+ * 3 slides: HD Video | Mid/Final Exam PDF | Full Access 399 ETB
  * CTA → /subscription  |  Bilingual EN + Amharic
  */
 
@@ -11,7 +11,7 @@ import {
   ChevronLeft, ChevronRight, Zap, Download, Wifi
 } from 'lucide-react'
 
-const PRICE     = '1,000 ETB'
+const PRICE     = '399 ETB'
 const INTERVAL  = 3500
 
 const SLIDES = [

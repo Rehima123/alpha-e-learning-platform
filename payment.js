@@ -1,8 +1,8 @@
 const ETB_RATE = 56;
-const TAX_RATE = 0;   // No tax — flat 1000 ETB price includes everything
+const TAX_RATE = 0;   // No tax — flat 399 ETB price includes everything
 
-// ── FLAT PRICE: 1000 ETB for everything ───────────────────────────────────────
-const FLAT_PRICE_ETB = 1000;
+// ── FLAT PRICE: 399 ETB for everything ───────────────────────────────────────
+const FLAT_PRICE_ETB = 399;
 
 const params = new URLSearchParams(window.location.search);
 const courseId = params.get('courseId');
@@ -12,7 +12,7 @@ const method   = params.get('method');
 let subtotal = FLAT_PRICE_ETB, discount = 0, couponData = null;
 let selectedMethod = method === 'manual' ? 'manual' : 'chapa';
 
-// All plans now resolve to the same 1000 ETB flat price
+// All plans now resolve to the same 399 ETB flat price
 const planInfo = {
     monthly: { name: 'Full Access — All 12 Courses (1 Year)', etb: FLAT_PRICE_ETB },
     annual:  { name: 'Full Access — All 12 Courses (1 Year)', etb: FLAT_PRICE_ETB }
@@ -31,11 +31,11 @@ async function init() {
                 document.getElementById('orderIcon').textContent  = c.icon || '📚';
                 document.getElementById('orderTitle').textContent = c.title;
                 document.getElementById('orderType').textContent  = `Full Access — All 12 Courses`;
-                subtotal = FLAT_PRICE_ETB;   // always 1000 ETB
+                subtotal = FLAT_PRICE_ETB;   // always 399 ETB
             }
         } catch { toast?.error('Failed to load course info'); }
     } else {
-        // Plan or default — always 1000 ETB
+        // Plan or default — always 399 ETB
         document.getElementById('orderIcon').textContent  = '🎓';
         document.getElementById('orderTitle').textContent = 'Full Access — All 12 Courses';
         document.getElementById('orderType').textContent  = '1 Year · Offline Download Included';
@@ -52,7 +52,7 @@ async function init() {
 
 function updateTotals() {
     const afterDiscount = subtotal - discount;
-    const total = afterDiscount; // No tax — flat 1000 ETB
+    const total = afterDiscount; // No tax — flat 399 ETB
 
     document.getElementById('subtotalDisplay').textContent = `${subtotal.toLocaleString()} ETB`;
     document.getElementById('totalDisplay').textContent    = `${total.toLocaleString()} ETB`;
