@@ -422,50 +422,50 @@
         function getUser(){try{return JSON.parse(localStorage.getItem('currentUser'));}catch(e){return null;}}
         function isPaid(){var u=getUser();return u&&(u.paymentStatus==='APPROVED'||u.role==='admin'||u.role==='super_admin');}
 
-        // ── Course image map (Unsplash topic photos) ─────────────────────────
+        // ── Course image map (Popsy SVG illustrations) ───────────────────────
         var COURSE_IMGS = {
-            'nat_eng101':'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=600&auto=format&fit=crop',
-            'soc_eng101':'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=600&auto=format&fit=crop',
-            'nat_eng102':'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=600&auto=format&fit=crop',
-            'soc_eng102':'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=600&auto=format&fit=crop',
-            'coc_eng':   'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=600&auto=format&fit=crop',
-            'nat_math101':'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=600&auto=format&fit=crop',
-            'soc_math101':'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=600&auto=format&fit=crop',
-            'nat_math102':'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=600&auto=format&fit=crop',
-            'nat_phys101':'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?q=80&w=600&auto=format&fit=crop',
-            'nat_chem101':'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=600&auto=format&fit=crop',
-            'coc_chem':   'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=600&auto=format&fit=crop',
-            'nat_crit101':'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop',
-            'soc_crit101':'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop',
-            'nat_geog101':'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=600&auto=format&fit=crop',
-            'soc_geog101':'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=600&auto=format&fit=crop',
-            'nat_psych101':'https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=600&auto=format&fit=crop',
-            'soc_psych101':'https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=600&auto=format&fit=crop',
-            'nat_pe101':'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop',
-            'soc_pe101':'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop',
-            'nat_bio101':'https://images.unsplash.com/photo-1530210124550-912dc1381cb8?q=80&w=600&auto=format&fit=crop',
-            'coc_bio':   'https://images.unsplash.com/photo-1530210124550-912dc1381cb8?q=80&w=600&auto=format&fit=crop',
-            'nat_hist101':'https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=600&auto=format&fit=crop',
-            'soc_hist101':'https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=600&auto=format&fit=crop',
-            'nat_ict101':'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=600&auto=format&fit=crop',
-            'soc_ict101':'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=600&auto=format&fit=crop',
-            'nat_civic101':'https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?q=80&w=600&auto=format&fit=crop',
-            'soc_civic101':'https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?q=80&w=600&auto=format&fit=crop',
-            'nat_incl101':'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop',
-            'soc_incl101':'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop',
-            'soc_bus101':'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=600&auto=format&fit=crop',
-            'soc_anth101':'https://images.unsplash.com/photo-1533158307587-828f0a76ef46?q=80&w=600&auto=format&fit=crop',
-            'soc_econ101':'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=600&auto=format&fit=crop',
-            'coc_anat_phys':'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?q=80&w=600&auto=format&fit=crop',
-            'coc_pharm_basic':'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=600&auto=format&fit=crop',
-            'coc_ph_foundation':'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=600&auto=format&fit=crop',
-            'coc_apt':    'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=600&auto=format&fit=crop',
-            'coc_model_1':'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=600&auto=format&fit=crop',
-            'coc_model_2':'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=600&auto=format&fit=crop'
+            'nat_eng101':'https://illustrations.popsy.co/amber/reading-a-book.svg',
+            'soc_eng101':'https://illustrations.popsy.co/amber/reading-a-book.svg',
+            'nat_eng102':'https://illustrations.popsy.co/amber/reading-a-book.svg',
+            'soc_eng102':'https://illustrations.popsy.co/amber/reading-a-book.svg',
+            'coc_eng':   'https://illustrations.popsy.co/amber/reading-a-book.svg',
+            'nat_math101':'https://illustrations.popsy.co/amber/calculator-and-math.svg',
+            'soc_math101':'https://illustrations.popsy.co/amber/calculator-and-math.svg',
+            'nat_math102':'https://illustrations.popsy.co/amber/calculator-and-math.svg',
+            'nat_phys101':'https://illustrations.popsy.co/amber/atomic-science.svg',
+            'nat_chem101':'https://illustrations.popsy.co/amber/lab-experiment.svg',
+            'coc_chem':   'https://illustrations.popsy.co/amber/lab-experiment.svg',
+            'nat_crit101':'https://illustrations.popsy.co/amber/idea-brainstorming.svg',
+            'soc_crit101':'https://illustrations.popsy.co/amber/idea-brainstorming.svg',
+            'nat_geog101':'https://illustrations.popsy.co/amber/compass-and-map.svg',
+            'soc_geog101':'https://illustrations.popsy.co/amber/compass-and-map.svg',
+            'nat_psych101':'https://illustrations.popsy.co/amber/mental-health.svg',
+            'soc_psych101':'https://illustrations.popsy.co/amber/mental-health.svg',
+            'nat_pe101':'https://illustrations.popsy.co/amber/fitness-workout.svg',
+            'soc_pe101':'https://illustrations.popsy.co/amber/fitness-workout.svg',
+            'nat_bio101':'https://illustrations.popsy.co/amber/natural-science.svg',
+            'coc_bio':   'https://illustrations.popsy.co/amber/natural-science.svg',
+            'nat_hist101':'https://illustrations.popsy.co/amber/library.svg',
+            'soc_hist101':'https://illustrations.popsy.co/amber/library.svg',
+            'nat_ict101':'https://illustrations.popsy.co/amber/programmer.svg',
+            'soc_ict101':'https://illustrations.popsy.co/amber/programmer.svg',
+            'nat_civic101':'https://illustrations.popsy.co/amber/handshake.svg',
+            'soc_civic101':'https://illustrations.popsy.co/amber/handshake.svg',
+            'nat_incl101':'https://illustrations.popsy.co/amber/team.svg',
+            'soc_incl101':'https://illustrations.popsy.co/amber/team.svg',
+            'soc_bus101':'https://illustrations.popsy.co/amber/launching-an-app.svg',
+            'soc_anth101':'https://illustrations.popsy.co/amber/traveling.svg',
+            'soc_econ101':'https://illustrations.popsy.co/amber/financial-report.svg',
+            'coc_anat_phys':'https://illustrations.popsy.co/amber/health-and-wellness.svg',
+            'coc_pharm_basic':'https://illustrations.popsy.co/amber/doctor.svg',
+            'coc_ph_foundation':'https://illustrations.popsy.co/amber/medicine.svg',
+            'coc_apt':    'https://illustrations.popsy.co/amber/exam.svg',
+            'coc_model_1':'https://illustrations.popsy.co/amber/exam.svg',
+            'coc_model_2':'https://illustrations.popsy.co/amber/exam.svg'
         };
-        var FALLBACK_IMG = 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?q=80&w=600&auto=format&fit=crop';
+        var FALLBACK_IMG = 'https://illustrations.popsy.co/amber/online-course.svg';
 
-        // ── Tall image card (photo top, title middle, button bottom) ─────────
+        // ── SVG illustration card (centered on dark bg) ───────────────────────
         function courseCard(c, accentColor){
             var paid   = isPaid();
             var img    = COURSE_IMGS[c.id] || FALLBACK_IMG;
@@ -473,28 +473,29 @@
             var btnBg  = paid ? '#16a34a' : accent;
             var btnColor = paid ? 'white' : '#0f172a';
             var btnLabel = paid ? 'Continue Learning &rarr;' : '&#128274; View Course';
-            return '<div onclick="handleCourseClick(\''+c.id+'\')" style="background:#111625;border:1px solid #1e293b;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s" '+
-                'onmouseover="this.style.borderColor=\'#334155\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 12px 32px rgba(0,0,0,0.5)\'" '+
+            return '<div onclick="handleCourseClick(\''+c.id+'\')" ' +
+                'style="background:#111625;border:1px solid #1e293b;border-radius:18px;overflow:hidden;' +
+                'display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;' +
+                'transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s" ' +
+                'onmouseover="this.style.borderColor=\'#334155\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 12px 32px rgba(0,0,0,0.5)\'" ' +
                 'onmouseout="this.style.borderColor=\'#1e293b\';this.style.transform=\'translateY(0)\';this.style.boxShadow=\'none\'">' +
-                // Photo
-                '<div style="height:144px;overflow:hidden;position:relative;flex-shrink:0">' +
-                '<img src="'+img+'" alt="'+c.name+'" loading="lazy" '+
-                'style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.35s" '+
-                'onmouseover="this.style.transform=\'scale(1.06)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
-                // Subject tag
+                // Illustration area — slate-900 bg, centered SVG
+                '<div style="height:144px;background:#0f172a;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">' +
+                '<img src="'+img+'" alt="'+c.name+'" loading="lazy" ' +
+                'style="height:112px;width:auto;object-fit:contain;transition:transform 0.3s" ' +
+                'onmouseover="this.style.transform=\'scale(1.1)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
                 '</div>' +
                 // Title
                 '<div style="padding:12px 14px">' +
-                '<h4 style="margin:0;font-size:0.82rem;font-weight:700;color:#f1f5f9;line-height:1.4;'+
+                '<h4 style="margin:0;font-size:0.82rem;font-weight:700;color:#f1f5f9;line-height:1.4;' +
                 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+c.name+'</h4>' +
                 '</div>' +
                 // Button
                 '<div style="padding:0 14px 14px">' +
-                '<button onclick="event.stopPropagation();handleCourseClick(\''+c.id+'\')" '+
-                'style="width:100%;padding:9px;border-radius:12px;border:none;font-weight:800;font-size:11px;cursor:pointer;'+
-                'background:'+btnBg+';color:'+btnColor+';'+
-                'display:flex;align-items:center;justify-content:center;gap:5px;'+
-                'transition:opacity 0.2s" '+
+                '<button onclick="event.stopPropagation();handleCourseClick(\''+c.id+'\')" ' +
+                'style="width:100%;padding:9px;border-radius:12px;border:none;font-weight:800;font-size:11px;cursor:pointer;' +
+                'background:'+btnBg+';color:'+btnColor+';' +
+                'display:flex;align-items:center;justify-content:center;gap:5px;transition:opacity 0.2s" ' +
                 'onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'">'+btnLabel+'</button>' +
                 '</div></div>';
         }
