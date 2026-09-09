@@ -421,17 +421,112 @@
         var activeStream = 'natural';
         function getUser(){try{return JSON.parse(localStorage.getItem('currentUser'));}catch(e){return null;}}
         function isPaid(){var u=getUser();return u&&(u.paymentStatus==='APPROVED'||u.role==='admin'||u.role==='super_admin');}
-        function courseCard(c){var paid=isPaid();return '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px"><h4 style="margin:0;font-size:0.82rem;font-weight:700;color:#f1f5f9;line-height:1.4">'+c.name+'</h4><button onclick="handleCourseClick(\''+c.id+'\')" style="padding:8px;border-radius:10px;border:none;font-weight:800;font-size:11px;cursor:pointer;'+(paid?'background:#16a34a;color:white':'background:linear-gradient(135deg,#f59e0b,#ea580c);color:#0f172a')+'">'+(paid?'Continue Learning &rarr;':'&#128274; View Course')+'</button></div>';}
+
+        // ── Course image map ──────────────────────────────────────────────────
+        var COURSE_IMGS = {
+            'nat_eng101':'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&auto=format&fit=crop',
+            'soc_eng101':'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&auto=format&fit=crop',
+            'nat_eng102':'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=500&auto=format&fit=crop',
+            'soc_eng102':'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=500&auto=format&fit=crop',
+            'nat_math101':'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&auto=format&fit=crop',
+            'soc_math101':'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=500&auto=format&fit=crop',
+            'nat_math102':'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&auto=format&fit=crop',
+            'nat_phys101':'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=500&auto=format&fit=crop',
+            'nat_chem101':'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=500&auto=format&fit=crop',
+            'coc_chem':'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=500&auto=format&fit=crop',
+            'nat_crit101':'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&auto=format&fit=crop',
+            'soc_crit101':'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&auto=format&fit=crop',
+            'nat_geog101':'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=500&auto=format&fit=crop',
+            'soc_geog101':'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=500&auto=format&fit=crop',
+            'nat_psych101':'https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=500&auto=format&fit=crop',
+            'soc_psych101':'https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=500&auto=format&fit=crop',
+            'nat_pe101':'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&auto=format&fit=crop',
+            'soc_pe101':'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&auto=format&fit=crop',
+            'nat_bio101':'https://images.unsplash.com/photo-1530210124550-912dc1381cb8?w=500&auto=format&fit=crop',
+            'coc_bio':'https://images.unsplash.com/photo-1530210124550-912dc1381cb8?w=500&auto=format&fit=crop',
+            'nat_hist101':'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop',
+            'soc_hist101':'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=500&auto=format&fit=crop',
+            'nat_ict101':'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=500&auto=format&fit=crop',
+            'soc_ict101':'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=500&auto=format&fit=crop',
+            'nat_civic101':'https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?w=500&auto=format&fit=crop',
+            'soc_civic101':'https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?w=500&auto=format&fit=crop',
+            'nat_incl101':'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=500&auto=format&fit=crop',
+            'soc_incl101':'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=500&auto=format&fit=crop',
+            'soc_bus101':'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=500&auto=format&fit=crop',
+            'soc_anth101':'https://images.unsplash.com/photo-1533158307587-828f0a76ef46?w=500&auto=format&fit=crop',
+            'soc_econ101':'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=500&auto=format&fit=crop',
+            'coc_anat_phys':'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=500&auto=format&fit=crop',
+            'coc_pharm_basic':'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&auto=format&fit=crop',
+            'coc_ph_foundation':'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=500&auto=format&fit=crop',
+            'coc_eng':'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&auto=format&fit=crop',
+            'coc_apt':'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&auto=format&fit=crop',
+            'coc_model_1':'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&auto=format&fit=crop',
+            'coc_model_2':'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&auto=format&fit=crop'
+        };
+        var FALLBACK_IMG = 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=500&auto=format&fit=crop';
+
+        // ── New image card ────────────────────────────────────────────────────
+        function courseCard(c, accentColor){
+            var paid = isPaid();
+            var img  = COURSE_IMGS[c.id] || FALLBACK_IMG;
+            var accent = accentColor || '#f59e0b';
+            var btnStyle = paid
+                ? 'background:#16a34a;color:white'
+                : 'background:linear-gradient(135deg,'+accent+','+accent+'cc);color:#0f172a';
+            var btnLabel = paid ? 'Continue Learning &rarr;' : '&#128274; View Course';
+            return '<div onclick="handleCourseClick(\''+c.id+'\')" style="background:#020817;border:1px solid #1e293b;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color 0.2s,transform 0.2s" '+
+                'onmouseover="this.style.borderColor=\'#334155\';this.style.transform=\'translateY(-4px)\'" '+
+                'onmouseout="this.style.borderColor=\'#1e293b\';this.style.transform=\'translateY(0)\'">' +
+                '<div style="height:110px;overflow:hidden;position:relative;flex-shrink:0">' +
+                '<img src="'+img+'" alt="'+c.name+'" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.35s" '+
+                'onmouseover="this.style.transform=\'scale(1.08)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+                '</div>' +
+                '<div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:10px">' +
+                '<h4 style="margin:0;font-size:0.82rem;font-weight:700;color:#f1f5f9;line-height:1.4">'+c.name+'</h4>' +
+                '<button onclick="event.stopPropagation();handleCourseClick(\''+c.id+'\')" style="padding:8px;border-radius:10px;border:none;font-weight:800;font-size:11px;cursor:pointer;width:100%;'+btnStyle+'">'+btnLabel+'</button>' +
+                '</div></div>';
+        }
+
         function renderDrawer(cat){
-            var drawer=document.getElementById('catDrawer');
-            if(!cat){drawer.style.display='none';return;}
-            drawer.style.display='block';
-            var hdr='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08)"><div><div style="display:flex;align-items:center;gap:10px"><span style="font-size:2rem">'+cat.icon+'</span><div><h3 style="margin:0;font-size:1rem;font-weight:900;color:#fbbf24">'+cat.title+'</h3>'+(cat.subTitleTag?'<span style="display:inline-block;background:rgba(244,63,94,0.2);color:#fb7185;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:4px">'+cat.subTitleTag+'</span>':'')+'</div></div><p style="margin:6px 0 0;font-size:0.75rem;color:#64748b">'+cat.desc+'</p></div><button onclick="selectCat(null)" style="background:#1e293b;border:1px solid #334155;color:#64748b;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">&#10005; ዝጋ</button></div>';
-            var body='';
-            if(cat.streams){var tabBar='<div style="display:flex;gap:8px;margin-bottom:16px;background:rgba(255,255,255,0.03);padding:6px;border-radius:14px;width:fit-content;border:1px solid rgba(255,255,255,0.07)"><button onclick="switchStream(\'natural\')" style="padding:8px 16px;border-radius:10px;border:none;font-weight:800;font-size:11px;cursor:pointer;transition:all 0.2s;'+(activeStream==='natural'?'background:#10b981;color:white':'background:transparent;color:#64748b')+'">&#128300; Natural Science</button><button onclick="switchStream(\'social\')" style="padding:8px 16px;border-radius:10px;border:none;font-weight:800;font-size:11px;cursor:pointer;transition:all 0.2s;'+(activeStream==='social'?'background:#8b5cf6;color:white':'background:transparent;color:#64748b')+'">&#127758; Social Science</button></div>';var courses='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px">'+(cat.streams[activeStream]||[]).map(courseCard).join('')+'</div>';body=tabBar+courses;}
-            else if(cat.subjects){body='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px">'+cat.subjects.map(courseCard).join('')+'</div>';}
-            drawer.innerHTML=hdr+body;
-            drawer.scrollIntoView({behavior:'smooth',block:'nearest'});
+            var drawer = document.getElementById('catDrawer');
+            if(!cat){ drawer.style.display='none'; return; }
+            drawer.style.display = 'block';
+
+            // Header
+            var hdr = '<div style="display:flex;justify-content:space-between;align-items:flex-start;'+
+                'margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08)">' +
+                '<div><div style="display:flex;align-items:center;gap:10px">' +
+                '<span style="font-size:2rem">'+cat.icon+'</span>' +
+                '<div><h3 style="margin:0;font-size:1.05rem;font-weight:900;color:#fbbf24">'+cat.title+'</h3>' +
+                (cat.subTitleTag ? '<span style="display:inline-block;background:rgba(244,63,94,0.2);color:#fb7185;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:4px">'+cat.subTitleTag+'</span>' : '') +
+                '</div></div>' +
+                '<p style="margin:6px 0 0;font-size:0.75rem;color:#64748b">'+cat.desc+'</p></div>' +
+                '<button onclick="selectCat(null)" style="background:#1e293b;border:1px solid #334155;color:#64748b;'+
+                'padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">&#10005; ዝጋ</button></div>';
+
+            var body = '';
+            if(cat.streams){
+                // Stream tabs
+                var tabBar = '<div style="display:flex;gap:8px;margin-bottom:20px;background:rgba(0,0,0,0.3);'+
+                    'padding:5px;border-radius:14px;width:fit-content;border:1px solid rgba(255,255,255,0.07)">' +
+                    '<button onclick="switchStream(\'natural\')" style="padding:8px 18px;border-radius:10px;border:none;'+
+                    'font-weight:800;font-size:11px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;'+
+                    (activeStream==='natural' ? 'background:#059669;color:white;box-shadow:0 2px 8px rgba(5,150,105,0.4)' : 'background:transparent;color:#64748b')+'">'+
+                    '&#128300; Natural Science</button>' +
+                    '<button onclick="switchStream(\'social\')" style="padding:8px 18px;border-radius:10px;border:none;'+
+                    'font-weight:800;font-size:11px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;'+
+                    (activeStream==='social' ? 'background:#7c3aed;color:white;box-shadow:0 2px 8px rgba(124,58,237,0.4)' : 'background:transparent;color:#64748b')+'">'+
+                    '&#127758; Social Science</button></div>';
+
+                var courses = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">' +
+                    (cat.streams[activeStream]||[]).map(function(c){ return courseCard(c,'#f59e0b'); }).join('') + '</div>';
+                body = tabBar + courses;
+            } else if(cat.subjects){
+                body = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">' +
+                    cat.subjects.map(function(c){ return courseCard(c,'#f43f5e'); }).join('') + '</div>';
+            }
+            drawer.innerHTML = hdr + body;
+            drawer.scrollIntoView({behavior:'smooth', block:'nearest'});
         }
         window.switchStream=function(stream){activeStream=stream;var cat=CATS.find(function(c){return c.id===selectedId;});if(cat&&cat.streams)renderDrawer(cat);};
         window.selectCat=function(id){
