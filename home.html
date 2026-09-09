@@ -422,49 +422,48 @@
         function getUser(){try{return JSON.parse(localStorage.getItem('currentUser'));}catch(e){return null;}}
         function isPaid(){var u=getUser();return u&&(u.paymentStatus==='APPROVED'||u.role==='admin'||u.role==='super_admin');}
 
-        // ── Course image map (reliable CDN - emoji-based SVGs via twemoji) ────
-        // Using OpenMoji / Noto Emoji SVGs hosted on GitHub CDN (always works)
+        // ── Course image map (icons8 3D Fluency - free, reliable) ─────────────
         var COURSE_IMGS = {
-            'nat_eng101': 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4da.svg',
-            'soc_eng101': 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4da.svg',
-            'nat_eng102': 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4da.svg',
-            'soc_eng102': 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4da.svg',
-            'coc_eng':    'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4da.svg',
-            'nat_math101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4d0.svg',
-            'soc_math101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4d0.svg',
-            'nat_math102':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4d0.svg',
-            'nat_phys101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/269b.svg',
-            'nat_chem101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f9ea.svg',
-            'coc_chem':   'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f9ea.svg',
-            'nat_crit101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4a1.svg',
-            'soc_crit101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4a1.svg',
-            'nat_geog101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f30d.svg',
-            'soc_geog101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f30d.svg',
-            'nat_psych101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f9e0.svg',
-            'soc_psych101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f9e0.svg',
-            'nat_pe101':  'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f3cb.svg',
-            'soc_pe101':  'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f3cb.svg',
-            'nat_bio101': 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f9ec.svg',
-            'coc_bio':    'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f9ec.svg',
-            'nat_hist101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4dc.svg',
-            'soc_hist101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4dc.svg',
-            'nat_ict101': 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4bb.svg',
-            'soc_ict101': 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4bb.svg',
-            'nat_civic101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/2696.svg',
-            'soc_civic101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/2696.svg',
-            'nat_incl101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f91d.svg',
-            'soc_incl101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f91d.svg',
-            'soc_bus101': 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f680.svg',
-            'soc_anth101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f3db.svg',
-            'soc_econ101':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4c8.svg',
-            'coc_anat_phys':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1fac0.svg',
-            'coc_pharm_basic':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f48a.svg',
-            'coc_ph_foundation':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f3e5.svg',
-            'coc_apt':    'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4dd.svg',
-            'coc_model_1':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4dd.svg',
-            'coc_model_2':'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4dd.svg'
+            'nat_eng101': 'https://img.icons8.com/3d-fluency/186/chat--v1.png',
+            'soc_eng101': 'https://img.icons8.com/3d-fluency/186/chat--v1.png',
+            'nat_eng102': 'https://img.icons8.com/3d-fluency/186/chat--v1.png',
+            'soc_eng102': 'https://img.icons8.com/3d-fluency/186/chat--v1.png',
+            'coc_eng':    'https://img.icons8.com/3d-fluency/186/chat--v1.png',
+            'nat_math101':'https://img.icons8.com/3d-fluency/186/math.png',
+            'soc_math101':'https://img.icons8.com/3d-fluency/186/math.png',
+            'nat_math102':'https://img.icons8.com/3d-fluency/186/math.png',
+            'nat_phys101':'https://img.icons8.com/3d-fluency/186/atom.png',
+            'nat_chem101':'https://img.icons8.com/3d-fluency/186/test-tube.png',
+            'coc_chem':   'https://img.icons8.com/3d-fluency/186/test-tube.png',
+            'nat_crit101':'https://img.icons8.com/3d-fluency/186/idea.png',
+            'soc_crit101':'https://img.icons8.com/3d-fluency/186/idea.png',
+            'nat_geog101':'https://img.icons8.com/3d-fluency/186/globe.png',
+            'soc_geog101':'https://img.icons8.com/3d-fluency/186/globe.png',
+            'nat_psych101':'https://img.icons8.com/3d-fluency/186/brain.png',
+            'soc_psych101':'https://img.icons8.com/3d-fluency/186/brain.png',
+            'nat_pe101':  'https://img.icons8.com/3d-fluency/186/dumbbell.png',
+            'soc_pe101':  'https://img.icons8.com/3d-fluency/186/dumbbell.png',
+            'nat_bio101': 'https://img.icons8.com/3d-fluency/186/dna-helix.png',
+            'coc_bio':    'https://img.icons8.com/3d-fluency/186/dna-helix.png',
+            'nat_hist101':'https://img.icons8.com/3d-fluency/186/books.png',
+            'soc_hist101':'https://img.icons8.com/3d-fluency/186/books.png',
+            'nat_ict101': 'https://img.icons8.com/3d-fluency/186/laptop.png',
+            'soc_ict101': 'https://img.icons8.com/3d-fluency/186/laptop.png',
+            'nat_civic101':'https://img.icons8.com/3d-fluency/186/scales.png',
+            'soc_civic101':'https://img.icons8.com/3d-fluency/186/scales.png',
+            'nat_incl101':'https://img.icons8.com/3d-fluency/186/handshake.png',
+            'soc_incl101':'https://img.icons8.com/3d-fluency/186/handshake.png',
+            'soc_bus101': 'https://img.icons8.com/3d-fluency/186/rocket.png',
+            'soc_anth101':'https://img.icons8.com/3d-fluency/186/museum.png',
+            'soc_econ101':'https://img.icons8.com/3d-fluency/186/increase.png',
+            'coc_anat_phys':'https://img.icons8.com/3d-fluency/186/heart-with-pulse.png',
+            'coc_pharm_basic':'https://img.icons8.com/3d-fluency/186/pill.png',
+            'coc_ph_foundation':'https://img.icons8.com/3d-fluency/186/hospital.png',
+            'coc_apt':    'https://img.icons8.com/3d-fluency/186/test-passed.png',
+            'coc_model_1':'https://img.icons8.com/3d-fluency/186/test-passed.png',
+            'coc_model_2':'https://img.icons8.com/3d-fluency/186/test-passed.png'
         };
-        var FALLBACK_IMG = 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/1f4da.svg';
+        var FALLBACK_IMG = 'https://img.icons8.com/3d-fluency/186/books.png';
 
         // ── Subject tag map ────────────────────────────────────────────────────
         var COURSE_TAGS = {
@@ -487,60 +486,45 @@
             'coc_apt':'📝 Aptitude', 'coc_model_1':'📝 Model Exam', 'coc_model_2':'📝 Model Exam'
         };
 
-        // ── Emoji map (no CDN needed — always works) ─────────────────────────
-        var COURSE_EMOJI = {
-            'nat_eng101':'📖','soc_eng101':'📖','nat_eng102':'📖','soc_eng102':'📖','coc_eng':'📖',
-            'nat_math101':'📐','soc_math101':'📐','nat_math102':'📐',
-            'nat_phys101':'⚛️',
-            'nat_chem101':'🧪','coc_chem':'🧪',
-            'nat_crit101':'💡','soc_crit101':'💡',
-            'nat_geog101':'🌍','soc_geog101':'🌍',
-            'nat_psych101':'🧠','soc_psych101':'🧠',
-            'nat_pe101':'🏋️','soc_pe101':'🏋️',
-            'nat_bio101':'🧬','coc_bio':'🧬',
-            'nat_hist101':'📜','soc_hist101':'📜',
-            'nat_ict101':'💻','soc_ict101':'💻',
-            'nat_civic101':'⚖️','soc_civic101':'⚖️',
-            'nat_incl101':'🤝','soc_incl101':'🤝',
-            'soc_bus101':'🚀','soc_anth101':'🗿','soc_econ101':'📊',
-            'coc_anat_phys':'🫀','coc_pharm_basic':'💊','coc_ph_foundation':'🏥',
-            'coc_apt':'📝','coc_model_1':'📋','coc_model_2':'📋'
-        };
-
-        // ── 3D icon card — emoji icon (100% reliable, no CDN) ─────────────────
+        // ── icons8 3D Fluency card ────────────────────────────────────────────
         function courseCard(c, accentColor){
             var paid   = isPaid();
-            var emoji  = COURSE_EMOJI[c.id] || '📚';
+            var img    = COURSE_IMGS[c.id] || FALLBACK_IMG;
             var tag    = COURSE_TAGS[c.id] || '';
             var accent = accentColor || '#f59e0b';
             var btnBg  = paid ? '#16a34a' : accent;
             var btnColor = paid ? 'white' : '#0f172a';
             var btnLabel = paid ? 'Continue Learning &rarr;' : '&#128274; View Course';
             var hoverBorder = accentColor === '#f43f5e' ? 'rgba(244,63,94,0.5)' : 'rgba(245,158,11,0.5)';
+            var glowColor  = accentColor === '#f43f5e' ? 'rgba(244,63,94,0.08)' : 'rgba(245,158,11,0.08)';
             return '<div onclick="handleCourseClick(\''+c.id+'\')" ' +
                 'style="background:#111625;border:1px solid rgba(30,41,59,0.8);border-radius:18px;overflow:hidden;' +
                 'display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;' +
                 'transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s" ' +
-                'onmouseover="this.style.borderColor=\''+hoverBorder+'\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 16px 40px rgba(0,0,0,0.5)\'" ' +
-                'onmouseout="this.style.borderColor=\'rgba(30,41,59,0.8)\';this.style.transform=\'translateY(0)\';this.style.boxShadow=\'none\'">' +
-                // Icon area
-                '<div style="height:140px;background:linear-gradient(135deg,#171d2f,#0f172a);' +
-                'display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative">' +
-                (tag ? '<span style="position:absolute;top:10px;left:10px;background:rgba(15,23,42,0.9);' +
+                'onmouseover="this.style.borderColor=\''+hoverBorder+'\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 16px 40px rgba(0,0,0,0.5)\';" ' +
+                'onmouseout="this.style.borderColor=\'rgba(30,41,59,0.8)\';this.style.transform=\'translateY(0)\';this.style.boxShadow=\'none\';">' +
+                // Image area with hover glow overlay
+                '<div style="height:176px;background:#171d2f;display:flex;align-items:center;justify-content:center;' +
+                'flex-shrink:0;position:relative;overflow:hidden;padding:16px">' +
+                // Glow overlay (shown via parent hover in vanilla JS)
+                '<div id="glow-'+c.id+'" style="position:absolute;inset:0;background:linear-gradient(to bottom,'+glowColor+',transparent);opacity:0;transition:opacity 0.3s;pointer-events:none"></div>' +
+                (tag ? '<span style="position:absolute;top:12px;left:12px;background:rgba(15,23,42,0.9);' +
                 'color:#e2e8f0;font-size:10px;font-weight:600;padding:3px 10px;border-radius:8px;' +
                 'border:1px solid rgba(71,85,105,0.6);z-index:10">'+tag+'</span>' : '') +
-                '<span style="font-size:3.5rem;line-height:1;transition:transform 0.3s;display:block" ' +
-                'onmouseover="this.style.transform=\'scale(1.15)\'" onmouseout="this.style.transform=\'scale(1)\'">'+emoji+'</span>' +
+                '<img src="'+img+'" alt="'+c.name+'" loading="lazy" width="96" height="96" ' +
+                'style="width:96px;height:96px;object-fit:contain;transition:transform 0.3s;' +
+                'filter:drop-shadow(0 10px 15px rgba(0,0,0,0.4));position:relative;z-index:1" ' +
+                'onmouseover="this.style.transform=\'scale(1.1)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
                 '</div>' +
                 // Title
-                '<div style="padding:12px 14px 8px">' +
-                '<h4 style="margin:0;font-size:0.82rem;font-weight:700;color:#f1f5f9;line-height:1.4;' +
+                '<div style="padding:16px 18px 8px">' +
+                '<h4 style="margin:0;font-size:0.82rem;font-weight:700;color:#f1f5f9;line-height:1.4;min-height:40px;' +
                 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+c.name+'</h4>' +
                 '</div>' +
                 // Button
-                '<div style="padding:0 14px 14px">' +
+                '<div style="padding:0 18px 18px">' +
                 '<button onclick="event.stopPropagation();handleCourseClick(\''+c.id+'\')" ' +
-                'style="width:100%;padding:9px;border-radius:12px;border:none;font-weight:700;font-size:11px;cursor:pointer;' +
+                'style="width:100%;padding:10px;border-radius:12px;border:none;font-weight:700;font-size:11px;cursor:pointer;' +
                 'background:'+btnBg+';color:'+btnColor+';' +
                 'display:flex;align-items:center;justify-content:center;gap:5px;transition:opacity 0.2s,transform 0.1s" ' +
                 'onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'" ' +
