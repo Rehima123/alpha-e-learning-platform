@@ -35,27 +35,74 @@
         </div>
     </nav>
 
-    <main class="container">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px">
-            <div>
-                <h2 id="dashGreeting">My Learning Dashboard</h2>
-                <p style="color:var(--text-secondary);font-size:0.9rem;margin:4px 0 0" id="dashSubtitle">ትምህርትዎን ይቀጥሉ!</p>
-            </div>
-            <a href="courses.html" class="btn btn-success" style="white-space:nowrap">+ አዲስ ኮርስ</a>
-        </div>
-        <div id="streak-badge" style="margin: 0.5rem 0 1.5rem"></div>
-        <div id="analytics-section" style="display:none;margin-bottom:2rem">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:1.5rem">
-                <div style="background:var(--bg-secondary);border-radius:12px;padding:20px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
-                    <canvas id="progressChart" width="160" height="160" style="max-width:160px"></canvas>
+    <main style="background:#020817;min-height:80vh;padding:40px 24px 80px">
+        <div style="max-width:1200px;margin:0 auto">
+
+            <!-- Greeting Header -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;
+                flex-wrap:wrap;gap:16px;margin-bottom:32px">
+                <div>
+                    <h2 id="dashGreeting" style="color:white;font-size:clamp(1.4rem,3vw,2rem);
+                        font-weight:900;margin:0 0 6px">My Learning Dashboard</h2>
+                    <p id="dashSubtitle" style="color:#64748b;font-size:0.88rem;margin:0"></p>
                 </div>
-                <div style="background:var(--bg-secondary);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
-                    <h4 style="margin-bottom:12px;color:var(--text-primary)">🏆 Leaderboard</h4>
-                    <div id="leaderboard-mini"></div>
+                <a href="courses.html" style="padding:10px 22px;background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                    color:white;border-radius:14px;font-weight:700;font-size:0.85rem;
+                    text-decoration:none;white-space:nowrap;flex-shrink:0">
+                    + አዲስ ኮርስ
+                </a>
+            </div>
+
+            <!-- Streak badge -->
+            <div id="streak-badge" style="margin-bottom:20px"></div>
+
+            <!-- Payment status banner -->
+            <div id="payStatusBanner" style="margin-bottom:24px"></div>
+
+            <!-- Stats row -->
+            <div id="statsRow" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px">
+                <div style="background:#0f172a;border:1px solid #1e293b;border-radius:18px;padding:20px;text-align:center">
+                    <div id="stat-enrolled" style="font-size:1.8rem;font-weight:900;color:#818cf8">0</div>
+                    <div style="font-size:0.75rem;color:#64748b;margin-top:4px">Enrolled</div>
+                </div>
+                <div style="background:#0f172a;border:1px solid #1e293b;border-radius:18px;padding:20px;text-align:center">
+                    <div id="stat-completed" style="font-size:1.8rem;font-weight:900;color:#34d399">0</div>
+                    <div style="font-size:0.75rem;color:#64748b;margin-top:4px">Completed</div>
+                </div>
+                <div style="background:#0f172a;border:1px solid #1e293b;border-radius:18px;padding:20px;text-align:center">
+                    <div id="stat-progress" style="font-size:1.8rem;font-weight:900;color:#fbbf24">0%</div>
+                    <div style="font-size:0.75rem;color:#64748b;margin-top:4px">Progress</div>
+                </div>
+                <div style="background:#0f172a;border:1px solid #1e293b;border-radius:18px;padding:20px;text-align:center">
+                    <div id="stat-streak" style="font-size:1.8rem;font-weight:900;color:#fb7185">0</div>
+                    <div style="font-size:0.75rem;color:#64748b;margin-top:4px">Day Streak</div>
                 </div>
             </div>
+            <style>
+            @media(max-width:640px){ #statsRow { grid-template-columns:repeat(2,1fr); } }
+            </style>
+
+            <!-- My Courses section -->
+            <h3 style="color:white;font-size:1rem;font-weight:800;margin:0 0 16px">
+                📚 My Courses
+            </h3>
+            <div class="enrolled-courses" id="enrolledCourses"></div>
+
+            <!-- Analytics (hidden until loaded) -->
+            <div id="analytics-section" style="display:none;margin-top:32px">
+                <div style="display:grid;grid-template-columns:180px 1fr;gap:20px;
+                    background:#0f172a;border:1px solid #1e293b;border-radius:20px;padding:24px">
+                    <canvas id="progressChart" width="160" height="160"></canvas>
+                    <div>
+                        <h4 style="color:white;margin:0 0 12px;font-size:0.9rem;font-weight:700">
+                            🏆 Leaderboard
+                        </h4>
+                        <div id="leaderboard-mini"></div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-        <div class="enrolled-courses" id="enrolledCourses"></div>
     </main>
 
     <script src="theme.js"></script>
