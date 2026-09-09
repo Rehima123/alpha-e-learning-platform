@@ -48,37 +48,475 @@
         </div>
     </nav>
 
-    <main class="container">
-        <section class="hero">
-            <h2>Explore Courses</h2>
-            <p>Learn new skills at your own pace</p>
-        </section>
+    <!-- ── Hidden inputs for courses.js compatibility ── -->
+    <input type="text" id="searchInput" style="display:none">
+    <select id="sortSelect" style="display:none"></select>
+    <span id="courseCount" style="display:none"></span>
+    <div id="coursesGrid" style="display:none"></div>
 
-        <div class="filters-section">
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="🔍 Search courses, topics, instructors...">
+    <!-- ── Page Header ── -->
+    <div style="background:linear-gradient(135deg,#020817,#0f172a);padding:48px 24px 32px;border-bottom:1px solid #1e293b">
+        <div style="max-width:1200px;margin:0 auto">
+            <h1 style="color:white;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:900;margin:0 0 8px">
+                📚 All Courses
+            </h1>
+            <p style="color:#64748b;font-size:0.9rem;margin:0 0 24px">
+                Ethiopian Freshman Curriculum &amp; Health Science CoC — ሁሉም ኮርሶች
+            </p>
+            <!-- Search bar -->
+            <div style="display:flex;align-items:center;gap:8px;background:#0f172a;border:1px solid #1e293b;
+                padding:8px 8px 8px 16px;border-radius:16px;max-width:480px">
+                <span style="color:#64748b">🔍</span>
+                <input type="text" id="searchInputVisible" placeholder="Search courses..."
+                    style="background:transparent;border:none;outline:none;color:white;font-size:0.88rem;flex:1;padding:4px 0"
+                    oninput="filterVisible(this.value)">
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:0.5rem">
-                <div class="category-filters" style="margin-bottom:0">
-                    <button class="filter-btn active" data-category="all">All</button>
-                    <button class="filter-btn" data-category="semester1">Semester 1</button>
-                    <button class="filter-btn" data-category="semester2">Semester 2</button>
-                    <button class="filter-btn" data-category="natural">Natural</button>
-                    <button class="filter-btn" data-category="social">Social</button>
+        </div>
+    </div>
+
+    <!-- ── Courses Main ── -->
+    <main style="background:#020817;min-height:60vh;padding:40px 24px 80px">
+        <div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:40px" id="coursesSections">
+
+        <!-- ================================================
+             1. FIRST SEMESTER — NATURAL SCIENCE
+             ================================================ -->
+        <div class="cs-section" data-stream="natural sem1">
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;
+                gap:12px;border-bottom:1px solid #1e293b;padding-bottom:20px;margin-bottom:24px">
+                <div>
+                    <h2 style="font-size:1.35rem;font-weight:900;color:#fbbf24;margin:0 0 4px">
+                        First Semester (Natural Science)
+                    </h2>
+                    <p style="font-size:0.78rem;color:#64748b;margin:0">የመጀመሪያ ሴሚስተር የናቹራል ሳይንስ ኮርሶች</p>
                 </div>
-                <div style="display:flex;align-items:center;gap:10px">
-                    <span id="courseCount" style="font-size:0.85rem;color:var(--text-secondary)"></span>
-                    <select id="sortSelect" style="padding:7px 12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);font-size:0.85rem;cursor:pointer">
-                        <option value="newest">Newest</option>
-                        <option value="rating">Top Rated</option>
-                        <option value="students">Most Popular</option>
-                    </select>
+                <span style="padding:5px 14px;border-radius:12px;font-size:11px;font-weight:700;
+                    background:rgba(20,184,166,0.1);color:#2dd4bf;border:1px solid rgba(20,184,166,0.25)">
+                    🧪 Natural Science Stream
+                </span>
+            </div>
+            <div class="cs-grid">
+                <!-- English -->
+                <div class="cs-card" onclick="goCourse('nat_eng101')">
+                    <div class="cs-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=500&q=80" alt="English" class="cs-img">
+                        <span class="cs-tag" style="color:#fbbf24">📖 English</span>
+                    </div>
+                    <div class="cs-body">
+                        <h3 class="cs-title">Communicative English Skills I</h3>
+                        <button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('nat_eng101')">
+                            <span id="cs-lbl-nat_eng101">🔒 View Course</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Math -->
+                <div class="cs-card" onclick="goCourse('nat_math101')">
+                    <div class="cs-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=500&q=80" alt="Math" class="cs-img">
+                        <span class="cs-tag" style="color:#fbbf24">📐 Math</span>
+                    </div>
+                    <div class="cs-body">
+                        <h3 class="cs-title">Applied Mathematics I</h3>
+                        <button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('nat_math101')">
+                            <span id="cs-lbl-nat_math101">🔒 View Course</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Physics -->
+                <div class="cs-card" onclick="goCourse('nat_phys101')">
+                    <div class="cs-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&w=500&q=80" alt="Physics" class="cs-img">
+                        <span class="cs-tag" style="color:#fbbf24">⚡ Physics</span>
+                    </div>
+                    <div class="cs-body">
+                        <h3 class="cs-title">General Physics</h3>
+                        <button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('nat_phys101')">
+                            <span id="cs-lbl-nat_phys101">🔒 View Course</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Chemistry -->
+                <div class="cs-card" onclick="goCourse('nat_chem101')">
+                    <div class="cs-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=500&q=80" alt="Chemistry" class="cs-img">
+                        <span class="cs-tag" style="color:#fbbf24">🧪 Chemistry</span>
+                    </div>
+                    <div class="cs-body">
+                        <h3 class="cs-title">General Chemistry</h3>
+                        <button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('nat_chem101')">
+                            <span id="cs-lbl-nat_chem101">🔒 View Course</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Logic -->
+                <div class="cs-card" onclick="goCourse('nat_crit101')">
+                    <div class="cs-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=500&q=80" alt="Logic" class="cs-img">
+                        <span class="cs-tag" style="color:#fbbf24">💡 Logic</span>
+                    </div>
+                    <div class="cs-body">
+                        <h3 class="cs-title">Critical Thinking (Logic)</h3>
+                        <button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('nat_crit101')">
+                            <span id="cs-lbl-nat_crit101">🔒 View Course</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Geography -->
+                <div class="cs-card" onclick="goCourse('nat_geog101')">
+                    <div class="cs-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=500&q=80" alt="Geography" class="cs-img">
+                        <span class="cs-tag" style="color:#fbbf24">🌍 Geography</span>
+                    </div>
+                    <div class="cs-body">
+                        <h3 class="cs-title">Geography of Ethiopia and the Horn</h3>
+                        <button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('nat_geog101')">
+                            <span id="cs-lbl-nat_geog101">🔒 View Course</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Psychology -->
+                <div class="cs-card" onclick="goCourse('nat_psych101')">
+                    <div class="cs-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=500&q=80" alt="Psychology" class="cs-img">
+                        <span class="cs-tag" style="color:#fbbf24">🧠 Psychology</span>
+                    </div>
+                    <div class="cs-body">
+                        <h3 class="cs-title">General Psychology</h3>
+                        <button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('nat_psych101')">
+                            <span id="cs-lbl-nat_psych101">🔒 View Course</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Physical Fitness -->
+                <div class="cs-card" onclick="goCourse('nat_pe101')">
+                    <div class="cs-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=500&q=80" alt="Fitness" class="cs-img">
+                        <span class="cs-tag" style="color:#fbbf24">🏃 Health</span>
+                    </div>
+                    <div class="cs-body">
+                        <h3 class="cs-title">Physical Fitness &amp; Health</h3>
+                        <button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('nat_pe101')">
+                            <span id="cs-lbl-nat_pe101">🔒 View Course</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="courses-grid" id="coursesGrid"></div>
+        <!-- ================================================
+             2. FIRST SEMESTER — SOCIAL SCIENCE
+             ================================================ -->
+        <div class="cs-section" data-stream="social sem1">
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;
+                gap:12px;border-bottom:1px solid #1e293b;padding-bottom:20px;margin-bottom:24px">
+                <div>
+                    <h2 style="font-size:1.35rem;font-weight:900;color:#fbbf24;margin:0 0 4px">
+                        First Semester (Social Science)
+                    </h2>
+                    <p style="font-size:0.78rem;color:#64748b;margin:0">የሶሻል ሳይንስ የመጀመሪያ ሴሚስተር ኮርሶች</p>
+                </div>
+                <span style="padding:5px 14px;border-radius:12px;font-size:11px;font-weight:700;
+                    background:rgba(99,102,241,0.1);color:#818cf8;border:1px solid rgba(99,102,241,0.25)">
+                    🌍 Social Science Stream
+                </span>
+            </div>
+            <div class="cs-grid">
+                <div class="cs-card" onclick="goCourse('soc_eng101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=500&q=80" alt="English" class="cs-img"><span class="cs-tag" style="color:#fbbf24">📖 English</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Communicative English Skills I</h3><button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('soc_eng101')"><span id="cs-lbl-soc_eng101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('soc_crit101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=500&q=80" alt="Logic" class="cs-img"><span class="cs-tag" style="color:#fbbf24">💡 Logic</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Critical Thinking (Logic)</h3><button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('soc_crit101')"><span id="cs-lbl-soc_crit101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('soc_geog101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=500&q=80" alt="Geography" class="cs-img"><span class="cs-tag" style="color:#fbbf24">🌍 Geography</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Geography of Ethiopia &amp; Horn</h3><button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('soc_geog101')"><span id="cs-lbl-soc_geog101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('soc_psych101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=500&q=80" alt="Psychology" class="cs-img"><span class="cs-tag" style="color:#fbbf24">🧠 Psychology</span></div>
+                    <div class="cs-body"><h3 class="cs-title">General Psychology</h3><button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('soc_psych101')"><span id="cs-lbl-soc_psych101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('soc_anth101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1533158307587-828f0a76ef46?auto=format&fit=crop&w=500&q=80" alt="Anthropology" class="cs-img"><span class="cs-tag" style="color:#fbbf24">🗿 Anthropology</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Social Anthropology</h3><button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('soc_anth101')"><span id="cs-lbl-soc_anth101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('soc_math101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=500&q=80" alt="Math" class="cs-img"><span class="cs-tag" style="color:#fbbf24">📐 Math</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Math for Social Sciences</h3><button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('soc_math101')"><span id="cs-lbl-soc_math101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('soc_econ101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=500&q=80" alt="Economics" class="cs-img"><span class="cs-tag" style="color:#fbbf24">📊 Economics</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Introduction to Economics</h3><button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('soc_econ101')"><span id="cs-lbl-soc_econ101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('soc_pe101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=500&q=80" alt="Health" class="cs-img"><span class="cs-tag" style="color:#fbbf24">🏃 Health</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Physical Fitness &amp; Health</h3><button class="cs-btn cs-btn-amber" onclick="event.stopPropagation();goCourse('soc_pe101')"><span id="cs-lbl-soc_pe101">🔒 View Course</span></button></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================
+             3. SECOND SEMESTER
+             ================================================ -->
+        <div class="cs-section" data-stream="sem2">
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;
+                gap:12px;border-bottom:1px solid #1e293b;padding-bottom:20px;margin-bottom:24px">
+                <div>
+                    <h2 style="font-size:1.35rem;font-weight:900;color:#818cf8;margin:0 0 4px">Second Semester</h2>
+                    <p style="font-size:0.78rem;color:#64748b;margin:0">የሁለተኛ ሴሚስተር ኮርሶች</p>
+                </div>
+                <span style="padding:5px 14px;border-radius:12px;font-size:11px;font-weight:700;
+                    background:rgba(99,102,241,0.1);color:#818cf8;border:1px solid rgba(99,102,241,0.25)">
+                    🎓 Semester II
+                </span>
+            </div>
+            <div class="cs-grid">
+                <div class="cs-card" onclick="goCourse('nat_eng102')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=500&q=80" alt="English II" class="cs-img"><span class="cs-tag" style="color:#818cf8">📖 English II</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Communicative English Skills II</h3><button class="cs-btn cs-btn-indigo" onclick="event.stopPropagation();goCourse('nat_eng102')"><span id="cs-lbl-nat_eng102">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('nat_bio101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1530210124550-912dc1381cb8?auto=format&fit=crop&w=500&q=80" alt="Biology" class="cs-img"><span class="cs-tag" style="color:#818cf8">🧬 Biology</span></div>
+                    <div class="cs-body"><h3 class="cs-title">General Biology</h3><button class="cs-btn cs-btn-indigo" onclick="event.stopPropagation();goCourse('nat_bio101')"><span id="cs-lbl-nat_bio101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('nat_hist101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?auto=format&fit=crop&w=500&q=80" alt="History" class="cs-img"><span class="cs-tag" style="color:#818cf8">📜 History</span></div>
+                    <div class="cs-body"><h3 class="cs-title">History of Ethiopia &amp; Horn</h3><button class="cs-btn cs-btn-indigo" onclick="event.stopPropagation();goCourse('nat_hist101')"><span id="cs-lbl-nat_hist101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('nat_ict101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=500&q=80" alt="Technology" class="cs-img"><span class="cs-tag" style="color:#818cf8">🤖 Tech</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Emerging Technologies</h3><button class="cs-btn cs-btn-indigo" onclick="event.stopPropagation();goCourse('nat_ict101')"><span id="cs-lbl-nat_ict101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('nat_civic101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=500&q=80" alt="Ethics" class="cs-img"><span class="cs-tag" style="color:#818cf8">⚖️ Ethics</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Moral &amp; Civic Education</h3><button class="cs-btn cs-btn-indigo" onclick="event.stopPropagation();goCourse('nat_civic101')"><span id="cs-lbl-nat_civic101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('soc_bus101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=500&q=80" alt="Business" class="cs-img"><span class="cs-tag" style="color:#818cf8">💼 Business</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Entrepreneurship</h3><button class="cs-btn cs-btn-indigo" onclick="event.stopPropagation();goCourse('soc_bus101')"><span id="cs-lbl-soc_bus101">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('nat_math102')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=500&q=80" alt="Math II" class="cs-img"><span class="cs-tag" style="color:#818cf8">📐 Math II</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Applied Mathematics II</h3><button class="cs-btn cs-btn-indigo" onclick="event.stopPropagation();goCourse('nat_math102')"><span id="cs-lbl-nat_math102">🔒 View Course</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('nat_incl101')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=500&q=80" alt="Inclusiveness" class="cs-img"><span class="cs-tag" style="color:#818cf8">🤝 Inclusive</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Inclusiveness</h3><button class="cs-btn cs-btn-indigo" onclick="event.stopPropagation();goCourse('nat_incl101')"><span id="cs-lbl-nat_incl101">🔒 View Course</span></button></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================
+             4. HEALTH SCIENCE CoC PREP
+             ================================================ -->
+        <div class="cs-section" data-stream="coc">
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;
+                gap:12px;border-bottom:1px solid #1e293b;padding-bottom:20px;margin-bottom:24px">
+                <div>
+                    <h2 style="font-size:1.35rem;font-weight:900;color:#fb7185;margin:0 0 4px">Health Science CoC Prep</h2>
+                    <p style="font-size:0.78rem;color:#64748b;margin:0">የጤና ሳይንስ የ CoC ፈተና ዝግጅት ኮርሶች እና ሞዴል ፈተናዎች</p>
+                </div>
+                <span style="padding:5px 14px;border-radius:12px;font-size:11px;font-weight:700;
+                    background:rgba(244,63,94,0.1);color:#fb7185;border:1px solid rgba(244,63,94,0.25)">
+                    🩺 CoC Specialty
+                </span>
+            </div>
+            <div class="cs-grid">
+                <div class="cs-card" onclick="goCourse('coc_anat_phys')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&w=500&q=80" alt="Anatomy" class="cs-img"><span class="cs-tag" style="color:#fb7185">🫀 Anatomy</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Human Anatomy &amp; Physiology</h3><button class="cs-btn cs-btn-rose" onclick="event.stopPropagation();goCourse('coc_anat_phys')"><span id="cs-lbl-coc_anat_phys">🔒 Start CoC Prep</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('coc_bio')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1530210124550-912dc1381cb8?auto=format&fit=crop&w=500&q=80" alt="Biology CoC" class="cs-img"><span class="cs-tag" style="color:#fb7185">🧬 Biology</span></div>
+                    <div class="cs-body"><h3 class="cs-title">General Biology CoC Prep</h3><button class="cs-btn cs-btn-rose" onclick="event.stopPropagation();goCourse('coc_bio')"><span id="cs-lbl-coc_bio">🔒 Start CoC Prep</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('coc_pharm_basic')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=500&q=80" alt="Pharmacology" class="cs-img"><span class="cs-tag" style="color:#fb7185">💊 Pharmacy</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Pharmacology Essentials</h3><button class="cs-btn cs-btn-rose" onclick="event.stopPropagation();goCourse('coc_pharm_basic')"><span id="cs-lbl-coc_pharm_basic">🔒 Start CoC Prep</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('coc_ph_foundation')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=500&q=80" alt="Public Health" class="cs-img"><span class="cs-tag" style="color:#fb7185">🏥 Public Health</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Public Health &amp; Epidemiology</h3><button class="cs-btn cs-btn-rose" onclick="event.stopPropagation();goCourse('coc_ph_foundation')"><span id="cs-lbl-coc_ph_foundation">🔒 Start CoC Prep</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('coc_chem')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=500&q=80" alt="Chemistry CoC" class="cs-img"><span class="cs-tag" style="color:#fb7185">🧪 Chemistry</span></div>
+                    <div class="cs-body"><h3 class="cs-title">General Chemistry CoC Prep</h3><button class="cs-btn cs-btn-rose" onclick="event.stopPropagation();goCourse('coc_chem')"><span id="cs-lbl-coc_chem">🔒 Start CoC Prep</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('coc_eng')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=500&q=80" alt="English CoC" class="cs-img"><span class="cs-tag" style="color:#fb7185">📖 English</span></div>
+                    <div class="cs-body"><h3 class="cs-title">English Language Competency</h3><button class="cs-btn cs-btn-rose" onclick="event.stopPropagation();goCourse('coc_eng')"><span id="cs-lbl-coc_eng">🔒 Start CoC Prep</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('coc_model_1')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=500&q=80" alt="Model Exam 1" class="cs-img"><span class="cs-tag" style="color:#fb7185">📝 Model Exam 1</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Comprehensive Model Exam 1</h3><button class="cs-btn cs-btn-rose" onclick="event.stopPropagation();goCourse('coc_model_1')"><span id="cs-lbl-coc_model_1">🔒 Take Exam</span></button></div>
+                </div>
+                <div class="cs-card" onclick="goCourse('coc_model_2')">
+                    <div class="cs-img-wrap"><img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=500&q=80" alt="Model Exam 2" class="cs-img"><span class="cs-tag" style="color:#fb7185">📝 Model Exam 2</span></div>
+                    <div class="cs-body"><h3 class="cs-title">Comprehensive Model Exam 2</h3><button class="cs-btn cs-btn-rose" onclick="event.stopPropagation();goCourse('coc_model_2')"><span id="cs-lbl-coc_model_2">🔒 Take Exam</span></button></div>
+                </div>
+            </div>
+        </div>
+
+        </div><!-- /coursesSections -->
+
+        <!-- Payment CTA banner -->
+        <div id="payCta" style="display:none;margin-top:32px;background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(245,158,11,0.1));
+            border:1px solid rgba(99,102,241,0.3);border-radius:24px;padding:32px 24px;text-align:center">
+            <div style="font-size:2rem;margin-bottom:8px">🔒</div>
+            <h3 style="color:white;font-size:1.1rem;font-weight:900;margin:0 0 8px">ሁሉም ኮርሶችን ለማየት ክፍያ ይፈልጋል</h3>
+            <p style="color:#64748b;font-size:0.85rem;margin:0 0 20px">1,000 ETB ብቻ — ሁሉም Semester 1&amp;2 + CoC ኮርሶች</p>
+            <a href="payment.html?method=manual"
+                style="display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#f59e0b,#ea580c);
+                color:#0f172a;font-weight:900;border-radius:14px;text-decoration:none;font-size:0.9rem">
+                💳 ክፍያ ፈጽሙ →
+            </a>
+        </div>
     </main>
+
+    <!-- ── Styles for new course grid ── -->
+    <style>
+    .cs-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+    @media(max-width:1024px){ .cs-grid { grid-template-columns: repeat(3,1fr); } }
+    @media(max-width:768px)  { .cs-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:480px)  { .cs-grid { grid-template-columns: 1fr; } }
+
+    .cs-card {
+        background: #0a0f1e;
+        border: 1px solid #1e293b;
+        border-radius: 18px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .cs-card:hover {
+        border-color: rgba(245,158,11,0.4);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        transform: translateY(-4px);
+    }
+    .cs-img-wrap {
+        height: 140px;
+        overflow: hidden;
+        position: relative;
+        flex-shrink: 0;
+    }
+    .cs-img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 0.35s ease;
+        display: block;
+    }
+    .cs-card:hover .cs-img { transform: scale(1.08); }
+    .cs-tag {
+        position: absolute;
+        top: 8px; left: 8px;
+        background: rgba(2,8,30,0.85);
+        backdrop-filter: blur(8px);
+        font-size: 11px; font-weight: 700;
+        padding: 3px 10px; border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+    .cs-body {
+        padding: 16px;
+        display: flex; flex-direction: column;
+        gap: 12px; flex: 1;
+        justify-content: space-between;
+    }
+    .cs-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+        line-height: 1.4;
+    }
+    .cs-btn {
+        width: 100%;
+        padding: 9px 0;
+        border: none;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 800;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: opacity 0.2s, transform 0.15s;
+    }
+    .cs-btn:hover { opacity: 0.88; transform: scale(1.01); }
+    .cs-btn-amber { background: #f59e0b; color: #0f172a; }
+    .cs-btn-indigo { background: #4f46e5; color: white; }
+    .cs-btn-rose   { background: #e11d48; color: white; }
+    .cs-btn-green  { background: #16a34a; color: white; }
+    </style>
+
+    <!-- ── Courses page JS ── -->
+    <script>
+    (function() {
+        var user = null;
+        try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
+        var paid = user && (user.paymentStatus === 'APPROVED' || user.role === 'admin' || user.role === 'super_admin');
+
+        // Update all button labels based on payment status
+        if (paid) {
+            document.querySelectorAll('[id^="cs-lbl-"]').forEach(function(el) {
+                var isCoC = el.id.includes('coc_model');
+                el.textContent = isCoC ? '▶ Take Exam' : '▶ Continue Learning';
+                var btn = el.closest('button');
+                if (btn) {
+                    btn.className = 'cs-btn cs-btn-green';
+                }
+            });
+        } else if (user && user.paymentStatus === 'PENDING') {
+            document.querySelectorAll('[id^="cs-lbl-"]').forEach(function(el) {
+                el.textContent = '⏳ Pending Approval';
+                var btn = el.closest('button');
+                if (btn) btn.style.opacity = '0.6';
+            });
+        } else if (!user) {
+            // Show payment CTA
+            var cta = document.getElementById('payCta');
+            if (cta) cta.style.display = 'block';
+        } else {
+            // Logged in but UNPAID — show CTA
+            var cta = document.getElementById('payCta');
+            if (cta) cta.style.display = 'block';
+        }
+    })();
+
+    function goCourse(courseId) {
+        var user = null;
+        try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
+        var paid = user && (user.paymentStatus === 'APPROVED' || user.role === 'admin' || user.role === 'super_admin');
+        if (paid) {
+            window.location.href = 'course-detail.html?id=' + courseId;
+        } else if (!user) {
+            window.location.href = 'auth-login.html?redirect=' + encodeURIComponent('payment.html?method=manual');
+        } else {
+            window.location.href = 'payment.html?method=manual';
+        }
+    }
+
+    function filterVisible(q) {
+        q = q.toLowerCase().trim();
+        document.querySelectorAll('.cs-card').forEach(function(card) {
+            var title = card.querySelector('.cs-title');
+            var text  = title ? title.textContent.toLowerCase() : '';
+            card.style.display = (!q || text.includes(q)) ? '' : 'none';
+        });
+        // Hide empty sections
+        document.querySelectorAll('.cs-section').forEach(function(sec) {
+            var visible = Array.from(sec.querySelectorAll('.cs-card')).some(function(c){ return c.style.display !== 'none'; });
+            sec.style.display = visible ? '' : 'none';
+        });
+    }
+    </script>
 
     <script src="theme.js"></script>
     <script src="api.js"></script>
