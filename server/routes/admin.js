@@ -20,7 +20,6 @@ router.get('/stats', isAnyAdmin, adminController.getStats);
 router.get('/courses/pending',       isContentAdmin, adminController.getPendingCourses);
 router.put('/courses/:id/approve',   isContentAdmin, adminController.approveCourse);
 router.put('/courses/:id/reject',    isContentAdmin, adminController.rejectCourse);
-router.post('/courses',              isContentAdmin, adminController.createCourse);
 
 // ── User management (super_admin only) ───────────────────────────────────────
 router.post('/users',                isSuperAdmin,   adminController.createUser);
