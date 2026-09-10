@@ -11,7 +11,7 @@ const STATIC_COURSES = [
         description: 'Develop essential English communication skills for academic and everyday contexts. Covers reading, writing, listening and speaking.',
         level: 'Beginner', category: 'semester1', duration: '16 weeks',
         instructor: { fullName: 'Dr. Tigist Haile' }, instructorName: 'Dr. Tigist Haile',
-        rating: 4.8, enrolledStudents: 1240, totalLessons: 32, isPremium: true, price: 1000,
+        rating: 4.8, enrolledStudents: 1240, totalLessons: 32, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-01'
     },
     {
@@ -19,7 +19,7 @@ const STATIC_COURSES = [
         description: 'Covers calculus, algebra and analytical geometry. Foundation for engineering, medicine and natural science students.',
         level: 'Intermediate', category: 'semester1', duration: '16 weeks',
         instructor: { fullName: 'Prof. Bekele Tadesse' }, instructorName: 'Prof. Bekele Tadesse',
-        rating: 4.7, enrolledStudents: 980, totalLessons: 28, isPremium: true, price: 1000,
+        rating: 4.7, enrolledStudents: 980, totalLessons: 28, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-02'
     },
     {
@@ -27,7 +27,7 @@ const STATIC_COURSES = [
         description: 'Master logical reasoning, argument analysis and problem-solving techniques essential for all academic disciplines.',
         level: 'Beginner', category: 'semester1', duration: '12 weeks',
         instructor: { fullName: 'Dr. Mekdes Alemu' }, instructorName: 'Dr. Mekdes Alemu',
-        rating: 4.9, enrolledStudents: 1560, totalLessons: 24, isPremium: true, price: 1000,
+        rating: 4.9, enrolledStudents: 1560, totalLessons: 24, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-03'
     },
     {
@@ -35,7 +35,7 @@ const STATIC_COURSES = [
         description: 'Physical and human geography of Ethiopia and the world. Covers climate, ecosystems, population and development.',
         level: 'Beginner', category: 'semester1', duration: '14 weeks',
         instructor: { fullName: 'Dr. Yonas Girma' }, instructorName: 'Dr. Yonas Girma',
-        rating: 4.5, enrolledStudents: 870, totalLessons: 22, isPremium: true, price: 1000,
+        rating: 4.5, enrolledStudents: 870, totalLessons: 22, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-04'
     },
     {
@@ -43,7 +43,7 @@ const STATIC_COURSES = [
         description: 'Introduction to psychological principles covering behavior, cognition, emotion, personality and human development.',
         level: 'Beginner', category: 'semester1', duration: '14 weeks',
         instructor: { fullName: 'Dr. Hana Kebede' }, instructorName: 'Dr. Hana Kebede',
-        rating: 4.6, enrolledStudents: 1120, totalLessons: 26, isPremium: true, price: 1000,
+        rating: 4.6, enrolledStudents: 1120, totalLessons: 26, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-05'
     },
     {
@@ -51,7 +51,7 @@ const STATIC_COURSES = [
         description: 'Mechanics, thermodynamics, waves and optics. Core physics for Natural Science stream students.',
         level: 'Intermediate', category: 'semester1', duration: '16 weeks',
         instructor: { fullName: 'Prof. Abebe Mengistu' }, instructorName: 'Prof. Abebe Mengistu',
-        rating: 4.7, enrolledStudents: 950, totalLessons: 30, isPremium: true, price: 1000,
+        rating: 4.7, enrolledStudents: 950, totalLessons: 30, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-06'
     },
     {
@@ -59,7 +59,7 @@ const STATIC_COURSES = [
         description: 'Advanced academic writing, research skills and presentation techniques. Build on Communicative English I.',
         level: 'Intermediate', category: 'semester2', duration: '16 weeks',
         instructor: { fullName: 'Dr. Tigist Haile' }, instructorName: 'Dr. Tigist Haile',
-        rating: 4.7, enrolledStudents: 1080, totalLessons: 30, isPremium: true, price: 1000,
+        rating: 4.7, enrolledStudents: 1080, totalLessons: 30, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-07'
     },
     {
@@ -67,7 +67,7 @@ const STATIC_COURSES = [
         description: 'Study human societies, cultures and evolution. Understand Ethiopia\'s diverse cultural heritage.',
         level: 'Beginner', category: 'semester2', duration: '12 weeks',
         instructor: { fullName: 'Dr. Sara Muleta' }, instructorName: 'Dr. Sara Muleta',
-        rating: 4.5, enrolledStudents: 720, totalLessons: 20, isPremium: true, price: 1000,
+        rating: 4.5, enrolledStudents: 720, totalLessons: 20, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-08'
     },
     {
@@ -75,7 +75,7 @@ const STATIC_COURSES = [
         description: 'Practical computer skills including word processing, spreadsheets, presentations, internet and basic programming.',
         level: 'Beginner', category: 'semester2', duration: '12 weeks',
         instructor: { fullName: 'Eng. Daniel Tesfaye' }, instructorName: 'Eng. Daniel Tesfaye',
-        rating: 4.8, enrolledStudents: 1450, totalLessons: 24, isPremium: true, price: 1000,
+        rating: 4.8, enrolledStudents: 1450, totalLessons: 24, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-09'
     },
     {
@@ -83,7 +83,7 @@ const STATIC_COURSES = [
         description: 'Learn to identify opportunities, develop business ideas and build entrepreneurial mindset for the modern economy.',
         level: 'Beginner', category: 'semester2', duration: '10 weeks',
         instructor: { fullName: 'Dr. Liya Girma' }, instructorName: 'Dr. Liya Girma',
-        rating: 4.6, enrolledStudents: 890, totalLessons: 20, isPremium: true, price: 1000,
+        rating: 4.6, enrolledStudents: 890, totalLessons: 20, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-10'
     },
     {
@@ -91,7 +91,7 @@ const STATIC_COURSES = [
         description: 'Comprehensive study of Ethiopian history from ancient civilizations to the modern state. Rich with primary sources.',
         level: 'Beginner', category: 'semester2', duration: '14 weeks',
         instructor: { fullName: 'Prof. Getachew Yimer' }, instructorName: 'Prof. Getachew Yimer',
-        rating: 4.9, enrolledStudents: 1320, totalLessons: 28, isPremium: true, price: 1000,
+        rating: 4.9, enrolledStudents: 1320, totalLessons: 28, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-11'
     },
     {
@@ -99,7 +99,7 @@ const STATIC_COURSES = [
         description: 'Rights and responsibilities of citizens, democratic governance, constitutional law and Ethiopia\'s political system.',
         level: 'Beginner', category: 'semester2', duration: '12 weeks',
         instructor: { fullName: 'Dr. Meseret Bekele' }, instructorName: 'Dr. Meseret Bekele',
-        rating: 4.4, enrolledStudents: 760, totalLessons: 22, isPremium: true, price: 1000,
+        rating: 4.4, enrolledStudents: 760, totalLessons: 22, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-12'
     },
     {
@@ -107,7 +107,7 @@ const STATIC_COURSES = [
         description: 'Microeconomics and macroeconomics fundamentals. Supply, demand, markets, GDP, inflation and monetary policy.',
         level: 'Beginner', category: 'social', duration: '14 weeks',
         instructor: { fullName: 'Dr. Temesgen Alemu' }, instructorName: 'Dr. Temesgen Alemu',
-        rating: 4.7, enrolledStudents: 1010, totalLessons: 26, isPremium: true, price: 1000,
+        rating: 4.7, enrolledStudents: 1010, totalLessons: 26, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-13'
     },
     {
@@ -115,7 +115,7 @@ const STATIC_COURSES = [
         description: 'Cell biology, genetics, evolution, ecology and physiology. Foundation course for Medicine and Natural Science students.',
         level: 'Intermediate', category: 'natural', duration: '16 weeks',
         instructor: { fullName: 'Dr. Emebet Tadesse' }, instructorName: 'Dr. Emebet Tadesse',
-        rating: 4.8, enrolledStudents: 1180, totalLessons: 32, isPremium: true, price: 1000,
+        rating: 4.8, enrolledStudents: 1180, totalLessons: 32, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-14'
     },
     {
@@ -123,7 +123,7 @@ const STATIC_COURSES = [
         description: 'Atomic structure, chemical bonding, reactions, stoichiometry and thermochemistry for science stream students.',
         level: 'Intermediate', category: 'natural', duration: '16 weeks',
         instructor: { fullName: 'Prof. Dawit Hailu' }, instructorName: 'Prof. Dawit Hailu',
-        rating: 4.6, enrolledStudents: 890, totalLessons: 30, isPremium: true, price: 1000,
+        rating: 4.6, enrolledStudents: 890, totalLessons: 30, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-15'
     },
     {
@@ -131,7 +131,7 @@ const STATIC_COURSES = [
         description: 'Differential equations, linear algebra, vector calculus and complex analysis for engineering and science majors.',
         level: 'Advanced', category: 'natural', duration: '16 weeks',
         instructor: { fullName: 'Prof. Bekele Tadesse' }, instructorName: 'Prof. Bekele Tadesse',
-        rating: 4.5, enrolledStudents: 640, totalLessons: 34, isPremium: true, price: 1000,
+        rating: 4.5, enrolledStudents: 640, totalLessons: 34, isPremium: true, price: 399,
         createdAt: '2024-01-16'
     },
     {
@@ -139,7 +139,7 @@ const STATIC_COURSES = [
         description: 'International organizations, foreign policy, global challenges and Ethiopia\'s role in the African Union and world affairs.',
         level: 'Intermediate', category: 'social', duration: '12 weeks',
         instructor: { fullName: 'Dr. Feven Mekonnen' }, instructorName: 'Dr. Feven Mekonnen',
-        rating: 4.6, enrolledStudents: 720, totalLessons: 22, isPremium: true, price: 1000,
+        rating: 4.6, enrolledStudents: 720, totalLessons: 22, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-17'
     },
     {
@@ -147,7 +147,7 @@ const STATIC_COURSES = [
         description: 'Explore gender, disability, ethnicity and social inclusion in Ethiopian and global contexts.',
         level: 'Beginner', category: 'social', duration: '10 weeks',
         instructor: { fullName: 'Dr. Mekdes Alemu' }, instructorName: 'Dr. Mekdes Alemu',
-        rating: 4.7, enrolledStudents: 830, totalLessons: 18, isPremium: true, price: 1000,
+        rating: 4.7, enrolledStudents: 830, totalLessons: 18, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-18'
     },
     {
@@ -155,7 +155,7 @@ const STATIC_COURSES = [
         description: 'Physical education, nutrition, mental health and wellness strategies for academic success and lifelong fitness.',
         level: 'Beginner', category: 'semester1', duration: '8 weeks',
         instructor: { fullName: 'Coach Biruk Asnake' }, instructorName: 'Coach Biruk Asnake',
-        rating: 4.8, enrolledStudents: 1400, totalLessons: 16, isPremium: true, price: 1000,
+        rating: 4.8, enrolledStudents: 1400, totalLessons: 16, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-19'
     },
     {
@@ -163,7 +163,7 @@ const STATIC_COURSES = [
         description: 'Complete exam preparation with past papers, mock tests and AI-powered practice questions for all freshman subjects.',
         level: 'Intermediate', category: 'natural', duration: '6 weeks',
         instructor: { fullName: 'Alpha Tutorial Team' }, instructorName: 'Alpha Tutorial Team',
-        rating: 4.9, enrolledStudents: 2100, totalLessons: 20, isPremium: true, price: 1000,
+        rating: 4.9, enrolledStudents: 2100, totalLessons: 20, isPremium: true, price: 399,
         createdAt: '2024-01-20'
     },
     {
@@ -171,7 +171,7 @@ const STATIC_COURSES = [
         description: 'Evidence-based learning strategies, memory techniques, note-taking and exam strategies to maximize your GPA.',
         level: 'Beginner', category: 'semester1', duration: '4 weeks',
         instructor: { fullName: 'Dr. Hana Kebede' }, instructorName: 'Dr. Hana Kebede',
-        rating: 4.8, enrolledStudents: 1780, totalLessons: 12, isPremium: true, price: 1000,
+        rating: 4.8, enrolledStudents: 1780, totalLessons: 12, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-21'
     },
     {
@@ -179,7 +179,7 @@ const STATIC_COURSES = [
         description: 'Fundamentals of Ethiopian legal system, constitutional law, human rights and access to justice for social science students.',
         level: 'Intermediate', category: 'social', duration: '14 weeks',
         instructor: { fullName: 'Adv. Selam Worku' }, instructorName: 'Adv. Selam Worku',
-        rating: 4.7, enrolledStudents: 560, totalLessons: 26, isPremium: true, price: 1000,
+        rating: 4.7, enrolledStudents: 560, totalLessons: 26, isPremium: true, price: 399,
         isFreePreview: true, createdAt: '2024-01-22'
     }
 ];
