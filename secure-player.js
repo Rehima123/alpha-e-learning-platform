@@ -460,3 +460,353 @@ if (typeof module !== 'undefined') {
 } else {
     window.buildSecurePlayer = buildSecurePlayer;
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SecureCourseAppDB  — matches React: new Dexie('SecureCourseAppDB')
+// Stores real video/PDF blobs with keyPath:'id'
+// ══════════════════════════════════════════════════════════════════════════════
+const _SECURE_DB_NAME = 'SecureCourseAppDB';
+let   _secureDb       = null;
+
+function _openSecureDB() {
+    if (_secureDb) return Promise.resolve(_secureDb);
+    return new Promise((res, rej) => {
+        const req = indexedDB.open(_SECURE_DB_NAME, 1);
+        req.onupgradeneeded = e => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('secureFiles'))
+                db.createObjectStore('secureFiles', { keyPath: 'id' });
+        };
+        req.onsuccess = () => { _secureDb = req.result; res(_secureDb); };
+        req.onerror   = () => rej(req.error);
+    });
+}
+async function _sdbGet(id)      { const db=await _openSecureDB(); return new Promise((r,j)=>{ const q=db.transaction('secureFiles','readonly').objectStore('secureFiles').get(id); q.onsuccess=()=>r(q.result||null); q.onerror=()=>j(q.error); }); }
+async function _sdbPut(rec)     { const db=await _openSecureDB(); const tx=db.transaction('secureFiles','readwrite'); tx.objectStore('secureFiles').put(rec); return new Promise((r,j)=>{ tx.oncomplete=()=>r(true); tx.onerror=()=>j(tx.error); }); }
+async function _sdbDelete(id)   { const db=await _openSecureDB(); const tx=db.transaction('secureFiles','readwrite'); tx.objectStore('secureFiles').delete(id); return new Promise((r,j)=>{ tx.oncomplete=()=>r(true); tx.onerror=()=>j(tx.error); }); }
+async function _sdbGetAll()     { const db=await _openSecureDB(); return new Promise((r,j)=>{ const q=db.transaction('secureFiles','readonly').objectStore('secureFiles').getAll(); q.onsuccess=()=>r(q.result||[]); q.onerror=()=>j(q.error); }); }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// buildSecureVideoPlayer
+// Vanilla-JS port of the React <SecureVideoPlayer> component.
+// — Blob-first: loads from SecureCourseAppDB if offline copy exists
+// — Falls back to Drive embed iframe (online)
+// — Custom controls: Play/Pause · ±10s · Speed · Volume · Seek bar
+// — Watermark overlay · right-click block · no-download attr
+//
+// Usage:
+//   buildSecureVideoPlayer(driveFileId, title, currentUser, containerElement);
+// ══════════════════════════════════════════════════════════════════════════════
+async function buildSecureVideoPlayer(driveFileId, title, user, container) {
+    if (!container || !driveFileId) return;
+
+    const wmText = user
+        ? ([user.fullName, user.phoneNumber || user.email].filter(Boolean).join(' | ') || 'Alpha Freshman Tutorial')
+        : 'Alpha Freshman Tutorial';
+
+    const saved   = await _sdbGet(driveFileId).catch(() => null);
+    const blobUrl = (saved && saved.fileBlob) ? URL.createObjectURL(saved.fileBlob) : null;
+    const offline = !!blobUrl;
+    const embedUrl = `https://drive.google.com/file/d/${driveFileId}/preview`;
+
+    container.innerHTML = `
+<div id="scvp-root" style="max-width:800px;margin:0 auto;user-select:none;-webkit-user-select:none">
+
+  <!-- Video area -->
+  <div style="position:relative;background:#000;border-radius:12px;overflow:hidden">
+    ${offline
+        ? `<video id="scvp-video" src="${blobUrl}"
+            style="width:100%;display:block;aspect-ratio:16/9;object-fit:contain"
+            controlsList="nodownload noremoteplayback" disablepictureinpicture
+            oncontextmenu="return false"></video>`
+        : `<iframe src="${embedUrl}" id="scvp-iframe"
+            style="width:100%;aspect-ratio:16/9;border:none;display:block"
+            allow="autoplay" allowfullscreen
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>`
+    }
+    <!-- Watermark -->
+    <div style="position:absolute;inset:0;pointer-events:none;user-select:none;z-index:20;overflow:hidden">
+      <span style="position:absolute;top:10px;right:12px;color:rgba(255,255,255,0.28);
+        font-size:11px;font-family:monospace;font-weight:700;
+        text-shadow:0 1px 3px rgba(0,0,0,0.9)">${_escHtml(wmText)}</span>
+      <span style="position:absolute;bottom:48px;left:12px;color:rgba(255,255,255,0.12);
+        font-size:9px;font-family:monospace">${_escHtml(wmText)}</span>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+        transform:rotate(-25deg);overflow:hidden">
+        <span style="color:rgba(255,255,255,0.04);font-size:clamp(10px,2vw,18px);font-weight:700;
+          letter-spacing:4px;white-space:nowrap;font-family:monospace">
+          ${_escHtml(wmText)}&nbsp;&nbsp;${_escHtml(wmText)}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  ${offline ? `
+  <!-- Custom controls (blob mode) -->
+  <div style="background:#1e293b;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button id="scvp-play-btn" onclick="scvpPlay()"
+      style="padding:6px 14px;background:#4f46e5;color:#fff;border:none;border-radius:8px;
+      font-size:12px;font-weight:700;cursor:pointer">▶ Play</button>
+    <button onclick="scvpSeek(-10)"
+      style="padding:6px 11px;background:#334155;color:#fff;border:none;border-radius:8px;
+      font-size:12px;cursor:pointer">⏪ -10s</button>
+    <button onclick="scvpSeek(10)"
+      style="padding:6px 11px;background:#334155;color:#fff;border:none;border-radius:8px;
+      font-size:12px;cursor:pointer">+10s ⏩</button>
+    <label style="font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:4px">Speed:
+      <select id="scvp-speed" onchange="scvpSpeed(this.value)"
+        style="background:#334155;color:#fff;border:none;border-radius:6px;padding:3px 6px;font-size:11px">
+        <option value="0.5">0.5×</option>
+        <option value="0.75">0.75×</option>
+        <option value="1" selected>1.0×</option>
+        <option value="1.25">1.25×</option>
+        <option value="1.5">1.5×</option>
+        <option value="2">2.0×</option>
+      </select>
+    </label>
+    <label style="font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:4px">🔊
+      <input type="range" id="scvp-vol" min="0" max="1" step="0.05" value="1"
+        oninput="scvpVolume(this.value)"
+        style="width:65px;accent-color:#4f46e5">
+    </label>
+    <span id="scvp-time" style="font-size:11px;color:#64748b;margin-left:auto;font-family:monospace">0:00 / 0:00</span>
+  </div>
+  <!-- Seek bar -->
+  <div style="background:#0f172a;padding:4px 14px 8px">
+    <input type="range" id="scvp-seek" min="0" max="100" step="0.1" value="0"
+      oninput="scvpScrub(this.value)"
+      style="width:100%;accent-color:#4f46e5;cursor:pointer">
+  </div>` : `
+  <!-- Online fallback notice -->
+  <div style="background:#0f172a;padding:8px 14px;border-radius:0 0 12px 12px;
+    font-size:11px;color:#64748b;text-align:center">
+    ☁️ Drive ቪዲዮ — ኢንተርኔት ያስፈልጋል · ለ offline አውርዱ ↓
+  </div>`}
+
+  <!-- Download / status row -->
+  <div id="scvp-dl-row" style="display:flex;align-items:center;justify-content:space-between;
+    padding:10px 0;gap:10px;flex-wrap:wrap">
+    ${offline
+        ? `<span style="color:#10b981;font-size:12px;font-weight:700">✓ Offline ዝግጁ ነው</span>
+           <button onclick="scvpRemove('${driveFileId}',this)"
+             style="padding:6px 14px;background:rgba(239,68,68,0.1);color:#f87171;
+             border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-size:11px;
+             font-weight:700;cursor:pointer">🗑️ Remove Offline</button>`
+        : `<span style="color:#94a3b8;font-size:12px">ያለ ኢንተርኔት ለማየት አውርዱ</span>
+           <button id="scvp-dl-btn" onclick="scvpDownload('${driveFileId}','${_escHtml(title)}')"
+             style="padding:8px 18px;background:linear-gradient(135deg,#4f46e5,#7c3aed);
+             color:#fff;border:none;border-radius:10px;font-size:12px;
+             font-weight:700;cursor:pointer">💾 ለ Offline አውርድ</button>`
+    }
+  </div>
+  <!-- Download progress -->
+  <div id="scvp-prog-wrap" style="display:none">
+    <div style="height:5px;background:#1e293b;border-radius:4px;overflow:hidden;margin-bottom:4px">
+      <div id="scvp-prog-bar" style="height:100%;width:0;background:#4f46e5;transition:width 0.3s;border-radius:4px"></div>
+    </div>
+    <span id="scvp-prog-txt" style="font-size:11px;color:#64748b"></span>
+  </div>
+</div>`;
+
+    // ── Wire video events ─────────────────────────────────────────────────────
+    if (offline) {
+        const vid  = document.getElementById('scvp-video');
+        const seek = document.getElementById('scvp-seek');
+        const time = document.getElementById('scvp-time');
+        const fmt  = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
+        vid.addEventListener('timeupdate', () => {
+            if (seek && vid.duration) seek.value = (vid.currentTime / vid.duration) * 100;
+            if (time) time.textContent = `${fmt(vid.currentTime)} / ${fmt(vid.duration||0)}`;
+        });
+        vid.addEventListener('play',  () => { const b=document.getElementById('scvp-play-btn'); if(b) b.textContent='⏸ Pause'; });
+        vid.addEventListener('pause', () => { const b=document.getElementById('scvp-play-btn'); if(b) b.textContent='▶ Play'; });
+        vid.addEventListener('contextmenu', e => e.preventDefault());
+    }
+    document.getElementById('scvp-root')?.addEventListener('contextmenu', e => e.preventDefault());
+}
+
+// ── scvp global handlers ──────────────────────────────────────────────────────
+window.scvpPlay   = ()    => { const v=document.getElementById('scvp-video'); if(v){ v.paused?v.play():v.pause(); }};
+window.scvpSeek   = (d)   => { const v=document.getElementById('scvp-video'); if(v) v.currentTime=Math.max(0,v.currentTime+d); };
+window.scvpSpeed  = (s)   => { const v=document.getElementById('scvp-video'); if(v) v.playbackRate=parseFloat(s); };
+window.scvpVolume = (s)   => { const v=document.getElementById('scvp-video'); if(v) v.volume=parseFloat(s); };
+window.scvpScrub  = (val) => { const v=document.getElementById('scvp-video'); if(v&&v.duration) v.currentTime=(parseFloat(val)/100)*v.duration; };
+
+window.scvpRemove = async (id, btn) => {
+    if (!confirm('Offline ቅጂ ይሰረዝ?')) return;
+    await _sdbDelete(id).catch(()=>{});
+    if (typeof toast !== 'undefined') toast.success('🗑️ Removed from offline storage');
+    const row = document.getElementById('scvp-dl-row');
+    if (row) row.innerHTML = '<span style="color:#64748b;font-size:12px">Removed. Reload lesson.</span>';
+};
+
+window.scvpDownload = async (driveFileId, title) => {
+    const btn  = document.getElementById('scvp-dl-btn');
+    const wrap = document.getElementById('scvp-prog-wrap');
+    const bar  = document.getElementById('scvp-prog-bar');
+    const txt  = document.getElementById('scvp-prog-txt');
+
+    if (btn)  { btn.disabled=true; btn.textContent='⏳ Downloading...'; }
+    if (wrap) wrap.style.display='block';
+    if (bar)  bar.style.width='15%';
+    if (txt)  txt.textContent='Drive ጋር እየተገናኘ ነው...';
+
+    try {
+        // Use the /uc?export=download endpoint for actual blob download
+        const directUrl = `https://drive.google.com/uc?export=download&id=${driveFileId}`;
+        if (bar) bar.style.width='35%';
+        if (txt) txt.textContent='Downloading video...';
+
+        const response = await fetch(directUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        if (bar) bar.style.width='65%';
+        if (txt) txt.textContent='Saving to secure storage...';
+
+        const blob = await response.blob();
+
+        await _sdbPut({
+            id:          driveFileId,
+            title:       title,
+            fileType:    'video',
+            fileBlob:    blob,
+            downloadedAt: new Date()
+        });
+
+        if (bar) bar.style.width='100%';
+        if (txt) txt.textContent='✅ Saved!';
+
+        setTimeout(() => {
+            if (typeof toast !== 'undefined') toast.success('✅ ቪዲዮው በምስጢር ተወርዷል! ያለ ኢንተርኔት ማየት ይቻላል።');
+            // Swap download button to "Offline Ready"
+            const row = document.getElementById('scvp-dl-row');
+            if (row) row.innerHTML = `
+                <span style="color:#10b981;font-size:12px;font-weight:700">✓ Offline ዝግጁ ነው</span>
+                <button onclick="scvpRemove('${driveFileId}',this)"
+                  style="padding:6px 14px;background:rgba(239,68,68,0.1);color:#f87171;
+                  border:1px solid rgba(239,68,68,0.3);border-radius:8px;
+                  font-size:11px;font-weight:700;cursor:pointer">🗑️ Remove Offline</button>`;
+            if (wrap) wrap.style.display='none';
+        }, 800);
+
+    } catch (err) {
+        console.error('[scvpDownload]', err);
+        if (txt) txt.textContent = '❌ Download failed: ' + err.message;
+        if (bar) { bar.style.width='100%'; bar.style.background='#ef4444'; }
+        if (btn) { btn.disabled=false; btn.textContent='🔄 Retry'; }
+        if (typeof toast !== 'undefined')
+            toast.error('ቪዲዮ ማውረድ አልተቻለም — Drive "Anyone with link" ማድረጉን ያረጋግጡ።');
+    }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// buildSecureDocViewer
+// Vanilla-JS port of the React <SecureDocumentViewer> component.
+// — Loads PDF/Doc blob from SecureCourseAppDB if offline copy exists
+// — Falls back to Drive embed iframe (online)
+// — Downloads blob to SecureCourseAppDB for offline use
+//
+// Usage:
+//   buildSecureDocViewer(driveFileId, title, containerElement);
+// ══════════════════════════════════════════════════════════════════════════════
+async function buildSecureDocViewer(driveFileId, title, container) {
+    if (!container || !driveFileId) return;
+
+    const saved   = await _sdbGet(driveFileId).catch(() => null);
+    const blobUrl = (saved && saved.fileBlob) ? URL.createObjectURL(saved.fileBlob) : null;
+    const offline = !!blobUrl;
+    const embedUrl = `https://drive.google.com/file/d/${driveFileId}/preview`;
+    const viewUrl  = offline ? blobUrl : embedUrl;
+
+    container.innerHTML = `
+<div id="scdv-root" style="border:1px solid var(--border-color,#e2e8f0);border-radius:12px;
+    overflow:hidden;user-select:none;-webkit-user-select:none">
+  <div style="background:#0f172a;padding:10px 16px;display:flex;
+    align-items:center;justify-content:space-between">
+    <h4 style="margin:0;color:white;font-size:0.88rem;font-weight:700">
+      📄 ${_escHtml(title)}
+    </h4>
+    ${offline
+        ? '<span style="color:#10b981;font-size:11px;font-weight:700">✓ Offline</span>'
+        : '<span style="color:#64748b;font-size:11px">☁️ Online</span>'}
+  </div>
+  <iframe src="${viewUrl}"
+    style="width:100%;height:520px;border:none;display:block"
+    oncontextmenu="return false"
+    title="${_escHtml(title)}">
+  </iframe>
+  <div style="background:#0f172a;padding:10px 16px;display:flex;
+    align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+    ${offline
+        ? `<span style="color:#10b981;font-size:12px;font-weight:700">✓ Offline ዝግጁ ነው</span>
+           <button onclick="scdvRemove('${driveFileId}')"
+             style="padding:6px 14px;background:rgba(239,68,68,0.1);color:#f87171;
+             border:1px solid rgba(239,68,68,0.3);border-radius:8px;
+             font-size:11px;font-weight:700;cursor:pointer">🗑️ Remove Offline</button>`
+        : `<span style="color:#94a3b8;font-size:12px">ፋይሉን ያለ ኢንተርኔት ለማየት አውርዱ</span>
+           <button id="scdv-dl-btn" onclick="scdvDownload('${driveFileId}','${_escHtml(title)}')"
+             style="padding:8px 18px;background:linear-gradient(135deg,#0891b2,#0e7490);
+             color:#fff;border:none;border-radius:10px;font-size:12px;
+             font-weight:700;cursor:pointer">📥 ፋይሉን አውርድ (Offline)</button>`
+    }
+  </div>
+  <div id="scdv-prog-wrap" style="display:none;padding:6px 16px 10px">
+    <div style="height:4px;background:#1e293b;border-radius:4px;overflow:hidden;margin-bottom:4px">
+      <div id="scdv-prog-bar" style="height:100%;width:0;background:#0891b2;transition:width 0.3s;border-radius:4px"></div>
+    </div>
+    <span id="scdv-prog-txt" style="font-size:11px;color:#64748b"></span>
+  </div>
+</div>`;
+
+    document.getElementById('scdv-root')?.addEventListener('contextmenu', e => e.preventDefault());
+}
+
+// ── scdv global handlers ──────────────────────────────────────────────────────
+window.scdvRemove = async (id) => {
+    if (!confirm('Offline ፋይሉ ይሰረዝ?')) return;
+    await _sdbDelete(id).catch(()=>{});
+    if (typeof toast !== 'undefined') toast.success('🗑️ Document removed from offline storage');
+};
+
+window.scdvDownload = async (driveFileId, title) => {
+    const btn  = document.getElementById('scdv-dl-btn');
+    const wrap = document.getElementById('scdv-prog-wrap');
+    const bar  = document.getElementById('scdv-prog-bar');
+    const txt  = document.getElementById('scdv-prog-txt');
+
+    if (btn)  { btn.disabled=true; btn.textContent='⏳ Downloading...'; }
+    if (wrap) wrap.style.display='block';
+    if (bar)  bar.style.width='20%';
+    if (txt)  txt.textContent='ፋይሉን እያወረደ ነው...';
+
+    try {
+        const res = await fetch(`https://drive.google.com/uc?export=download&id=${driveFileId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (bar) bar.style.width='65%';
+        const blob = await res.blob();
+        await _sdbPut({ id: driveFileId, title, fileType: 'document', fileBlob: blob, downloadedAt: new Date() });
+        if (bar) bar.style.width='100%';
+        if (txt) txt.textContent='✅ Saved!';
+        setTimeout(() => {
+            if (typeof toast !== 'undefined') toast.success('✅ ፋይሉ በአፕሊኬሽኑ ውስጥ ተቀምጧል!');
+            if (wrap) wrap.style.display='none';
+            // Refresh viewer with blob
+            const frame = document.querySelector('#scdv-root iframe');
+            if (frame) {
+                const url = URL.createObjectURL(blob);
+                frame.src = url;
+            }
+        }, 600);
+    } catch (err) {
+        if (txt) txt.textContent = '❌ ' + err.message;
+        if (btn) { btn.disabled=false; btn.textContent='🔄 Retry'; }
+        if (typeof toast !== 'undefined')
+            toast.error('ፋይሉን ማውረድ አልተቻለም — Drive access ክፍት ይሁን።');
+    }
+};
+
+// ── Expose new functions globally ─────────────────────────────────────────────
+window.buildSecureVideoPlayer = buildSecureVideoPlayer;
+window.buildSecureDocViewer   = buildSecureDocViewer;
+window._sdbGetAll             = _sdbGetAll;   // used by offline.html

@@ -534,7 +534,7 @@ function openLesson(chapterIdx, lessonIdx) {
                 ${lesson.videoUrl ? '<span>🎬 Video available</span>' : '<span>📄 Reading lesson</span>'}
             </div>
 
-            <!-- Video (if available) — rendered by buildSecurePlayer() after innerHTML is set -->
+            <!-- Video (if available) — rendered by buildSecurePlayer/buildSecureVideoPlayer after innerHTML is set -->
             ${lesson.videoUrl ? `
                 <div id="securePlayerMount" style="margin-bottom:1.5rem"></div>
             ` : `
@@ -546,6 +546,11 @@ function openLesson(chapterIdx, lessonIdx) {
                     </div>
                 </div>
             `}
+
+            <!-- PDF/Doc Note viewer (if pdfNoteUrl exists) — rendered by buildSecureDocViewer -->
+            ${lesson.pdfNoteUrl ? `
+                <div id="pdfNoteMount" style="margin-bottom:1.5rem"></div>
+            ` : ''}
 
             <!-- Study Notes -->
             <div style="margin-bottom:1.5rem">
@@ -614,14 +619,40 @@ function openLesson(chapterIdx, lessonIdx) {
     // ── Mount secure video player (after innerHTML is set) ───────────────────
     if (lesson.videoUrl) {
         const mount = document.getElementById('securePlayerMount');
-        if (mount && typeof buildSecurePlayer === 'function') {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
-            buildSecurePlayer(
-                { ...lesson, course: currentCourse?.title },
-                currentUser,
-                mount,
-                { autoplay: false, allowOffline: true }
-            );
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        const isDriveUrl = lesson.videoUrl.includes('drive.google.com');
+
+        if (mount) {
+            if (isDriveUrl && typeof buildSecureVideoPlayer === 'function') {
+                // Google Drive video → use custom player with blob download
+                const driveId = lesson.videoUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1]
+                    || lesson.videoUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/)?.[1]
+                    || '';
+                if (driveId) {
+                    buildSecureVideoPlayer(driveId, lesson.title, currentUser, mount);
+                } else {
+                    mount.innerHTML = '<p style="color:var(--text-secondary);padding:1rem">⚠️ Drive link invalid.</p>';
+                }
+            } else if (typeof buildSecurePlayer === 'function') {
+                // YouTube → use existing secure player
+                buildSecurePlayer(
+                    { ...lesson, course: currentCourse?.title },
+                    currentUser,
+                    mount,
+                    { autoplay: false, allowOffline: true }
+                );
+            }
+        }
+    }
+
+    // ── Mount PDF/Doc viewer if pdfNoteUrl exists ────────────────────────────
+    const pdfMount = document.getElementById('pdfNoteMount');
+    if (pdfMount && lesson.pdfNoteUrl) {
+        const driveDocId = lesson.pdfNoteUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1]
+            || lesson.pdfNoteUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/)?.[1]
+            || '';
+        if (driveDocId && typeof buildSecureDocViewer === 'function') {
+            buildSecureDocViewer(driveDocId, (lesson.title || 'Notes') + ' — PDF', pdfMount);
         }
     }
 

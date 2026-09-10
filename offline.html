@@ -483,11 +483,12 @@
         const list = document.getElementById('savedList');
         list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">⏳ Loading...</div>';
 
-        // Load from all three stores: legacy DB, AlphaOfflineDB/videos, AlphaOfflineDB/downloaded_files
-        const [legacyItems, alphaItems, dlFiles] = await Promise.all([
+        // Load from all stores: legacy, AlphaOfflineDB/videos, AlphaOfflineDB/downloaded_files, SecureCourseAppDB
+        const [legacyItems, alphaItems, dlFiles, secureItems] = await Promise.all([
             dbGetAll().catch(() => []),
             alphaDbGetAll().catch(() => []),
-            alphaDbGetDownloadedFiles().catch(() => [])
+            alphaDbGetDownloadedFiles().catch(() => []),
+            (typeof _sdbGetAll === 'function' ? _sdbGetAll() : Promise.resolve([])).catch(() => [])
         ]);
 
         // Normalise legacy items (alpha-offline-db/videos) → add semester label
@@ -538,13 +539,33 @@
             duration:    v.size || '',
         }));
 
-        // Deduplicate: dlFiles > alpha > legacy (higher specificity takes precedence)
-        const dlIds    = new Set(normDlFiles.map(v => v.id));
-        const alphaIds = new Set(normAlpha.map(v => v.id));
-        const merged   = [
-            ...normDlFiles,
-            ...normAlpha.filter(v => !dlIds.has(v.id)),
-            ...normLegacy.filter(v => !dlIds.has(v.id) && !alphaIds.has(v.id))
+        // Normalise SecureCourseAppDB/secureFiles items (buildSecureVideoPlayer / buildSecureDocViewer)
+        const normSecure = secureItems.map(v => ({
+            _source:      'secure',
+            id:           v.id,
+            title:        v.title || 'Secure File',
+            courseTitle:  v.title || '',
+            course:       v.title || '',
+            semester:     'Secure Downloads',
+            youtubeId:    null,
+            driveFileId:  v.id,            // id IS the driveFileId
+            isDriveVideo: v.fileType === 'video',
+            fileBlobUrl:  v.fileBlob ? URL.createObjectURL(v.fileBlob) : null,
+            thumbnail:    v.fileType === 'document' ? '📄' : '🎬',
+            savedAt:      v.downloadedAt ? new Date(v.downloadedAt).getTime() : 0,
+            type:         v.fileType || 'video',
+            duration:     '',
+        }));
+
+        // Deduplicate: secure > dlFiles > alpha > legacy
+        const secureIds = new Set(normSecure.map(v => v.id));
+        const dlIds     = new Set(normDlFiles.map(v => v.id));
+        const alphaIds  = new Set(normAlpha.map(v => v.id));
+        const merged    = [
+            ...normSecure,
+            ...normDlFiles.filter(v => !secureIds.has(v.id)),
+            ...normAlpha.filter(v => !secureIds.has(v.id) && !dlIds.has(v.id)),
+            ...normLegacy.filter(v => !secureIds.has(v.id) && !dlIds.has(v.id) && !alphaIds.has(v.id))
         ];
 
         // Update badge count
@@ -711,7 +732,12 @@
     // ── Remove item from either DB ────────────────────────────────────────────
     async function removeSavedItem(id, source) {
         if (!confirm('ይህን ቪዲዮ ከ Offline ላይ ማጥፋት ይፈልጋሉ?')) return;
-        if (source === 'dlfiles') {
+        if (source === 'secure') {
+            // SecureCourseAppDB — uses _sdbDelete exposed by secure-player.js
+            if (typeof _sdbDelete === 'function') {
+                await _sdbDelete(id).catch(() => {});
+            }
+        } else if (source === 'dlfiles') {
             await alphaDbDelete(id, 'downloaded_files').catch(() => {});
         } else if (source === 'alpha') {
             await alphaDbDelete(id, 'videos').catch(() => {});
@@ -1002,16 +1028,19 @@
     async function init() {
         const all = await dbGetAll();
         savedIds  = new Set(all.map(v => v.id));
-        // Count from AlphaOfflineDB for the badge
-        const alphaAll = await alphaDbGetAll().catch(() => []);
-        const dlAll    = await alphaDbGetDownloadedFiles().catch(() => []);
-        const alphaIds = new Set(alphaAll.map(v => v.lessonId || v.id || String(v.savedAt)));
-        const dlIds    = new Set(dlAll.map(v => v.id));
-        // Merge count (deduplicated)
+        // Count from all stores for the badge
+        const [alphaAll, dlAll, secureAll] = await Promise.all([
+            alphaDbGetAll().catch(() => []),
+            alphaDbGetDownloadedFiles().catch(() => []),
+            (typeof _sdbGetAll === 'function' ? _sdbGetAll() : Promise.resolve([])).catch(() => [])
+        ]);
+        const alphaIds  = new Set(alphaAll.map(v => v.lessonId || v.id || String(v.savedAt)));
+        const secureIds = new Set(secureAll.map(v => v.id));
         const totalUnique =
             savedIds.size +
             alphaAll.filter(v => !savedIds.has(v.lessonId || v.id || String(v.savedAt))).length +
-            dlAll.filter(v => !savedIds.has(v.id) && !alphaIds.has(v.id)).length;
+            dlAll.filter(v => !savedIds.has(v.id) && !alphaIds.has(v.id)).length +
+            secureAll.filter(v => !savedIds.has(v.id) && !alphaIds.has(v.id)).length;
         document.getElementById('savedCount').textContent = totalUnique;
         renderAvailable();
     }
