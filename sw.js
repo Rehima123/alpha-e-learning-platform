@@ -1,6 +1,6 @@
 // ─── Alpha Freshman Tutorial — Service Worker ─────────────────────────────────
 // CACHE_VERSION auto-bumped on each deploy via build timestamp
-const CACHE_VERSION  = 'v' + '2026083001';  // format: v{YYYYMMDDNN}
+const CACHE_VERSION  = 'v' + '2026091001';  // format: v{YYYYMMDDNN}
 const CACHE_NAME     = 'alpha-cache-' + CACHE_VERSION;
 
 // ── Offline video playback guard ──────────────────────────────────────────────
@@ -40,6 +40,9 @@ const STATIC_ASSETS = [
     '/dashboard.js',
     '/auth-login.js',
     '/auth-register.js',
+    '/lesson-download.js',
+    '/offline-db.js',
+    '/video-security.js',
     '/pwa.js'
 ];
 

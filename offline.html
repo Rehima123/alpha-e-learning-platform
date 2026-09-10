@@ -400,21 +400,31 @@
         }).join('');
     }
 
-    // ── AlphaOfflineDB helpers (lesson-download.js store) ────────────────────
+    // ── AlphaOfflineDB helpers (lesson-download.js + React db.js stores) ──────
     let _alphaDb = null;
     function _openAlphaDB() {
         if (_alphaDb) return Promise.resolve(_alphaDb);
         return new Promise((res, rej) => {
-            const req = indexedDB.open('AlphaOfflineDB', 2);
+            // Version 3 adds the 'downloaded_files' store used by the React db.js
+            const req = indexedDB.open('AlphaOfflineDB', 3);
             req.onupgradeneeded = e => {
                 const d = e.target.result;
-                if (!d.objectStoreNames.contains('videos'))  d.createObjectStore('videos');
-                if (!d.objectStoreNames.contains('lessons')) d.createObjectStore('lessons');
+                if (!d.objectStoreNames.contains('videos'))
+                    d.createObjectStore('videos');
+                if (!d.objectStoreNames.contains('lessons'))
+                    d.createObjectStore('lessons');
+                // React db.js uses this store with courseId + semester indexes
+                if (!d.objectStoreNames.contains('downloaded_files')) {
+                    const store = d.createObjectStore('downloaded_files', { keyPath: 'id' });
+                    store.createIndex('courseId',  'courseId',  { unique: false });
+                    store.createIndex('semester',  'semester',  { unique: false });
+                }
             };
             req.onsuccess = () => { _alphaDb = req.result; res(_alphaDb); };
             req.onerror   = () => rej(req.error);
         });
     }
+    // Read from AlphaOfflineDB/videos (lesson-download.js)
     async function alphaDbGetAll() {
         const d = await _openAlphaDB();
         return new Promise((res, rej) => {
@@ -423,11 +433,23 @@
             req.onerror   = () => rej(req.error);
         });
     }
-    async function alphaDbDelete(key) {
+    // Read from AlphaOfflineDB/downloaded_files (React db.js)
+    async function alphaDbGetDownloadedFiles() {
         const d = await _openAlphaDB();
         return new Promise((res, rej) => {
-            const tx = d.transaction('videos','readwrite');
-            tx.objectStore('videos').delete(key);
+            if (!d.objectStoreNames.contains('downloaded_files')) { res([]); return; }
+            const req = d.transaction('downloaded_files','readonly')
+                          .objectStore('downloaded_files').getAll();
+            req.onsuccess = () => res(req.result || []);
+            req.onerror   = () => rej(req.error);
+        });
+    }
+    async function alphaDbDelete(key, storeName) {
+        const store = storeName || 'videos';
+        const d = await _openAlphaDB();
+        return new Promise((res, rej) => {
+            const tx = d.transaction(store, 'readwrite');
+            tx.objectStore(store).delete(key);
             tx.oncomplete = () => res(true);
             tx.onerror    = () => rej(tx.error);
         });
@@ -461,10 +483,11 @@
         const list = document.getElementById('savedList');
         list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">⏳ Loading...</div>';
 
-        // Load from both DBs
-        const [legacyItems, alphaItems] = await Promise.all([
+        // Load from all three stores: legacy DB, AlphaOfflineDB/videos, AlphaOfflineDB/downloaded_files
+        const [legacyItems, alphaItems, dlFiles] = await Promise.all([
             dbGetAll().catch(() => []),
-            alphaDbGetAll().catch(() => [])
+            alphaDbGetAll().catch(() => []),
+            alphaDbGetDownloadedFiles().catch(() => [])
         ]);
 
         // Normalise legacy items (alpha-offline-db/videos) → add semester label
@@ -497,9 +520,30 @@
             duration:    '',
         }));
 
-        // Deduplicate: alpha takes precedence for same lesson
+        // Normalise AlphaOfflineDB/downloaded_files items (React db.js)
+        const normDlFiles = dlFiles.map(v => ({
+            _source:     'dlfiles',
+            id:          v.id,
+            title:       v.title || 'Download',
+            courseTitle: v.courseTitle || '',
+            course:      v.courseTitle || '',
+            semester:    v.semester || v.courseTitle || 'Saved Videos',
+            youtubeId:   v.youtubeId || null,
+            fileBlobUrl: v.blob ? URL.createObjectURL(v.blob) : null,
+            thumbnail:   v.type === 'video' ? '🎥' : '📄',
+            savedAt:     v.savedAt,
+            type:        v.type || 'video',
+            duration:    v.size || '',
+        }));
+
+        // Deduplicate: dlFiles > alpha > legacy (higher specificity takes precedence)
+        const dlIds    = new Set(normDlFiles.map(v => v.id));
         const alphaIds = new Set(normAlpha.map(v => v.id));
-        const merged   = [...normAlpha, ...normLegacy.filter(v => !alphaIds.has(v.id))];
+        const merged   = [
+            ...normDlFiles,
+            ...normAlpha.filter(v => !dlIds.has(v.id)),
+            ...normLegacy.filter(v => !dlIds.has(v.id) && !alphaIds.has(v.id))
+        ];
 
         // Update badge count
         document.getElementById('savedCount').textContent = merged.length;
@@ -613,7 +657,15 @@
                                 </div>
                             </div>
                             <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-                                ${item.youtubeId ? `
+                                ${item.fileBlobUrl ? `
+                                <button onclick="playBlobVideo('${escHtml(item.fileBlobUrl)}','${escHtml(item.title)}','${escHtml(item.courseTitle)}')"
+                                    style="padding:6px 14px;background:#059669;color:white;border:none;
+                                    border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
+                                    transition:background 0.2s"
+                                    onmouseover="this.style.background='#047857'"
+                                    onmouseout="this.style.background='#059669'">
+                                    ▶ Watch
+                                </button>` : item.youtubeId ? `
                                 <button onclick="playVideo('${escHtml(item.id)}','${item.youtubeId}','${escHtml(item.title)}','${escHtml(item.courseTitle)}')"
                                     style="padding:6px 14px;background:#4f46e5;color:white;border:none;
                                     border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
@@ -649,8 +701,10 @@
     // ── Remove item from either DB ────────────────────────────────────────────
     async function removeSavedItem(id, source) {
         if (!confirm('ይህን ቪዲዮ ከ Offline ላይ ማጥፋት ይፈልጋሉ?')) return;
-        if (source === 'alpha') {
-            await alphaDbDelete(id).catch(() => {});
+        if (source === 'dlfiles') {
+            await alphaDbDelete(id, 'downloaded_files').catch(() => {});
+        } else if (source === 'alpha') {
+            await alphaDbDelete(id, 'videos').catch(() => {});
         } else {
             await dbDelete(id).catch(() => {});
             savedIds.delete(id);
@@ -752,9 +806,55 @@
     // ── Close player ──────────────────────────────────────────────────────────
     function closePlayer() {
         document.getElementById('playerIframe').src = '';
+        document.getElementById('playerIframe').style.display = '';
+        const blobVid = document.getElementById('blobVideoEl');
+        if (blobVid) { blobVid.src = ''; blobVid.remove(); }
         document.getElementById('playerOverlay').classList.remove('active');
         document.body.style.overflow = '';
         if (wmTimer) { clearInterval(wmTimer); wmTimer = null; }
+    }
+
+    // ── Play blob video (from downloaded_files store) ─────────────────────────
+    function playBlobVideo(blobUrl, title, course) {
+        if (!blobUrl) { toast?.error('No video file available.'); return; }
+
+        document.getElementById('playerTitle').textContent  = title;
+        document.getElementById('playerCourse').textContent = course;
+
+        // Replace iframe with a <video> element for blob playback
+        const playerBody = document.getElementById('playerBody');
+        const existingVideo = document.getElementById('blobVideoEl');
+        if (existingVideo) existingVideo.remove();
+
+        const video = document.createElement('video');
+        video.id      = 'blobVideoEl';
+        video.src     = blobUrl;
+        video.controls   = true;
+        video.autoplay   = true;
+        video.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000';
+        playerBody.appendChild(video);
+
+        // Hide iframe
+        document.getElementById('playerIframe').style.display = 'none';
+
+        // Watermark
+        const wm = getWmText();
+        ['wm-tl','wm-tr','wm-bl','wm-br'].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = wm; });
+        const diag = document.getElementById('wm-diag');
+        if (diag) diag.textContent = `${wm}   ${wm}`;
+        const main = document.getElementById('wm-main');
+        if (main) main.textContent = wm;
+
+        document.getElementById('playerOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        wmPosIdx = 0;
+        if (wmTimer) clearInterval(wmTimer);
+        wmTimer = setInterval(() => {
+            wmPosIdx = (wmPosIdx + 1) % WM_POSITIONS.length;
+            const p = WM_POSITIONS[wmPosIdx];
+            if (main) { main.style.top = p.top; main.style.left = p.left; }
+        }, 4000);
     }
 
     // ── Keyboard: Escape closes player ───────────────────────────────────────
@@ -853,11 +953,16 @@
     async function init() {
         const all = await dbGetAll();
         savedIds  = new Set(all.map(v => v.id));
-        // Also count from AlphaOfflineDB for the badge
+        // Count from AlphaOfflineDB for the badge
         const alphaAll = await alphaDbGetAll().catch(() => []);
+        const dlAll    = await alphaDbGetDownloadedFiles().catch(() => []);
         const alphaIds = new Set(alphaAll.map(v => v.lessonId || v.id || String(v.savedAt)));
+        const dlIds    = new Set(dlAll.map(v => v.id));
         // Merge count (deduplicated)
-        const totalUnique = savedIds.size + alphaAll.filter(v => !savedIds.has(v.lessonId || v.id || String(v.savedAt))).length;
+        const totalUnique =
+            savedIds.size +
+            alphaAll.filter(v => !savedIds.has(v.lessonId || v.id || String(v.savedAt))).length +
+            dlAll.filter(v => !savedIds.has(v.id) && !alphaIds.has(v.id)).length;
         document.getElementById('savedCount').textContent = totalUnique;
         renderAvailable();
     }

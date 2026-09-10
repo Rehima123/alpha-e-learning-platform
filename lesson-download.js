@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ALPHA_OFFLINE_DB   = 'AlphaOfflineDB';
-const ALPHA_OFFLINE_VER  = 2;
+const ALPHA_OFFLINE_VER  = 3;  // v3 adds downloaded_files store
 
 // ── Open the shared IndexedDB ─────────────────────────────────────────────────
 function _openAlphaDB() {
@@ -17,6 +17,12 @@ function _openAlphaDB() {
                 db.createObjectStore('videos');
             if (!db.objectStoreNames.contains('lessons'))
                 db.createObjectStore('lessons');
+            // v3: React db.js compatible store with semester + courseId indexes
+            if (!db.objectStoreNames.contains('downloaded_files')) {
+                const store = db.createObjectStore('downloaded_files', { keyPath: 'id' });
+                store.createIndex('courseId', 'courseId', { unique: false });
+                store.createIndex('semester', 'semester', { unique: false });
+            }
         };
         req.onsuccess = () => resolve(req.result);
         req.onerror   = () => reject(req.error);
