@@ -59,6 +59,24 @@ router.put('/users/:id/package',     isAnyAdmin,     async (req, res, next) => {
     } catch (err) { next(err); }
 });
 
+// ── Reset device binding (admin only — allows user to login from a new device) ─
+router.put('/users/:id/reset-device', isSuperAdmin, async (req, res, next) => {
+    try {
+        const User = require('../models/User');
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { registeredDeviceId: null },
+            { new: true }
+        ).select('fullName email phoneNumber registeredDeviceId');
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        res.json({
+            success: true,
+            message: `Device binding reset for ${user.fullName}. User can now login from any device once.`,
+            user
+        });
+    } catch (err) { next(err); }
+});
+
 // ── Bulk SMS (all admins) ─────────────────────────────────────────────────────
 router.post('/send-bulk-sms',        isAnyAdmin,     adminController.sendBulkSMS);
 

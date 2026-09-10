@@ -97,6 +97,10 @@ const userSchema = new mongoose.Schema({
     lastLoginAt:         { type: Date,   default: null },
     lastLoginIP:         { type: String, default: null },
 
+    // ── Device binding — 1 account = 1 registered device ─────────────────────
+    // Set on first login; subsequent logins from a different device are blocked
+    registeredDeviceId:  { type: String, default: null, select: false },
+
     // ── Package enrollment (semester + stream bundle) ─────────────────────────
     enrolledPackage: {
         type:    String,

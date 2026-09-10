@@ -51,6 +51,15 @@ class APIService {
                     setTimeout(() => window.location.href = 'auth-login.html', 1500);
                     throw new Error(data.message);
                 }
+                // ── Device mismatch — account bound to different device ────────
+                if (response.status === 403 && data.code === 'DEVICE_MISMATCH') {
+                    if (typeof toast !== 'undefined') {
+                        toast.error('📵 ' + data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                    throw new Error(data.message);
+                }
                 throw new Error(data.message || 'Server error. Please try again.');
             }
 
@@ -306,7 +315,12 @@ class APIService {
     }
 
     async login(credentials) {
-        return this.request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
+        // Attach a stable deviceId so the server can enforce 1-account-1-device
+        const deviceId = _getOrCreateDeviceId();
+        return this.request('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ ...credentials, deviceId })
+        });
     }
 
     async getMe() {
@@ -389,6 +403,11 @@ class APIService {
         return this.request('/admin/send-bulk-sms', { method: 'POST', body: JSON.stringify({ message }) });
     }
 
+    // ── Device binding (admin) ──────────────────────────────────────────────────
+    async resetDeviceBinding(userId) {
+        return this.request(`/admin/users/${userId}/reset-device`, { method: 'PUT' });
+    }
+
     // ── Google Drive Video Link endpoints ───────────────────────────────────────
     async saveDriveVideoLink(data) {
         // data: { courseId, chapterIdx?, lessonIdx?, driveFileId, lessonTitle? }
@@ -440,6 +459,20 @@ class APIService {
 }
 
 const api = new APIService();
+
+// ── Stable device fingerprint (persisted in localStorage) ────────────────────
+// Used by login() to enforce 1-account-1-device binding on the server.
+function _getOrCreateDeviceId() {
+    let id = localStorage.getItem('_deviceId');
+    if (!id) {
+        // Generate a random 32-char hex ID and persist it
+        const arr = new Uint8Array(16);
+        crypto.getRandomValues(arr);
+        id = Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+        localStorage.setItem('_deviceId', id);
+    }
+    return id;
+}
 
 // ── Auto-dismiss offline banner when network returns ──────────────────────────
 window.addEventListener('online', () => {

@@ -490,6 +490,14 @@ async function loadUsers() {
                                     ? `<button class="btn btn-sm btn-danger" onclick="deactivateUser('${u._id}')">Deactivate</button>`
                                     : `<button class="btn btn-sm btn-success" onclick="activateUser('${u._id}')">Activate</button>`
                                 }
+                                ${isSuperAdmin ? `
+                                <button class="btn btn-sm" title="Reset device binding — allows user to login from a new device"
+                                    onclick="resetUserDevice('${u._id}','${u.fullName}')"
+                                    style="background:rgba(245,158,11,0.1);color:#d97706;
+                                    border:1px solid rgba(245,158,11,0.3);font-size:0.72rem;
+                                    padding:3px 8px;white-space:nowrap">
+                                    📱 Reset Device
+                                </button>` : ''}
                             </td>
                         </tr>
                     `).join('')}
@@ -648,6 +656,22 @@ async function activateUser(id) {
         const res = await api.activateUser(id);
         if (res.success) { toast?.success('User activated'); await loadUsers(); }
     } catch (e) { toast?.error('Failed'); }
+}
+
+// ── Reset device binding (1-device enforcement) ───────────────────────────────
+async function resetUserDevice(userId, userName) {
+    if (!confirm(`"${userName}" የ device binding ይሰረዝ?\n\nከዚህ በኋላ ተጠቃሚው ከማንኛውም ስልክ ጊዜያዊ ሊገቡ ይችላሉ — አዲሱ ስልካቸው ሲገቡ ይመዘገባል።`)) return;
+    try {
+        const res = await api.resetDeviceBinding(userId);
+        if (res.success) {
+            toast?.success(`✅ Device binding reset for "${userName}"`);
+            await loadUsers();
+        } else {
+            toast?.error(res.message || 'Failed to reset device');
+        }
+    } catch (e) {
+        toast?.error('Server error. Try again.');
+    }
 }
 
 // ── Video manager ─────────────────────────────────────────────────────────────

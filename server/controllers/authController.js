@@ -111,7 +111,7 @@ exports.login = async (req, res, next) => {
         const query = email ? { email } : { phoneNumber };
 
         // Check if user exists
-        const user = await User.findOne(query).select('+password');
+        const user = await User.findOne(query).select('+password +currentSessionToken +registeredDeviceId');
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -134,6 +134,27 @@ exports.login = async (req, res, next) => {
                 success: false,
                 message: 'Invalid credentials'
             });
+        }
+
+        // ── Device Binding Check (1 Account = 1 Device) ───────────────────────
+        // deviceId is optional — sent by mobile/PWA clients for enforcement
+        const deviceId = req.body.deviceId || req.headers['x-device-id'] || null;
+
+        if (deviceId) {
+            if (user.registeredDeviceId && user.registeredDeviceId !== deviceId) {
+                // Admin accounts are exempt from device binding
+                if (!['admin','super_admin'].includes(user.role)) {
+                    return res.status(403).json({
+                        success: false,
+                        code: 'DEVICE_MISMATCH',
+                        message: 'ይህ አካውንት በሌላ ስልክ ላይ ተመዝግቧል። በ1 አካውንት በ1 ስልክ ብቻ መጠቀም ይቻላል።'
+                    });
+                }
+            }
+            // Register device on first login
+            if (!user.registeredDeviceId) {
+                await User.findByIdAndUpdate(user._id, { registeredDeviceId: deviceId });
+            }
         }
 
         // Generate token with unique session ID (single-device enforcement)
