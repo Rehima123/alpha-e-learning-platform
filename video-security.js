@@ -85,11 +85,43 @@ document.addEventListener('visibilitychange', () => {
         _lastTabHidden = Date.now();
     } else {
         const elapsed = Date.now() - _lastTabHidden;
-        if (elapsed > 0 && elapsed < 800) {
+        // < 800ms = likely screenshot (PrintScreen / system screen capture)
+        // < 2000ms = likely screen recorder starting
+        if (elapsed > 0 && elapsed < 2000) {
             _showScreenShield();
         }
     }
 });
+
+// ── Detect screen capture API (Chrome/Edge 94+) ───────────────────────────────
+if (navigator.mediaDevices && typeof navigator.mediaDevices.getDisplayMedia === 'function') {
+    const _origGetDisplayMedia = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
+    navigator.mediaDevices.getDisplayMedia = async (...args) => {
+        _showScreenShield();
+        if (typeof toast !== 'undefined')
+            toast.error('⛔ Screen recording is not permitted on this platform.');
+        throw new DOMException('Screen capture blocked by Alpha Freshman Tutorial', 'NotAllowedError');
+    };
+}
+
+// ── Block clipboard image copy (Ctrl+C on selected content) ──────────────────
+document.addEventListener('copy', (e) => {
+    const sel = window.getSelection()?.toString() || '';
+    // Only block if inside video area
+    if (document.activeElement?.closest('#videoWrapper, #securePlayerMount, #scvp-root, #svp-root')) {
+        e.preventDefault();
+        e.clipboardData?.setData('text/plain', '⛔ Content is protected.');
+    }
+});
+
+// ── Prevent F12 DevTools ──────────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'F12') { e.preventDefault(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey &&
+        ['i','I','j','J','c','C','u','U'].includes(e.key)) {
+        e.preventDefault(); return;
+    }
+}, true);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // FEATURE 2 — Dynamic Video Watermark (name + phone/email, multi-position drift)
