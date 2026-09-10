@@ -192,17 +192,77 @@
 
         <!-- Tab: Videos -->
         <div id="tab-videos" class="admin-tab-content">
-            <h3 style="margin-bottom:0.5rem;color:var(--text-primary)">🎬 Manage YouTube Video Links</h3>
+            <h3 style="margin-bottom:0.5rem;color:var(--text-primary)">🎬 Manage Google Drive Video Links</h3>
             <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1.2rem">
-                Upload videos to YouTube (unlisted), then paste the link here. Only paid students can watch.
+                Google Drive ላይ ቪዲዮ upload አድርገው "Anyone with the link can view" ያድርጉ → ሊንኩን ከዚህ ያስገቡ።
             </p>
-            <div class="form-group" style="margin-bottom:1rem">
-                <label>Select Course</label>
-                <select id="videoCourseSelect" class="form-select" onchange="loadCourseChapters()">
-                    <option value="">Choose a course...</option>
-                </select>
+
+            <!-- Quick Add form (top-level, for simple video list) -->
+            <div style="background:var(--bg-primary);border:1px solid var(--border-color);
+                border-radius:16px;padding:20px;margin-bottom:1.5rem">
+                <h4 style="color:var(--text-primary);margin:0 0 14px;font-size:0.95rem">
+                    ➕ ቪዲዮ ሊንክ ማከያ (Quick Add)
+                </h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                    <div class="form-group" style="margin:0">
+                        <label>Course ምረጥ</label>
+                        <select id="driveCourseSelect" class="form-select" onchange="loadDriveCourseChapters()">
+                            <option value="">Course ምረጥ...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0">
+                        <label>የቪዲዮ ርዕስ (Lesson Title)</label>
+                        <input type="text" id="driveLessonTitle" class="form-input"
+                            placeholder="ምሳሌ: Unit 1 - Introduction">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+                    <div class="form-group" style="margin:0">
+                        <label>Google Drive Share Link ወይም File ID</label>
+                        <input type="text" id="driveFileInput" class="form-input"
+                            placeholder="https://drive.google.com/file/d/XXXX/view?usp=sharing"
+                            oninput="updateDrivePreview()">
+                    </div>
+                    <button onclick="saveDriveVideoLink()"
+                        style="padding:10px 22px;background:linear-gradient(135deg,#27ae60,#1a7030);
+                        color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;
+                        font-size:0.9rem;white-space:nowrap">
+                        💾 አስቀምጥ
+                    </button>
+                </div>
+
+                <!-- Preview -->
+                <div id="drivePreviewBox" style="display:none;margin-top:14px">
+                    <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 8px">
+                        📽️ ቅድመ-ዕይታ (Preview):
+                    </p>
+                    <iframe id="drivePreviewIframe"
+                        width="100%" height="240"
+                        style="border:none;border-radius:10px;background:#000"
+                        allow="autoplay"
+                        src="">
+                    </iframe>
+                </div>
             </div>
-            <div id="videoChaptersList"></div>
+
+            <!-- Chapter-level assignment (for structured courses) -->
+            <div style="background:var(--bg-primary);border:1px solid var(--border-color);
+                border-radius:16px;padding:20px;margin-bottom:1.5rem" id="driveChapterBox">
+                <h4 style="color:var(--text-primary);margin:0 0 10px;font-size:0.9rem">
+                    📖 Chapter › Lesson ደረጃ ማያያዣ
+                </h4>
+                <div id="driveCourseChapters" style="color:var(--text-secondary);font-size:0.85rem">
+                    ከላይ course ምረጡ...
+                </div>
+            </div>
+
+            <!-- Saved videos list -->
+            <div>
+                <h4 style="color:var(--text-primary);margin:0 0 12px">📋 የተቀመጡ ቪዲዮዎች</h4>
+                <div id="driveVideosList" style="color:var(--text-secondary);font-size:0.85rem">
+                    Course ምረጡ...
+                </div>
+            </div>
         </div>
 
         <!-- Tab: Support Tickets -->

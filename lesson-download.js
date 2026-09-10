@@ -34,14 +34,19 @@ async function downloadVideoForOffline(videoUrl, lessonId, lessonTitle) {
     try {
         const db  = await _openAlphaDB();
         const ytId = _extractYTId(videoUrl);
+        // Also handle Google Drive video URLs
+        const isDrive  = videoUrl.includes('drive.google.com');
+        const driveId  = isDrive ? (videoUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1] || null) : null;
 
         const record = {
             lessonId,
             lessonTitle: lessonTitle || lessonId,
             youtubeId:   ytId,
             youtubeUrl:  videoUrl,
+            driveFileId: driveId,
+            isDriveVideo: isDrive,
             savedAt:     Date.now(),
-            type:        'youtube-embed'   // not a raw blob — embed reference
+            type:        isDrive ? 'google-drive' : 'youtube-embed'
         };
 
         await new Promise((res, rej) => {

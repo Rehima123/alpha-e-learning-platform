@@ -381,7 +381,88 @@ exports.replyTicket = async (req, res, next) => {
     }
 };
 
-// @desc    Send Bulk SMS to all students (AfroMessage API)
+// @desc    Save Google Drive video link to a course lesson
+exports.saveDriveVideoLink = async (req, res, next) => {
+    try {
+        const { courseId, chapterIdx, lessonIdx, driveFileId, lessonTitle } = req.body;
+
+        if (!courseId || !driveFileId) {
+            return res.status(400).json({
+                success: false,
+                error: 'courseId እና driveFileId ያስፈልጋሉ።'
+            });
+        }
+
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ success: false, error: 'Course አልተገኘም።' });
+        }
+
+        // ── Case 1: chapters[chapterIdx].lessons[lessonIdx] ─────────────────
+        if (chapterIdx !== undefined && lessonIdx !== undefined) {
+            const ci = parseInt(chapterIdx);
+            const li = parseInt(lessonIdx);
+
+            if (!course.chapters[ci]) {
+                return res.status(400).json({ success: false, error: 'Chapter index invalid.' });
+            }
+            if (!course.chapters[ci].lessons[li]) {
+                // Create lesson placeholder
+                course.chapters[ci].lessons.push({
+                    title:    lessonTitle || `Lesson ${li + 1}`,
+                    videoUrl: `https://drive.google.com/file/d/${driveFileId}/preview`,
+                    order:    li
+                });
+            } else {
+                course.chapters[ci].lessons[li].videoUrl =
+                    `https://drive.google.com/file/d/${driveFileId}/preview`;
+            }
+        }
+        // ── Case 2: push to videos[] array (simple flat list) ────────────────
+        else {
+            // Check if entry already exists for this driveFileId
+            const existing = course.videos.find(v => v.youtubeId === driveFileId);
+            if (existing) {
+                existing.youtubeUrl = `https://drive.google.com/file/d/${driveFileId}/preview`;
+            } else {
+                course.videos.push({
+                    title:      lessonTitle || 'Video',
+                    youtubeUrl: `https://drive.google.com/file/d/${driveFileId}/preview`,
+                    youtubeId:  driveFileId,   // re-using youtubeId field for driveFileId
+                    chapter:    ''
+                });
+            }
+        }
+
+        await course.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'ቪዲዮው በተሳካ ሁኔታ ተያይዟል!',
+            driveFileId,
+            courseId
+        });
+    } catch (error) {
+        console.error('[saveDriveVideoLink]', error);
+        next(error);
+    }
+};
+
+// @desc    Get all video links for a course (for admin manager)
+exports.getCourseVideoLinks = async (req, res, next) => {
+    try {
+        const course = await Course.findById(req.params.courseId)
+            .select('title chapters videos icon');
+        if (!course) {
+            return res.status(404).json({ success: false, error: 'Course not found' });
+        }
+        res.status(200).json({ success: true, course });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
 exports.sendBulkSMS = async (req, res, next) => {
     try {
         const { message } = req.body;

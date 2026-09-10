@@ -514,7 +514,9 @@
             course:      v.courseTitle || v.course || '',
             semester:    v.department || v.courseTitle || v.course || 'Saved Videos',
             youtubeId:   v.youtubeId,
-            thumbnail:   '🎬',
+            driveFileId: v.driveFileId || null,
+            isDriveVideo: v.isDriveVideo || (v.youtubeUrl && v.youtubeUrl.includes('drive.google.com')),
+            thumbnail:   (v.isDriveVideo || (v.youtubeUrl && v.youtubeUrl.includes('drive.google.com'))) ? '☁️' : '🎬',
             savedAt:     v.savedAt,
             type:        'video',
             duration:    '',
@@ -665,6 +667,14 @@
                                     onmouseover="this.style.background='#047857'"
                                     onmouseout="this.style.background='#059669'">
                                     ▶ Watch
+                                </button>` : item.isDriveVideo && item.driveFileId ? `
+                                <button onclick="playDriveVideo('${item.driveFileId}','${escHtml(item.title)}','${escHtml(item.courseTitle)}')"
+                                    style="padding:6px 14px;background:#059669;color:white;border:none;
+                                    border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
+                                    transition:background 0.2s"
+                                    onmouseover="this.style.background='#047857'"
+                                    onmouseout="this.style.background='#059669'">
+                                    ☁️ Watch
                                 </button>` : item.youtubeId ? `
                                 <button onclick="playVideo('${escHtml(item.id)}','${item.youtubeId}','${escHtml(item.title)}','${escHtml(item.courseTitle)}')"
                                     style="padding:6px 14px;background:#4f46e5;color:white;border:none;
@@ -836,6 +846,45 @@
 
         // Hide iframe
         document.getElementById('playerIframe').style.display = 'none';
+
+        // Watermark
+        const wm = getWmText();
+        ['wm-tl','wm-tr','wm-bl','wm-br'].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = wm; });
+        const diag = document.getElementById('wm-diag');
+        if (diag) diag.textContent = `${wm}   ${wm}`;
+        const main = document.getElementById('wm-main');
+        if (main) main.textContent = wm;
+
+        document.getElementById('playerOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        wmPosIdx = 0;
+        if (wmTimer) clearInterval(wmTimer);
+        wmTimer = setInterval(() => {
+            wmPosIdx = (wmPosIdx + 1) % WM_POSITIONS.length;
+            const p = WM_POSITIONS[wmPosIdx];
+            if (main) { main.style.top = p.top; main.style.left = p.left; }
+        }, 4000);
+    }
+
+    // ── Play Google Drive video via embed iframe ───────────────────────────────
+    function playDriveVideo(driveFileId, title, course) {
+        if (!driveFileId) { toast?.error('Drive video not available.'); return; }
+
+        document.getElementById('playerTitle').textContent  = title;
+        document.getElementById('playerCourse').textContent = course + ' ☁️';
+
+        // Remove any existing blob video element
+        const existingVideo = document.getElementById('blobVideoEl');
+        if (existingVideo) existingVideo.remove();
+
+        // Show iframe with Drive embed
+        const iframe = document.getElementById('playerIframe');
+        iframe.style.display = '';
+        iframe.src = `https://drive.google.com/file/d/${driveFileId}/preview`;
+        // Drive needs allow-popups in sandbox to work
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+        iframe.setAttribute('allow', 'autoplay');
 
         // Watermark
         const wm = getWmText();

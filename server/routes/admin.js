@@ -62,4 +62,8 @@ router.put('/users/:id/package',     isAnyAdmin,     async (req, res, next) => {
 // ── Bulk SMS (all admins) ─────────────────────────────────────────────────────
 router.post('/send-bulk-sms',        isAnyAdmin,     adminController.sendBulkSMS);
 
+// ── Google Drive Video Links ──────────────────────────────────────────────────
+router.post('/videos/link',          isContentAdmin, adminController.saveDriveVideoLink);
+router.get('/videos/:courseId',      isContentAdmin, adminController.getCourseVideoLinks);
+
 module.exports = router;

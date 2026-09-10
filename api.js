@@ -388,6 +388,16 @@ class APIService {
     async sendBulkSMS(message) {
         return this.request('/admin/send-bulk-sms', { method: 'POST', body: JSON.stringify({ message }) });
     }
+
+    // ── Google Drive Video Link endpoints ───────────────────────────────────────
+    async saveDriveVideoLink(data) {
+        // data: { courseId, chapterIdx?, lessonIdx?, driveFileId, lessonTitle? }
+        return this.request('/admin/videos/link', { method: 'POST', body: JSON.stringify(data) });
+    }
+    async getCourseVideoLinks(courseId) {
+        return this.request(`/admin/videos/${courseId}`);
+    }
+
     async updateProgress(enrollmentId, progressData) {
         return this.request(`/enrollments/${enrollmentId}/progress`, { method: 'PUT', body: JSON.stringify(progressData) });
     }

@@ -72,6 +72,16 @@ function _extractYTId(url) {
     return null;
 }
 
+// ── Extract Google Drive file ID ──────────────────────────────────────────────
+function _extractDriveId(url) {
+    if (!url) return null;
+    const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (m1) return m1[1];
+    const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m2) return m2[1];
+    return null;
+}
+
 // ── Build safe embed URL ──────────────────────────────────────────────────────
 function _buildEmbedUrl(videoId, autoplay) {
     const origin = encodeURIComponent(window.location.origin);
@@ -195,7 +205,11 @@ async function buildSecurePlayer(lesson, user, container, opts = {}) {
     const ytId     = _extractYTId(videoUrl);
     const lessonId = lesson?._id || lesson?.title || 'unknown';
 
-    if (!videoUrl || !ytId) {
+    // ── Detect Google Drive video ─────────────────────────────────────────────
+    const isDriveVideo = videoUrl.includes('drive.google.com');
+    const driveFileId  = isDriveVideo ? _extractDriveId(videoUrl) : null;
+
+    if (!videoUrl || (!ytId && !isDriveVideo)) {
         container.innerHTML = `
             <div style="background:#1e293b;border-radius:16px;padding:3rem;text-align:center;color:#94a3b8;font-family:sans-serif">
                 📄 No video for this lesson.
@@ -203,11 +217,15 @@ async function buildSecurePlayer(lesson, user, container, opts = {}) {
         return;
     }
 
-    // Check if already saved offline
+    // Check if already saved offline (YouTube only)
     let isSaved = false;
-    try { isSaved = !!(await _dbGet('videos', lessonId)); } catch {}
+    if (ytId) {
+        try { isSaved = !!(await _dbGet('videos', lessonId)); } catch {}
+    }
 
-    const embedUrl = _buildEmbedUrl(ytId, autoplay);
+    const embedUrl = isDriveVideo
+        ? `https://drive.google.com/file/d/${driveFileId}/preview`
+        : _buildEmbedUrl(ytId, autoplay);
 
     // ── Inject HTML ───────────────────────────────────────────────────────────
     container.innerHTML = `
@@ -216,15 +234,17 @@ async function buildSecurePlayer(lesson, user, container, opts = {}) {
         <!-- 16:9 ratio wrapper -->
         <div style="position:relative;padding-bottom:56.25%;overflow:hidden">
 
-            <!-- YouTube embed — ID not exposed as plain text in DOM -->
+            <!-- Video embed (YouTube or Google Drive) — ID not exposed as plain text in DOM -->
             <iframe
                 id="svp-iframe"
                 src="${embedUrl}"
                 title="${_escHtml(lesson.title || 'Lesson')}"
                 style="position:absolute;inset:0;width:100%;height:100%;border:none"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-                allowfullscreen="false"
-                sandbox="allow-scripts allow-same-origin allow-presentation"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen="${isDriveVideo ? 'true' : 'false'}"
+                sandbox="${isDriveVideo
+                    ? 'allow-scripts allow-same-origin allow-popups allow-forms'
+                    : 'allow-scripts allow-same-origin allow-presentation'}"
                 loading="lazy"
             ></iframe>
 
@@ -260,9 +280,9 @@ async function buildSecurePlayer(lesson, user, container, opts = {}) {
                 </span>
             </div>
 
-            <!-- YouTube title-bar click blocker -->
-            <div id="svp-ytblock"
-                style="position:absolute;top:0;left:0;right:0;height:44px;z-index:10;cursor:default"></div>
+            <!-- YouTube title-bar click blocker (skipped for Drive) -->
+            ${!isDriveVideo ? `<div id="svp-ytblock"
+                style="position:absolute;top:0;left:0;right:0;height:44px;z-index:10;cursor:default"></div>` : ''}
         </div>
 
         <!-- Footer bar -->
@@ -270,14 +290,18 @@ async function buildSecurePlayer(lesson, user, container, opts = {}) {
             <div style="flex:1;min-width:0">
                 <p style="margin:0;color:#fff;font-size:11px;font-weight:600;font-family:sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
                     ${_escHtml(lesson.title || '')}
+                    ${isDriveVideo ? '<span style="margin-left:8px;padding:2px 8px;background:rgba(16,185,129,0.2);color:#10b981;border-radius:6px;font-size:9px;font-weight:700">☁️ Drive Video</span>' : ''}
                 </p>
             </div>
-            ${allowOffline ? `
+            ${allowOffline && !isDriveVideo ? `
             <div id="svp-dl-area" style="display:flex;align-items:center;gap:8px;flex-shrink:0">
                 ${isSaved
                     ? `<button id="svp-rm-btn" style="${_btnStyle('#ef4444','rgba(239,68,68,0.15)')}">🗑️ Remove Offline</button>`
                     : `<button id="svp-dl-btn" style="${_btnStyle('#9333ea','rgba(147,51,234,0.8)')}">💾 Save Offline</button>`
                 }
+            </div>` : isDriveVideo ? `
+            <div style="flex-shrink:0">
+                <span style="color:#10b981;font-size:10px;font-family:sans-serif">☁️ Google Drive ቪዲዮ</span>
             </div>` : ''}
             <div style="flex-shrink:0">
                 <span style="color:#334155;font-size:9px;font-family:monospace;user-select:none">${_escHtml(wmText)}</span>
@@ -287,7 +311,10 @@ async function buildSecurePlayer(lesson, user, container, opts = {}) {
         <!-- Quality / Speed hint -->
         <div style="background:#0a0f1e;padding:5px 14px;display:flex;align-items:center;justify-content:flex-end">
             <span style="color:#64748b;font-size:10px;font-family:sans-serif">
-                ⚙️ Setting ላይ በመንካት <strong style="color:#94a3b8">Quality</strong> እና <strong style="color:#94a3b8">Speed</strong> ማስተካከል ይቻላል
+                ${isDriveVideo
+                    ? '☁️ Google Drive ቪዲዮ — "Anyone with link" ማድረግ አለቦት'
+                    : '⚙️ Setting ላይ በመንካት <strong style="color:#94a3b8">Quality</strong> እና <strong style="color:#94a3b8">Speed</strong> ማስተካከል ይቻላል'
+                }
             </span>
         </div>
 
@@ -328,8 +355,8 @@ async function buildSecurePlayer(lesson, user, container, opts = {}) {
     // ── Install screen shield (once per page) ─────────────────────────────────
     _installScreenShield();
 
-    // ── Offline download logic ────────────────────────────────────────────────
-    if (allowOffline) {
+    // ── Offline download logic (YouTube only — Drive CORS blocks blob fetch) ──
+    if (allowOffline && !isDriveVideo) {
         const dlArea   = document.getElementById('svp-dl-area');
         const progWrap = document.getElementById('svp-prog-wrap');
         const progBar  = document.getElementById('svp-prog-bar');

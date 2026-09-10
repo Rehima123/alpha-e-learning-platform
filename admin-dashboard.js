@@ -1559,3 +1559,262 @@ async function submitBulkSMS() {
         btn.disabled = false; btn.textContent = '📤 SMS ላክ';
     }
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GOOGLE DRIVE VIDEO LINK MANAGER
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Extract Drive file ID from URL ────────────────────────────────────────────
+function extractDriveFileId(url) {
+    if (!url) return '';
+    url = url.trim();
+    // https://drive.google.com/file/d/FILE_ID/view?...
+    const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (m1) return m1[1];
+    // https://drive.google.com/open?id=FILE_ID
+    const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m2) return m2[1];
+    // Raw file ID (no slashes or dots)
+    if (/^[a-zA-Z0-9_-]{20,}$/.test(url)) return url;
+    return '';
+}
+
+// ── Update preview iframe when admin pastes a link ───────────────────────────
+function updateDrivePreview() {
+    const input   = document.getElementById('driveFileInput');
+    const box     = document.getElementById('drivePreviewBox');
+    const iframe  = document.getElementById('drivePreviewIframe');
+    if (!input || !box || !iframe) return;
+
+    const fileId = extractDriveFileId(input.value);
+    if (fileId) {
+        iframe.src = `https://drive.google.com/file/d/${fileId}/preview`;
+        box.style.display = 'block';
+    } else {
+        box.style.display = 'none';
+        iframe.src = '';
+    }
+}
+
+// ── Populate course dropdown in Drive video tab ───────────────────────────────
+async function loadDriveCoursesDropdown() {
+    const sel = document.getElementById('driveCourseSelect');
+    if (!sel) return;
+
+    try {
+        const res = await api.getCourses({ status: 'approved', limit: 100 });
+        const courses = res.courses || res.data || [];
+        sel.innerHTML = '<option value="">Course ምረጥ...</option>' +
+            courses.map(c => `<option value="${c._id}">${c.icon || '📚'} ${c.title}</option>`).join('');
+    } catch (e) {
+        sel.innerHTML = '<option value="">ኮርሶችን ማምጣት አልተቻለም</option>';
+    }
+}
+
+// ── Load chapters for selected course (structured assignment) ─────────────────
+async function loadDriveCourseChapters() {
+    const courseId = document.getElementById('driveCourseSelect')?.value;
+    const box      = document.getElementById('driveCourseChapters');
+    const listBox  = document.getElementById('driveVideosList');
+    if (!box) return;
+
+    if (!courseId) {
+        box.innerHTML = '<p style="color:var(--text-secondary);font-size:0.85rem">Course ምረጡ...</p>';
+        if (listBox) listBox.innerHTML = '<p style="color:var(--text-secondary);font-size:0.85rem">Course ምረጡ...</p>';
+        return;
+    }
+
+    box.innerHTML = '<p style="color:var(--text-secondary);font-size:0.85rem">⏳ Loading...</p>';
+    if (listBox) listBox.innerHTML = '<p style="color:var(--text-secondary);font-size:0.85rem">⏳ Loading...</p>';
+
+    try {
+        const res = await api.getCourseVideoLinks(courseId);
+        const course = res.course;
+        if (!course) throw new Error('Course not found');
+
+        // ── Chapter-level assignment UI ──────────────────────────────────────
+        if (course.chapters && course.chapters.length > 0) {
+            let html = `<div style="display:flex;flex-direction:column;gap:10px">`;
+            course.chapters.forEach((ch, ci) => {
+                html += `
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);
+                    border-radius:12px;overflow:hidden">
+                    <div style="padding:12px 16px;background:rgba(102,126,234,0.06);
+                        border-bottom:1px solid var(--border-color);font-weight:700;
+                        font-size:0.88rem;color:var(--text-primary)">
+                        📖 ${escAdminHtml(ch.title)}
+                    </div>
+                    <div style="padding:10px 16px;display:flex;flex-direction:column;gap:8px">
+                        ${(ch.lessons || []).map((lesson, li) => {
+                            const hasVideo = lesson.videoUrl && lesson.videoUrl.includes('drive.google.com');
+                            const existingId = hasVideo ? extractDriveFileId(lesson.videoUrl) : '';
+                            return `
+                            <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center">
+                                <div>
+                                    <p style="margin:0;font-size:0.82rem;font-weight:600;color:var(--text-primary)">
+                                        ${li + 1}. ${escAdminHtml(lesson.title)}
+                                    </p>
+                                    ${hasVideo ? `<p style="margin:2px 0 0;font-size:0.72rem;color:#27ae60">
+                                        ✅ Drive ቪዲዮ ተያይዟል</p>` : ''}
+                                </div>
+                                <input type="text"
+                                    id="drive-${ci}-${li}"
+                                    placeholder="Drive link ወይም File ID"
+                                    value="${existingId}"
+                                    style="padding:6px 10px;border:1px solid var(--border-color);
+                                    border-radius:8px;font-size:0.78rem;background:var(--bg-primary);
+                                    color:var(--text-primary);min-width:220px">
+                                <button onclick="saveChapterDriveLink('${courseId}',${ci},${li},'drive-${ci}-${li}','${escAdminHtml(lesson.title)}')"
+                                    style="padding:6px 14px;background:#27ae60;color:white;border:none;
+                                    border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;
+                                    white-space:nowrap">
+                                    💾 Save
+                                </button>
+                            </div>`;
+                        }).join('')}
+                        ${(ch.lessons || []).length === 0 ?
+                            '<p style="color:var(--text-secondary);font-size:0.8rem;margin:0">ምንም lesson የለም</p>' : ''}
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+            box.innerHTML = html;
+        } else {
+            box.innerHTML = `<p style="color:var(--text-secondary);font-size:0.85rem">
+                ይህ ኮርስ chapters አልተፈጠረም። ከ "Quick Add" ይጠቀሙ።</p>`;
+        }
+
+        // ── Show saved videos list ────────────────────────────────────────────
+        renderDriveVideosList(course);
+
+    } catch (e) {
+        box.innerHTML = `<p style="color:#e74c3c;font-size:0.85rem">❌ ${e.message}</p>`;
+    }
+}
+
+// ── Render saved videos list for a course ─────────────────────────────────────
+function renderDriveVideosList(course) {
+    const listBox = document.getElementById('driveVideosList');
+    if (!listBox) return;
+
+    const videos = course.videos || [];
+    // Also gather from chapters
+    const chapterVideos = [];
+    (course.chapters || []).forEach((ch, ci) => {
+        (ch.lessons || []).forEach((l, li) => {
+            if (l.videoUrl && l.videoUrl.includes('drive.google.com')) {
+                chapterVideos.push({
+                    title: `${ch.title} › ${l.title}`,
+                    fileId: extractDriveFileId(l.videoUrl)
+                });
+            }
+        });
+    });
+
+    const allVideos = [
+        ...chapterVideos,
+        ...videos.filter(v => v.youtubeId && v.youtubeId.length > 15).map(v => ({
+            title: v.title,
+            fileId: v.youtubeId
+        }))
+    ];
+
+    if (allVideos.length === 0) {
+        listBox.innerHTML = `<p style="color:var(--text-secondary);font-size:0.85rem">
+            ምንም Drive ቪዲዮ አልተያያዘም።</p>`;
+        return;
+    }
+
+    listBox.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:8px">
+        ${allVideos.map(v => `
+            <div style="background:var(--bg-secondary);border:1px solid var(--border-color);
+                border-radius:10px;padding:12px 16px;
+                display:flex;align-items:center;justify-content:space-between;gap:12px">
+                <div>
+                    <p style="margin:0;font-size:0.85rem;font-weight:600;color:var(--text-primary)">
+                        🎬 ${escAdminHtml(v.title)}
+                    </p>
+                    <p style="margin:2px 0 0;font-size:0.72rem;color:var(--text-secondary);
+                        font-family:monospace">${v.fileId}</p>
+                </div>
+                <a href="https://drive.google.com/file/d/${v.fileId}/preview"
+                    target="_blank" rel="noopener"
+                    style="padding:5px 12px;background:#4f46e5;color:white;border-radius:8px;
+                    font-size:0.75rem;font-weight:700;text-decoration:none;white-space:nowrap">
+                    ▶ Preview
+                </a>
+            </div>
+        `).join('')}
+        </div>`;
+}
+
+// ── Save Drive link from Quick Add form ───────────────────────────────────────
+async function saveDriveVideoLink() {
+    const courseId    = document.getElementById('driveCourseSelect')?.value;
+    const lessonTitle = document.getElementById('driveLessonTitle')?.value?.trim() || 'Video';
+    const inputVal    = document.getElementById('driveFileInput')?.value?.trim() || '';
+    const driveFileId = extractDriveFileId(inputVal);
+
+    if (!courseId) { toast?.error('Course ምረጡ'); return; }
+    if (!driveFileId) { toast?.error('ትክክለኛ Drive link ወይም File ID ያስገቡ'); return; }
+
+    try {
+        const res = await api.saveDriveVideoLink({ courseId, driveFileId, lessonTitle });
+        if (res.success) {
+            toast?.success('✅ ቪዲዮው በተሳካ ሁኔታ ተያይዟል!');
+            document.getElementById('driveFileInput').value = '';
+            document.getElementById('driveLessonTitle').value = '';
+            document.getElementById('drivePreviewBox').style.display = 'none';
+            document.getElementById('drivePreviewIframe').src = '';
+            // Reload list
+            loadDriveCourseChapters();
+        } else {
+            toast?.error(res.error || 'Save failed');
+        }
+    } catch (e) {
+        toast?.error(e.message || 'Save failed');
+    }
+}
+
+// ── Save Drive link for a specific chapter lesson ─────────────────────────────
+async function saveChapterDriveLink(courseId, ci, li, inputId, lessonTitle) {
+    const inputEl  = document.getElementById(inputId);
+    const inputVal = inputEl?.value?.trim() || '';
+    const driveFileId = extractDriveFileId(inputVal);
+
+    if (!driveFileId) { toast?.error('ትክክለኛ Drive link ወይም File ID ያስገቡ'); return; }
+
+    try {
+        const res = await api.saveDriveVideoLink({
+            courseId,
+            chapterIdx: ci,
+            lessonIdx:  li,
+            driveFileId,
+            lessonTitle
+        });
+        if (res.success) {
+            toast?.success(`✅ "${lessonTitle}" ቪዲዮ ተያይዟል!`);
+            // Reload chapters view
+            loadDriveCourseChapters();
+        } else {
+            toast?.error(res.error || 'Save failed');
+        }
+    } catch (e) {
+        toast?.error(e.message || 'Save failed');
+    }
+}
+
+// ── Escape helper for admin HTML ──────────────────────────────────────────────
+function escAdminHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── Init Drive tab when Videos tab is clicked ─────────────────────────────────
+// Patch showTab to call loadDriveCoursesDropdown when videos tab opens
+const _origShowTab = typeof showTab === 'function' ? showTab : null;
+// Override is done at call site — the onclick in the HTML now calls loadVideoManager() which calls this:
+async function loadVideoManager() {
+    await loadDriveCoursesDropdown();
+}
