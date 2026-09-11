@@ -296,8 +296,8 @@ body {
 .footer {
     background: var(--bg-navbar);
     color: var(--text-light);
-    padding: 2rem 0;
-    text-align: center;
+    padding: 3rem 0 1rem;
+    margin-top: 0;
 }
 
 /* Search and Filters */
@@ -1122,7 +1122,7 @@ body {
     background: var(--bg-navbar);
     color: var(--text-light);
     padding: 3rem 0 1rem;
-    margin-top: 4rem;
+    margin-top: 0;
 }
 
 .footer-content {
@@ -1853,16 +1853,10 @@ body { animation: fadeIn 0.3s ease; }
 .price .period { font-size: 0.9rem; color: var(--text-secondary); }
 .savings { font-size: 0.82rem; color: #27ae60; font-weight: 600; margin-top: 4px; }
 
-/* ─── Developer credit footer ───────────────────────────────────────── */
+/* ─── Developer credit footer — HIDDEN (replaced by unified footer) ─────── */
 .dev-credit {
-    text-align: center;
-    padding: 16px;
-    margin-top: 3rem;
-    border-top: 1px solid var(--border-color);
-    font-size: 0.82rem;
-    color: var(--text-secondary);
+    display: none !important;
 }
-.dev-credit strong { color: var(--text-primary); }
 
 /* ─── Lesson Reader (Notes + PDF) ───────────────────────────────────── */
 .reader-tabs {
@@ -2359,14 +2353,9 @@ body { animation: fadeIn 0.3s ease; }
     user-drag: none;
 }
 
-/* Dev credit line */
+/* Dev credit line — HIDDEN (replaced by unified footer) */
 .dev-credit {
-    text-align: center;
-    padding: 1rem 0;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    border-top: 1px solid var(--border-color);
-    margin-top: 2rem;
+    display: none !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
