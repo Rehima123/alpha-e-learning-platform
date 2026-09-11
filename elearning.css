@@ -2443,8 +2443,8 @@ body { animation: fadeIn 0.3s ease; }
    ══════════════════════════════════════════════════════════════════════════════ */
 
 .site-footer {
-    background: #1b2533;
-    border-top: 1px solid rgba(71,85,105,0.6);
+    background: #2c3e50;
+    border-top: 1px solid rgba(71,85,105,0.4);
     padding: 40px 0 0;
     font-size: 0.78rem;
     color: #94a3b8;
@@ -2523,14 +2523,14 @@ body { animation: fadeIn 0.3s ease; }
     max-width: 1200px;
     margin: 28px auto 0;
     padding: 20px 24px;
-    border-top: 1px solid #1e293b;
+    border-top: 1px solid rgba(255,255,255,0.1);
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 10px;
     font-size: 0.75rem;
-    color: #64748b;
+    color: #cbd5e1;
 }
 .site-footer-bottom p { margin: 0; }
 .footer-dev-line {
