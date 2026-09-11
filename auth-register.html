@@ -273,6 +273,52 @@
                         </select>
                     </div>
 
+                    <!-- University -->
+                    <div class="form-group">
+                        <label for="university">University / College</label>
+                        <select id="university" class="form-select">
+                            <option value="">— ዩኒቨርሲቲ ምረጡ —</option>
+                            <option value="Addis Ababa University">Addis Ababa University</option>
+                            <option value="Bahir Dar University">Bahir Dar University</option>
+                            <option value="Jimma University">Jimma University</option>
+                            <option value="Mekelle University">Mekelle University</option>
+                            <option value="Hawassa University">Hawassa University</option>
+                            <option value="Wollo University">Wollo University</option>
+                            <option value="Gondar University">Gondar University</option>
+                            <option value="Haramaya University">Haramaya University</option>
+                            <option value="Adama Science and Technology">Adama Science &amp; Technology</option>
+                            <option value="Debre Berhan University">Debre Berhan University</option>
+                            <option value="Arba Minch University">Arba Minch University</option>
+                            <option value="Dire Dawa University">Dire Dawa University</option>
+                            <option value="Wollega University">Wollega University</option>
+                            <option value="Dilla University">Dilla University</option>
+                            <option value="Other / College">Other / College</option>
+                        </select>
+                    </div>
+
+                    <!-- Stream -->
+                    <div class="form-group">
+                        <label>Stream / ክፍል</label>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">
+                            <label id="stream-nat-label" onclick="selectStream('Natural')"
+                                style="display:flex;align-items:center;gap:8px;padding:10px 12px;
+                                background:var(--bg-primary);border:1.5px solid var(--border-color);
+                                border-radius:10px;cursor:pointer;transition:all 0.2s;font-size:0.9rem">
+                                <input type="radio" name="stream" value="Natural" id="stream-natural"
+                                    style="accent-color:#667eea">
+                                <span>🌿 Natural</span>
+                            </label>
+                            <label id="stream-soc-label" onclick="selectStream('Social')"
+                                style="display:flex;align-items:center;gap:8px;padding:10px 12px;
+                                background:var(--bg-primary);border:1.5px solid var(--border-color);
+                                border-radius:10px;cursor:pointer;transition:all 0.2s;font-size:0.9rem">
+                                <input type="radio" name="stream" value="Social" id="stream-social"
+                                    style="accent-color:#667eea">
+                                <span>🌍 Social</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <label class="checkbox-label">
                         <input type="checkbox" id="terms" required>
                         I agree to the Terms of Service and Privacy Policy
@@ -384,10 +430,40 @@
     <script src="emailjs-service.js"></script>
     <script src="auth-register.js"></script>
     <script src="pwa.js"></script>
+
+    <!-- Stream + University UI helpers -->
+    <script>
+    function selectStream(value) {
+        document.getElementById('stream-natural').checked = (value === 'Natural');
+        document.getElementById('stream-social').checked  = (value === 'Social');
+        const natLbl = document.getElementById('stream-nat-label');
+        const socLbl = document.getElementById('stream-soc-label');
+        if (natLbl) {
+            natLbl.style.borderColor = value === 'Natural' ? '#667eea' : '';
+            natLbl.style.background  = value === 'Natural' ? 'rgba(102,126,234,0.08)' : '';
+        }
+        if (socLbl) {
+            socLbl.style.borderColor = value === 'Social'  ? '#667eea' : '';
+            socLbl.style.background  = value === 'Social'  ? 'rgba(102,126,234,0.08)' : '';
+        }
+        // Store in window for auth-register.js to pick up
+        window._selectedStream = value;
+    }
+
+    // Expose getters for auth-register.js
+    window.getSelectedUniversity = function() {
+        return document.getElementById('university')?.value || '';
+    };
+    window.getSelectedStream = function() {
+        return window._selectedStream ||
+            (document.getElementById('stream-natural')?.checked ? 'Natural' :
+             document.getElementById('stream-social')?.checked  ? 'Social'  : '');
+    };
+    </script>
     <!-- Site Footer -->
     <footer class="site-footer">
         <div class="footer-inner">
-            <p>� 2026 Alpha Freshman Tutorial. All rights reserved.</p>
+            <p>� 2026 Alpha Freshman Tutorial. All rights reserved.</p>
             <p class="footer-dev-line">Developed with ?? by
                 <button class="footer-team-btn" onclick="openTeamModal()">
                     <span>ALPHA DEVELOPERS TEAM</span>

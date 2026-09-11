@@ -241,7 +241,9 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         const normalized = '+251' + rawPhone.replace(/^0/, '');
 
         // Store for later use in backend registration
-        window._pendingReg = { fullName, phoneNumber: normalized, password, role };
+        const university = typeof getSelectedUniversity === 'function' ? getSelectedUniversity() : '';
+        const stream     = typeof getSelectedStream     === 'function' ? getSelectedStream()     : '';
+        window._pendingReg = { fullName, phoneNumber: normalized, password, role, university, stream };
 
         try {
             const auth = await initPhoneAuth();
@@ -305,7 +307,12 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     }
 
     try {
-        const response = await api.register({ fullName, email, password, role });
+        const response = await api.register({
+            fullName, email, password, role,
+            university: typeof getSelectedUniversity === 'function' ? getSelectedUniversity() : '',
+            stream:     typeof getSelectedStream     === 'function' ? getSelectedStream()     : '',
+            educationLevel: document.getElementById('university')?.value || ''
+        });
         if (response.success) {
             api.setAuthToken(response.token);
             localStorage.setItem('currentUser', JSON.stringify(response.user));

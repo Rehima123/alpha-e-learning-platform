@@ -53,6 +53,10 @@ const userSchema = new mongoose.Schema({
 
     educationLevel: { type: String, trim: true, default: null },
 
+    // ── University and stream (set during registration) ───────────────────────
+    university: { type: String, trim: true, default: null },
+    stream:     { type: String, enum: ['Natural', 'Social', null], default: null },
+
     password: {
         type:      String,
         minlength: [6, 'Password must be at least 6 characters'],

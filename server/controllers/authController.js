@@ -14,7 +14,7 @@ exports.register = async (req, res, next) => {
             });
         }
 
-        const { fullName, email, phoneNumber, password, role, educationLevel } = req.body;
+        const { fullName, email, phoneNumber, password, role, educationLevel, university, stream } = req.body;
 
         // Require at least one identifier
         if (!email && !phoneNumber) {
@@ -52,6 +52,8 @@ exports.register = async (req, res, next) => {
             email:          email      || undefined,
             phoneNumber:    (phoneNumber && phoneNumber.trim()) ? phoneNumber.trim() : undefined,
             educationLevel: educationLevel || undefined,
+            university:     university  || undefined,
+            stream:         stream      || undefined,
             password,
             role: role || 'student'
         });
@@ -242,6 +244,8 @@ exports.getMe = async (req, res, next) => {
                 avatar:          user.avatar,
                 paymentStatus:   user.paymentStatus   || 'UNPAID',
                 enrolledPackage: user.enrolledPackage  || 'None',
+                university:      user.university       || null,
+                stream:          user.stream           || null,
                 subscription:    user.subscription,
                 enrolledCourses: user.enrolledCourses
             }
