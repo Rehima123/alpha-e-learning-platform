@@ -1,7 +1,6 @@
 const ETB_RATE = 56;
-const TAX_RATE = 0;   // No tax — flat 399 ETB price includes everything
-
-// ── FLAT PRICE: 399 ETB for everything ───────────────────────────────────────
+// ── FLAT PRICE: 399 ETB per semester package ─────────────────────────────────
+// One payment = access to ALL courses in the selected semester/stream
 const FLAT_PRICE_ETB = 399;
 
 const params = new URLSearchParams(window.location.search);
@@ -12,10 +11,12 @@ const method   = params.get('method');
 let subtotal = FLAT_PRICE_ETB, discount = 0, couponData = null;
 let selectedMethod = method === 'manual' ? 'manual' : 'chapa';
 
-// All plans now resolve to the same 399 ETB flat price
-const planInfo = {
-    monthly: { name: 'Full Access — All 12 Courses (1 Year)', etb: FLAT_PRICE_ETB },
-    annual:  { name: 'Full Access — All 12 Courses (1 Year)', etb: FLAT_PRICE_ETB }
+// Package descriptions
+const PACKAGE_INFO = {
+    '1st Semester Natural': { label: '📐 1st Semester — Natural Science', desc: 'Math, Physics, Chemistry, Psychology + Common courses' },
+    '1st Semester Social':  { label: '📊 1st Semester — Social Science',  desc: 'Math (Social), Economics, Inclusiveness + Common courses' },
+    '2nd Semester Natural': { label: '🔬 2nd Semester — Natural Science', desc: 'Calculus, Biology, Emerging Technologies + Common courses' },
+    '2nd Semester Social':  { label: '📈 2nd Semester — Social Science',  desc: 'Basic Statistics + All Common courses' }
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -23,24 +24,10 @@ async function init() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) { window.location.href = 'auth-login.html'; return; }
 
-    if (courseId) {
-        try {
-            const res = await api.getCourse(courseId);
-            if (res.success) {
-                const c = res.course;
-                document.getElementById('orderIcon').textContent  = c.icon || '📚';
-                document.getElementById('orderTitle').textContent = c.title;
-                document.getElementById('orderType').textContent  = `Full Access — All 12 Courses`;
-                subtotal = FLAT_PRICE_ETB;   // always 399 ETB
-            }
-        } catch { toast?.error('Failed to load course info'); }
-    } else {
-        // Plan or default — always 399 ETB
-        document.getElementById('orderIcon').textContent  = '🎓';
-        document.getElementById('orderTitle').textContent = 'Full Access — All 12 Courses';
-        document.getElementById('orderType').textContent  = '1 Year · Offline Download Included';
-        subtotal = FLAT_PRICE_ETB;
-    }
+    document.getElementById('orderIcon').textContent  = '🎓';
+    document.getElementById('orderTitle').textContent = '399 ETB — Semester Package';
+    document.getElementById('orderType').textContent  = 'ምረጡት semester ሁሉም ኮርሶች ይካተታሉ · 1 Year Access';
+    subtotal = FLAT_PRICE_ETB;
 
     updateTotals();
 
@@ -182,6 +169,13 @@ function selectPackage(value) {
         lbl.style.background  = 'rgba(102,126,234,0.07)';
     }
     document.getElementById('pkgError').style.display = 'none';
+
+    // Update order summary to show selected package
+    const info = PACKAGE_INFO[value];
+    if (info) {
+        document.getElementById('orderTitle').textContent = info.label;
+        document.getElementById('orderType').textContent  = info.desc + ' · 399 ETB · 1 Year Access';
+    }
 }
 
 function getSelectedPackage() {

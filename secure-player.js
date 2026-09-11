@@ -624,6 +624,10 @@ async function buildSecureVideoPlayer(driveFileId, title, user, container) {
         vid.addEventListener('contextmenu', e => e.preventDefault());
     }
     document.getElementById('scvp-root')?.addEventListener('contextmenu', e => e.preventDefault());
+
+    // Apply diagonal red-stripe security watermark on the video container
+    const scvpRoot = document.getElementById('scvp-root');
+    if (scvpRoot) applySecurityWatermark(scvpRoot, user);
 }
 
 // ── scvp global handlers ──────────────────────────────────────────────────────
@@ -701,27 +705,24 @@ window.scvpDownload = async (driveFileId, title) => {
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
-// buildSecureDocViewer
-// Vanilla-JS port of the React <SecureDocumentViewer> component.
-// — Loads PDF/Doc blob from SecureCourseAppDB if offline copy exists
-// — Falls back to Drive embed iframe (online)
-// — Downloads blob to SecureCourseAppDB for offline use
-//
-// Usage:
-//   buildSecureDocViewer(driveFileId, title, containerElement);
+// buildSecureDocViewer — v2 with Google Docs Viewer + diagonal watermark
 // ══════════════════════════════════════════════════════════════════════════════
 async function buildSecureDocViewer(driveFileId, title, container) {
     if (!container || !driveFileId) return;
 
+    const user    = JSON.parse(localStorage.getItem('currentUser') || 'null');
     const saved   = await _sdbGet(driveFileId).catch(() => null);
     const blobUrl = (saved && saved.fileBlob) ? URL.createObjectURL(saved.fileBlob) : null;
     const offline = !!blobUrl;
-    const embedUrl = `https://drive.google.com/file/d/${driveFileId}/preview`;
-    const viewUrl  = offline ? blobUrl : embedUrl;
+
+    // Google Docs Viewer works for PDFs served from Drive
+    const directDownloadUrl = `https://drive.google.com/uc?export=download&id=${driveFileId}`;
+    const docsViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(directDownloadUrl)}&embedded=true`;
+    const viewUrl = offline ? blobUrl : docsViewerUrl;
 
     container.innerHTML = `
-<div id="scdv-root" style="border:1px solid var(--border-color,#e2e8f0);border-radius:12px;
-    overflow:hidden;user-select:none;-webkit-user-select:none">
+<div id="scdv-root" style="border:1px solid var(--border-color,#334155);border-radius:12px;
+    overflow:hidden;user-select:none;-webkit-user-select:none;position:relative">
   <div style="background:#0f172a;padding:10px 16px;display:flex;
     align-items:center;justify-content:space-between">
     <h4 style="margin:0;color:white;font-size:0.88rem;font-weight:700">
@@ -731,11 +732,25 @@ async function buildSecureDocViewer(driveFileId, title, container) {
         ? '<span style="color:#10b981;font-size:11px;font-weight:700">✓ Offline</span>'
         : '<span style="color:#64748b;font-size:11px">☁️ Online</span>'}
   </div>
-  <iframe src="${viewUrl}"
-    style="width:100%;height:520px;border:none;display:block"
-    oncontextmenu="return false"
-    title="${_escHtml(title)}">
-  </iframe>
+
+  <div style="position:relative">
+    <iframe src="${viewUrl}"
+      style="width:100%;height:520px;border:none;display:block"
+      oncontextmenu="return false"
+      title="${_escHtml(title)}">
+    </iframe>
+    <!-- Red stripe diagonal watermark overlay over the doc -->
+    <div id="scdv-wm" style="
+      position:absolute;top:0;left:0;width:100%;height:100%;
+      pointer-events:none;opacity:0.18;
+      background:repeating-linear-gradient(-45deg,transparent,transparent 100px,rgba(255,0,0,0.08) 100px,rgba(255,0,0,0.08) 200px);
+      display:flex;flex-direction:column;justify-content:center;align-items:center;
+      font-weight:bold;color:#cc0000;font-size:13px;z-index:10;
+      user-select:none;text-align:center;white-space:pre-line;
+      text-shadow:0 1px 3px rgba(0,0,0,0.5);font-family:monospace;
+    ">${_escHtml(user ? (user.fullName || '') + (user.email ? '\n(' + user.email + ')' : user.phoneNumber ? '\n(' + user.phoneNumber + ')' : '') : 'CONFIDENTIAL')}\nUNAUTHORIZED RECORDING PROHIBITED</div>
+  </div>
+
   <div style="background:#0f172a;padding:10px 16px;display:flex;
     align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
     ${offline
@@ -751,7 +766,7 @@ async function buildSecureDocViewer(driveFileId, title, container) {
              font-weight:700;cursor:pointer">📥 ፋይሉን አውርድ (Offline)</button>`
     }
   </div>
-  <div id="scdv-prog-wrap" style="display:none;padding:6px 16px 10px">
+  <div id="scdv-prog-wrap" style="display:none;padding:6px 16px 10px;background:#0f172a">
     <div style="height:4px;background:#1e293b;border-radius:4px;overflow:hidden;margin-bottom:4px">
       <div id="scdv-prog-bar" style="height:100%;width:0;background:#0891b2;transition:width 0.3s;border-radius:4px"></div>
     </div>
@@ -810,3 +825,58 @@ window.scdvDownload = async (driveFileId, title) => {
 window.buildSecureVideoPlayer = buildSecureVideoPlayer;
 window.buildSecureDocViewer   = buildSecureDocViewer;
 window._sdbGetAll             = _sdbGetAll;   // used by offline.html
+window._sdbDelete             = _sdbDelete;   // used by offline.html
+
+// ══════════════════════════════════════════════════════════════════════════════
+// applySecurityWatermark — Enhanced diagonal red-stripe pattern watermark
+// Matches the React version: repeating-linear-gradient background + name text
+// Can be called on any container element (video wrapper, doc viewer, etc.)
+//
+// Usage: applySecurityWatermark(containerElement, currentUser)
+// ══════════════════════════════════════════════════════════════════════════════
+function applySecurityWatermark(container, user) {
+    // Remove any existing watermark first
+    const existing = container.querySelector('.alpha-security-watermark');
+    if (existing) existing.remove();
+
+    const studentInfo = user
+        ? `${user.fullName || ''}${user.email ? ' (' + user.email + ')' : user.phoneNumber ? ' (' + user.phoneNumber + ')' : ''}`
+        : 'CONFIDENTIAL CONTENT';
+
+    const wm = document.createElement('div');
+    wm.className = 'alpha-security-watermark';
+    wm.style.cssText = [
+        'position:absolute',
+        'top:0', 'left:0',
+        'width:100%', 'height:100%',
+        'pointer-events:none',
+        'opacity:0.22',
+        // Diagonal red stripe pattern — visible even in screen recordings
+        'background:repeating-linear-gradient(-45deg,transparent,transparent 120px,rgba(255,0,0,0.1) 120px,rgba(255,0,0,0.1) 240px)',
+        'display:flex',
+        'flex-direction:column',
+        'justify-content:center',
+        'align-items:center',
+        'font-weight:bold',
+        'color:#ff2222',
+        'font-size:14px',
+        'z-index:9999',
+        'user-select:none',
+        '-webkit-user-select:none',
+        'text-align:center',
+        'white-space:pre-line',
+        'text-shadow:0 1px 3px rgba(0,0,0,0.8)',
+        'font-family:monospace',
+        'letter-spacing:1px',
+    ].join(';');
+
+    wm.textContent = `${studentInfo}\nUNAUTHORIZED RECORDING IS PROHIBITED`;
+
+    // Ensure container has relative positioning
+    const pos = window.getComputedStyle(container).position;
+    if (pos === 'static') container.style.position = 'relative';
+    container.appendChild(wm);
+}
+
+// Expose globally
+window.applySecurityWatermark = applySecurityWatermark;

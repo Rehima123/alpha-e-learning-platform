@@ -322,7 +322,8 @@ function renderCourses() {
                     <p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${course.description}</p>
                     <div class="course-footer">
                         <span class="course-price">
-                            <strong style="color:#667eea;font-size:1.05rem">399 ETB</strong>
+                            <strong style="color:#667eea;font-size:1.05rem">Package: 399 ETB</strong>
+                            <small style="color:var(--text-secondary);font-size:0.72rem;display:block;margin-top:2px">ለምረጡት semester ሁሉም ኮርሶች</small>
                         </span>
                         <a href="course-detail.html?id=${course._id}" class="btn" onclick="event.stopPropagation()">👁 View Course</a>
                     </div>
