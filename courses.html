@@ -363,16 +363,53 @@
         </div><!-- /coursesSections -->
 
         <!-- Payment CTA banner -->
-        <div id="payCta" style="display:none;margin-top:32px;background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(245,158,11,0.1));
-            border:1px solid rgba(99,102,241,0.3);border-radius:24px;padding:32px 24px;text-align:center">
-            <div style="font-size:2rem;margin-bottom:8px"></div>
-            <h3 style="color:white;font-size:1.1rem;font-weight:900;margin:0 0 8px">? ?  ? ?</h3>
-            <p style="color:#64748b;font-size:0.85rem;margin:0 0 20px">399 ETB  � ? Semester 1&amp;2 + CoC </p>
-            <a href="payment.html?method=manual"
-                style="display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#f59e0b,#ea580c);
-                color:#0f172a;font-weight:900;border-radius:14px;text-decoration:none;font-size:0.9rem">
-                 ? ? ?
-            </a>
+        <div id="payCta" style="display:none;margin-top:32px">
+            <div class="bg-gradient-to-r from-amber-500/20 via-slate-800 to-amber-500/10 border border-amber-500/40 rounded-2xl p-8 my-10 text-center relative overflow-hidden shadow-2xl">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl"></div>
+
+                <!-- Header Badge -->
+                <span class="inline-flex items-center gap-2 bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4">
+                    <i class="fa-solid fa-fire"></i> &#x12E8;&#x120D;&#x12E9; &#x1245;&#x1293;&#x123D; &#x121B;&#x1235;&#x1273;&#x12C8;&#x1242;&#x12EB; - 50% DISCOUNT
+                </span>
+
+                <!-- Main Heading -->
+                <h2 class="text-2xl md:text-4xl font-extrabold text-white mb-3 leading-tight">
+                    &#x12E8;&#x12A0;&#x12F2;&#x1235; &#x1308;&#x1262; (Freshman) &#x12AE;&#x122D;&#x1231;&#x127D; + &#x12E8;&#x1362; CoC &#x121B;&#x1323;&#x1240;&#x1208;&#x12EB; &#x1260;&#x1325;&#x1245;&#x1209;!
+                </h2>
+
+                <!-- Description -->
+                <p class="text-slate-300 text-sm md:text-base max-w-2xl mx-auto mb-6 leading-relaxed">
+                    &#x12E8; 1&#x129B; &#x12A5;&#x1293; &#x12E8; 2&#x129B; &#x1230;&#x121A;&#x1235;&#x1270;&#x122D; &#x121D;&#x1209; &#x12AE;&#x122D;&#x1231;&#x127D;&#x1295;&#x1363;
+                    &#x12E8;&#x1270;&#x1218;&#x1228;&#x1321; Model Exam &#x1325;&#x12EB;&#x1240;&#x12CE;&#x127D;&#x1295; &#x12A5;&#x1293; &#x12E8; Health Science CoC &#x12DD;&#x130D;&#x1305;&#x1275;&#x1295;
+                    &#x1260;&#x12A0;&#x1295;&#x12F5; &#x120B;&#x12ED; &#x12A0;&#x12D8;&#x130B;&#x1305;&#x1290;&#x120D;&#x12CE;&#x1273;&#x1362;
+                    &#x12A0;&#x1201;&#x1291;&#x1291; &#x1260;&#x1218;&#x1218;&#x12D8;&#x1308;&#x1265; &#x12CD;&#x1329;&#x1275;&#x12CE;&#x1295; &#x12EB;&#x123B;&#x123D;&#x1209;!
+                </p>
+
+                <!-- Feature Highlights -->
+                <div class="flex flex-wrap justify-center gap-3 text-xs md:text-sm text-slate-200 mb-6">
+                    <span class="bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700/60 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-check text-amber-400"></i> Semester 1 &amp; 2 Full Courses
+                    </span>
+                    <span class="bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700/60 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-check text-amber-400"></i> Model Exams &amp; Worksheets
+                    </span>
+                    <span class="bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700/60 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-check text-amber-400"></i> Health Science CoC Prep
+                    </span>
+                </div>
+
+                <!-- Price & CTA -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <div class="text-left">
+                        <span class="text-xs text-slate-400 block">&#x121D;&#x1209; &#x1353;&#x12AC;&#x1305; &#x12A0;&#x1323;&#x1240;&#x120B;&#x12ED; &#x12CB;&#x130B;</span>
+                        <span class="text-3xl font-black text-amber-400">399 ETB</span>
+                    </div>
+                    <a href="payment.html?method=manual"
+                        class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold px-8 py-3.5 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center gap-2">
+                        <i class="fa-solid fa-bolt"></i> &#x12A0;&#x1201;&#x1291;&#x1291; &#x12ED;&#x1218;&#x12D8;&#x1308;&#x1261; (Enroll Now)
+                    </a>
+                </div>
+            </div>
         </div>
     </main>
 
