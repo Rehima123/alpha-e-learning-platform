@@ -508,6 +508,39 @@
         });
     }
     </script>
+    <!-- Site Footer -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>© 2026 Alpha Freshman Tutorial. All rights reserved.</p>
+            <p class="footer-dev-line">Developed with ?? by
+                <button class="footer-team-btn" onclick="openTeamModal()">
+                    <span>ALPHA DEVELOPERS TEAM</span>
+                    <span class="badge-i">i</span>
+                </button>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Team Modal -->
+    <div id="teamModal" onclick="if(event.target===this)closeTeamModal()">
+        <div class="team-modal-box">
+            <button class="team-modal-close" onclick="closeTeamModal()">?</button>
+            <div class="team-modal-avatar">RA</div>
+            <span class="team-modal-role">Lead Full-Stack Developer</span>
+            <h3 class="team-modal-name">Rehima Ali</h3>
+            <p class="team-modal-team">ALPHA DEVELOPERS TEAM</p>
+            <div class="team-modal-divider"></div>
+            <p class="team-modal-desc">
+                Lead architect and developer behind the <strong>Alpha Freshman Tutorial</strong> platform,
+                dedicated to empowering Ethiopian university freshmen with world-class learning tools.
+            </p>
+            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!</button>
+        </div>
+    </div>
+    <script>
+    function openTeamModal()  { document.getElementById('teamModal').classList.add('open'); }
+    function closeTeamModal() { document.getElementById('teamModal').classList.remove('open'); }
+    </script>
 
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
@@ -540,4 +573,5 @@
     </script>
 </body>
 </html>
+
 
