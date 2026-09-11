@@ -17,6 +17,8 @@
     <link rel="apple-touch-icon" sizes="152x152" href="logo.png">
     <link rel="apple-touch-icon" sizes="120x120" href="logo.png">
     <link rel="apple-touch-icon" sizes="76x76" href="logo.png">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
     <nav class="navbar">
@@ -27,21 +29,21 @@
             <ul class="nav-links">
                 <li><a href="home.html">Home</a></li>
                 <li><a href="courses.html">Courses</a></li>
-                <li><a href="study-hub.html">?? Study Hub</a></li>
-                <li><a href="department-guide.html">?? Departments</a></li>
-                <li><a href="offline.html">?? Offline Videos</a></li>
-                <li><button id="themeToggle" class="theme-toggle" title="Toggle theme">??</button></li>
+                <li><a href="study-hub.html"><i class="fa-solid fa-book-open" style="margin-right:4px"></i> Study Hub</a></li>
+                <li><a href="department-guide.html"><i class="fa-solid fa-building" style="margin-right:4px"></i> Departments</a></li>
+                <li><a href="offline.html"><i class="fa-solid fa-video" style="margin-right:4px"></i> Offline Videos</a></li>
+                <li><button id="themeToggle" class="theme-toggle" title="Toggle theme"><i class="fa-solid fa-moon"></i></button></li>
                 <li><button id="installAppBtn" onclick="installApp()" style="
                     background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;
                     padding:7px 16px;border-radius:20px;font-weight:700;cursor:pointer;
                     font-size:0.82rem;white-space:nowrap;display:none">
-                    ?? Install App
+                    <i class="fa-solid fa-download" style="margin-right:4px"></i> Install App
                 </button></li>
                 <li><a href="download.html" style="
                     background:linear-gradient(135deg,#27ae60,#1a7030);color:white;
                     padding:7px 16px;border-radius:20px;font-weight:700;font-size:0.82rem;
                     text-decoration:none;white-space:nowrap">
-                    ?? Get App
+                    <i class="fa-solid fa-mobile-screen" style="margin-right:4px"></i> Get App
                 </a></li>
                 <li><a href="auth-login.html" class="btn-nav-login">Login</a></li>
                 <li><a href="auth-register.html" class="btn-nav-register">Sign Up</a></li>
@@ -80,7 +82,7 @@
                     background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);
                     color:#818cf8;font-weight:700;font-size:0.72rem;letter-spacing:0.1em;
                     text-transform:uppercase;margin-bottom:20px">
-                    ?? THE #1 FRESHMAN LEARNING PLATFORM
+                    <i class="fa-solid fa-graduation-cap" style="margin-right:4px"></i> THE #1 FRESHMAN LEARNING PLATFORM
                 </span>
 
                 <h1 style="font-size:clamp(2.2rem,5vw,3.8rem);font-weight:900;line-height:1.08;
@@ -98,7 +100,7 @@
 
                 <!-- Search -->
                 <div class="hero-search-bar" style="margin-bottom:32px">
-                    <span style="color:#64748b;font-size:1rem;padding-left:4px">??</span>
+                    <span style="color:#64748b;font-size:1rem;padding-left:4px"><i class="fa-solid fa-magnifying-glass"></i></span>
                     <input type="text" id="heroSearch"
                         placeholder="Search courses, topics, instructors..."
                         onkeydown="if(event.key==='Enter')searchFromHero()">
@@ -129,7 +131,7 @@
                         onmouseout="this.style.background='transparent'">
                         <div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;
                             background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);
-                            display:flex;align-items:center;justify-content:center;font-size:1.5rem">??</div>
+                            display:flex;align-items:center;justify-content:center;font-size:1.5rem"><i class="fa-solid fa-laptop-code" style="color:#818cf8"></i></div>
                         <div>
                             <h4 style="font-weight:800;color:white;margin:0;font-size:0.95rem">Interactive Learning</h4>
                             <p style="font-size:0.72rem;color:#64748b;margin:3px 0 0">High quality modules &amp; practice exams</p>
@@ -152,11 +154,11 @@
                     <!-- Quick nav: 2�2 grid -->
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
                         <a href="courses.html" class="hero-nav-btn">
-                            <span class="hero-nav-icon">??</span>
+                            <span class="hero-nav-icon"><i class="fa-solid fa-book" style="color:#fbbf24"></i></span>
                             <span style="font-size:0.72rem;font-weight:700;color:#e2e8f0">20+ Courses</span>
                         </a>
                         <a href="offline.html" class="hero-nav-btn">
-                            <span class="hero-nav-icon">??</span>
+                            <span class="hero-nav-icon"><i class="fa-solid fa-user-doctor" style="color:#fbbf24"></i></span>
                             <span style="font-size:0.72rem;font-weight:700;color:#e2e8f0">CoC Prep</span>
                         </a>
                     </div>
@@ -181,15 +183,15 @@
             <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;overflow:hidden">
                 <span style="background:white;color:#0f172a;font-size:0.72rem;font-weight:900;
                     padding:3px 10px;border-radius:50px;white-space:nowrap;flex-shrink:0;
-                    box-shadow:0 2px 8px rgba(0,0,0,0.2)">399 ETB ??!</span>
+                    box-shadow:0 2px 8px rgba(0,0,0,0.2)">1,000 ETB <i class="fa-solid fa-fire" style="color:#f43f5e"></i></span>
                 <marquee behavior="scroll" direction="left" scrollamount="5"
                     style="font-size:0.82rem;font-weight:700;letter-spacing:0.03em;line-height:1.4;display:block">
-                    ?? ???? ??? ??? Freshman ???? � ???? ?????? ?????
-                    &nbsp;&nbsp;�&nbsp;&nbsp;
-                    ?? ???? ?????? ????? ????
-                    &nbsp;&nbsp;�&nbsp;&nbsp;
-                    ? Alpha Freshman Tutorial
-                    &nbsp;&nbsp;�&nbsp;&nbsp;
+                    &#x1F393; ሁሉም Freshman ኮርሶች &#8212; አሁን ተመዝገቡ!
+                    &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
+                    &#x1F4E5; ቪዲዮ ወርዶ ያለ ኢንተርኔት ይማሩ
+                    &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
+                    &#x2728; Alpha Freshman Tutorial
+                    &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
                 </marquee>
             </div>
             <button onclick="tickerHandleClick()"
@@ -199,7 +201,7 @@
                 box-shadow:0 2px 8px rgba(0,0,0,0.3)"
                 onmouseover="this.style.background='#000';this.style.transform='scale(1.05)'"
                 onmouseout="this.style.background='#0f172a';this.style.transform='scale(1)'">
-                <span id="tickerBtnLabel">399 ETB | ????? ?</span>
+                <span id="tickerBtnLabel">1,000 ETB | &#x2192; ተመዝገቡ</span>
             </button>
         </div>
     </div>
@@ -212,7 +214,7 @@
     (function() {
         var user = null; try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
         var el = document.getElementById('tickerBtnLabel');
-        if (el && user && user.id) el.textContent = '399 ETB | ??? ??? ?';    })();
+        if (el && user && user.id) el.textContent = '1,000 ETB | &#x2192; ይቀጥሉ';    })();
     </script>
 
     <!-- -- Categories Section (4 Cards) ----------------------------------------------- -->
@@ -242,31 +244,31 @@
                 Ethiopian Freshman &amp; Health Science CoC
             </h2>
             <p style="color:#64748b;font-size:0.88rem;margin:0 0 40px">
-                ???? ????? ???? ???? ?????
+                ሁሉም ፍሬሽማን ኮርሶች በአንድ ቦታ &#8212; ቀላል፣ ፈጣን፣ ውጤታማ
             </p>
             <div class="cat-cards-grid">
                 <button class="cat-card" onclick="selectCat('sem1')">
-                    <div class="cat-icon-ring" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.25)">??</div>
+                    <div class="cat-icon-ring" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.25)"><i class="fa-solid fa-sun" style="color:#f59e0b;font-size:1.8rem"></i></div>
                     <h3 style="font-weight:800;color:white;font-size:1rem;margin:0 0 6px">First Semester</h3>
-                    <p style="font-size:11px;color:#818cf8;margin:0">????? ????? ?</p>
+                    <p style="font-size:11px;color:#818cf8;margin:0">ሴሚስተር አንድ &#8212; ኮርሶች</p>
                 </button>
                 <button class="cat-card" onclick="selectCat('sem2')">
-                    <div class="cat-icon-ring" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25)">??</div>
+                    <div class="cat-icon-ring" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25)"><i class="fa-solid fa-moon" style="color:#818cf8;font-size:1.8rem"></i></div>
                     <h3 style="font-weight:800;color:white;font-size:1rem;margin:0 0 6px">Second Semester</h3>
-                    <p style="font-size:11px;color:#818cf8;margin:0">????? ????? ?</p>
+                    <p style="font-size:11px;color:#818cf8;margin:0">ሴሚስተር ሁለት &#8212; ኮርሶች</p>
                 </button>
                 <button class="cat-card" onclick="selectCat('coc')">
                     <span class="cat-badge" style="background:#dc2626">NEW</span>
-                    <div class="cat-icon-ring" style="background:rgba(244,63,94,0.15);border:1px solid rgba(244,63,94,0.25)">??</div>
+                    <div class="cat-icon-ring" style="background:rgba(244,63,94,0.15);border:1px solid rgba(244,63,94,0.25)"><i class="fa-solid fa-heart-pulse" style="color:#f43f5e;font-size:1.8rem"></i></div>
                     <h3 style="font-weight:800;color:white;font-size:1rem;margin:0 0 4px">CoC for Health Science</h3>
                     <p style="font-size:10px;color:#fb7185;font-weight:700;margin:0 0 4px">For All Health Science Students</p>
-                    <p style="font-size:11px;color:#818cf8;margin:0">????? ????? ?</p>
+                    <p style="font-size:11px;color:#818cf8;margin:0">የጤና ሳይንስ ተማሪዎች</p>
                 </button>
                 <button class="cat-card" onclick="openOfflineModal()">
                     <span class="cat-badge" style="background:#059669">OFFLINE</span>
-                    <div class="cat-icon-ring" style="background:rgba(5,150,105,0.15);border:1px solid rgba(5,150,105,0.25)">??</div>
+                    <div class="cat-icon-ring" style="background:rgba(5,150,105,0.15);border:1px solid rgba(5,150,105,0.25)"><i class="fa-solid fa-download" style="color:#34d399;font-size:1.8rem"></i></div>
                     <h3 style="font-weight:800;color:white;font-size:1rem;margin:0 0 6px">Offline Downloads</h3>
-                    <p style="font-size:11px;color:#34d399;margin:0">???? ?????? ??? ?</p>
+                    <p style="font-size:11px;color:#34d399;margin:0">ያለ ኢንተርኔት ይማሩ</p>
                 </button>
             </div>
             <div id="catDrawer" style="display:none;background:#0f172a;color:white;border-radius:20px;
@@ -281,18 +283,18 @@
             <div style="display:flex;align-items:center;justify-content:space-between;
                 padding-bottom:18px;margin-bottom:20px;border-bottom:1px solid #1e293b">
                 <div style="display:flex;align-items:center;gap:12px">
-                    <span style="font-size:1.6rem">??</span>
+                    <span style="font-size:1.6rem"><i class="fa-solid fa-download" style="color:#34d399"></i></span>
                     <div>
                         <h3 style="color:white;font-size:1.1rem;font-weight:900;margin:0">Offline Library</h3>
                         <p style="color:#64748b;font-size:0.78rem;margin:3px 0 0">
-                            ???? ??????? PDF ???? ?? ?????? ?????
+                            የወረዱ ቪዲዮዎች እና PDF ፋይሎች ያለ ኢንተርኔት ይታያሉ
                         </p>
                     </div>
                 </div>
                 <button onclick="closeOfflineModal()"
                     style="width:38px;height:38px;border-radius:50%;background:#1e293b;border:none;
                     color:#94a3b8;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;
-                    justify-content:center;font-weight:700">?</button>
+                    justify-content:center;font-weight:700">&#10005;</button>
             </div>
             <div id="offlineModalContent">
                 <div style="text-align:center;padding:2rem;color:#64748b">
@@ -304,11 +306,11 @@
                 display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
                 <a href="offline.html" style="padding:10px 24px;background:linear-gradient(135deg,#4f46e5,#7c3aed);
                     color:white;border-radius:14px;font-size:0.85rem;font-weight:700;text-decoration:none">
-                    ?? Full Offline Library ?
+                    <i class="fa-solid fa-download" style="margin-right:4px"></i> Full Offline Library &#x2192;
                 </a>
                 <a href="courses.html" style="padding:10px 24px;background:#1e293b;color:#94a3b8;
                     border:1px solid #334155;border-radius:14px;font-size:0.85rem;font-weight:700;text-decoration:none">
-                    ?? Browse Courses
+                    <i class="fa-solid fa-book" style="margin-right:4px"></i> Browse Courses
                 </a>
             </div>
         </div>
@@ -361,9 +363,9 @@
             var all = a1.concat(a2);
             if (all.length === 0) {
                 box.innerHTML = '<div style="text-align:center;padding:2.5rem;color:#64748b">' +
-                    '<div style="font-size:2.5rem;margin-bottom:10px">??</div>' +
-                    '<p style="font-size:0.88rem">??? ???? ??? ????</p>' +
-                    '<p style="font-size:0.78rem;margin-top:6px">Offline page ?? "?? Save Offline" ???</p></div>';
+                    '<div style="font-size:2.5rem;margin-bottom:10px">&#x1F4C2;</div>' +
+                    '<p style="font-size:0.88rem">ምንም ያወረደ ቪዲዮ የለም</p>' +
+                    '<p style="font-size:0.78rem;margin-top:6px">Offline page ላይ "&#x1F4BE; Save Offline" ይጫኑ</p></div>';
                 return;
             }
             var groups = {};
@@ -375,18 +377,18 @@
             var html = '<div style="display:flex;flex-direction:column;gap:12px">';
             Object.keys(groups).forEach(function(label) {
                 html += '<div style="background:#020817;border:1px solid #1e293b;border-radius:16px;padding:14px">' +
-                    '<h4 style="color:#818cf8;font-size:0.8rem;font-weight:700;margin:0 0 10px">?? ' + label + '</h4>' +
+                    '<h4 style="color:#818cf8;font-size:0.8rem;font-weight:700;margin:0 0 10px">&#x1F4DA; ' + label + '</h4>' +
                     '<div style="display:flex;flex-direction:column;gap:7px">';
                 groups[label].forEach(function(v) {
                     var title = v.title || v.lessonTitle || 'Lesson';
                     html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;' +
                         'background:#0f172a;padding:10px 14px;border-radius:12px;border:1px solid #1e293b">' +
                         '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">' +
-                        '<span style="font-size:1rem;flex-shrink:0">??</span>' +
+                        '<span style="font-size:1rem;flex-shrink:0">&#x1F3AC;</span>' +
                         '<p style="color:#e2e8f0;font-size:0.82rem;font-weight:600;margin:0;' +
                         'white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + title + '</p></div>' +
                         (v.youtubeId ?
-                            '<a href="offline.html" style="padding:5px 12px;background:#4f46e5;color:white;font-size:11px;font-weight:700;border-radius:10px;text-decoration:none;white-space:nowrap">? Watch</a>'
+                            '<a href="offline.html" style="padding:5px 12px;background:#4f46e5;color:white;font-size:11px;font-weight:700;border-radius:10px;text-decoration:none;white-space:nowrap">&#x25B6; Watch</a>'
                             : '<span style="color:#64748b;font-size:11px;white-space:nowrap">No video</span>') +
                         '</div>';
                 });
@@ -403,17 +405,17 @@
     <script>
     (function() {
         var CATS = [
-            { id:'sem1', icon:'??', title:'First Semester', gradient:'linear-gradient(135deg,#f59e0b,#ea580c)',
-              desc:'?????? ????? ???? ? Natural ?? Social Science ???',
+            { id:'sem1', icon:'&#x2600;&#xFE0F;', title:'First Semester', gradient:'linear-gradient(135deg,#f59e0b,#ea580c)',
+              desc:'የፍሬሽማን ዓመት ሴሚስተር አንድ — Natural እና Social Science ኮርሶች',
               streams:{ natural:[{id:'nat_eng101',name:'Communicative English Skills I'},{id:'nat_math101',name:'Applied Mathematics I'},{id:'nat_phys101',name:'General Physics'},{id:'nat_chem101',name:'General Chemistry'},{id:'nat_crit101',name:'Critical Thinking (Logic)'},{id:'nat_geog101',name:'Geography of Ethiopia and the Horn'},{id:'nat_psych101',name:'General Psychology'},{id:'nat_pe101',name:'Physical Fitness & Health'}], social:[{id:'soc_eng101',name:'Communicative English Skills I'},{id:'soc_math101',name:'General Mathematics for Social Science'},{id:'soc_econ101',name:'Introduction to Economics'},{id:'soc_geog101',name:'Geography of Ethiopia and the Horn'},{id:'soc_crit101',name:'Critical Thinking (Logic)'},{id:'soc_psych101',name:'General Psychology'},{id:'soc_pe101',name:'Physical Fitness & Health'}] }
             },
-            { id:'sem2', icon:'??', title:'Second Semester', gradient:'linear-gradient(135deg,#3b82f6,#4f46e5)',
-              desc:'???? ????? ???? ? Natural ?? Social Science ???',
+            { id:'sem2', icon:'&#x1F319;', title:'Second Semester', gradient:'linear-gradient(135deg,#3b82f6,#4f46e5)',
+              desc:'ሁለተኛ ሴሚስተር ኮርሶች — Natural እና Social Science ኮርሶች',
               streams:{ natural:[{id:'nat_eng102',name:'Academic Writing (English II)'},{id:'nat_math102',name:'Applied Mathematics II'},{id:'nat_bio101',name:'General Biology'},{id:'nat_ict101',name:'Emerging Technologies / ICT'},{id:'nat_hist101',name:'History of Ethiopia and the Horn'},{id:'nat_civic101',name:'Moral and Civic Education'},{id:'nat_incl101',name:'Inclusiveness'}], social:[{id:'soc_eng102',name:'Academic Writing (English II)'},{id:'soc_bus101',name:'Entrepreneurship'},{id:'soc_anth101',name:'Social Anthropology'},{id:'soc_ict101',name:'Emerging Technologies / ICT'},{id:'soc_hist101',name:'History of Ethiopia and the Horn'},{id:'soc_civic101',name:'Moral and Civic Education'},{id:'soc_incl101',name:'Inclusiveness'}] }
             },
-            { id:'coc', icon:'??', title:'CoC for Health Science', subTitleTag:'For All Health Science Students',
+            { id:'coc', icon:'&#x2695;&#xFE0F;', title:'CoC for Health Science', subTitleTag:'For All Health Science Students',
               gradient:'linear-gradient(135deg,#f43f5e,#dc2626)', isHot:true,
-              desc:'?????? ??? ??? ??? ??????? ? CoC ???? ???? ?? ???? ?????',
+              desc:'ለጤና ሳይንስ ተማሪዎች CoC ፈተና ዝግጅት — ሁሉም ትምህርቶች በአንድ ቦታ',
               subjects:[{id:'coc_anat_phys',name:'Human Anatomy & Physiology Review'},{id:'coc_bio',name:'General Biology CoC Prep'},{id:'coc_chem',name:'General Chemistry CoC Prep'},{id:'coc_ph_foundation',name:'Public Health & Epidemiology Basics'},{id:'coc_pharm_basic',name:'Basic Pharmacology & Therapeutics'},{id:'coc_eng',name:'English Language Competency Test'},{id:'coc_apt',name:'Scholastic Aptitude Test (CoC Special)'},{id:'coc_model_1',name:'Comprehensive Health Science Model Exam 1'},{id:'coc_model_2',name:'Comprehensive Health Science Model Exam 2'}]
             }
         ];
@@ -467,23 +469,23 @@
 
         // -- Subject tag map ----------------------------------------------------
         var COURSE_TAGS = {
-            'nat_eng101':'?? English', 'soc_eng101':'?? English', 'nat_eng102':'?? English', 'soc_eng102':'?? English', 'coc_eng':'?? English',
-            'nat_math101':'?? Math', 'soc_math101':'?? Math', 'nat_math102':'?? Math',
-            'nat_phys101':'? Physics',
-            'nat_chem101':'?? Chemistry', 'coc_chem':'?? Chemistry',
-            'nat_crit101':'?? Logic', 'soc_crit101':'?? Logic',
-            'nat_geog101':'?? Geography', 'soc_geog101':'?? Geography',
-            'nat_psych101':'?? Psychology', 'soc_psych101':'?? Psychology',
-            'nat_pe101':'??? Health', 'soc_pe101':'??? Health',
-            'nat_bio101':'?? Biology', 'coc_bio':'?? Biology',
-            'nat_hist101':'?? History', 'soc_hist101':'?? History',
-            'nat_ict101':'?? ICT', 'soc_ict101':'?? ICT',
-            'nat_civic101':'?? Civic', 'soc_civic101':'?? Civic',
-            'nat_incl101':'?? Inclusive', 'soc_incl101':'?? Inclusive',
-            'soc_bus101':'?? Business', 'soc_anth101':'?? Anthropology', 'soc_econ101':'?? Economics',
-            'coc_anat_phys':'?? Anatomy', 'coc_pharm_basic':'?? Pharmacy',
-            'coc_ph_foundation':'?? Public Health',
-            'coc_apt':'?? Aptitude', 'coc_model_1':'?? Model Exam', 'coc_model_2':'?? Model Exam'
+            'nat_eng101':'&#x1F4AC; English', 'soc_eng101':'&#x1F4AC; English', 'nat_eng102':'&#x1F4AC; English', 'soc_eng102':'&#x1F4AC; English', 'coc_eng':'&#x1F4AC; English',
+            'nat_math101':'&#x1F4D0; Math', 'soc_math101':'&#x1F4D0; Math', 'nat_math102':'&#x1F4D0; Math',
+            'nat_phys101':'&#x26A1; Physics',
+            'nat_chem101':'&#x1F9EA; Chemistry', 'coc_chem':'&#x1F9EA; Chemistry',
+            'nat_crit101':'&#x1F4A1; Logic', 'soc_crit101':'&#x1F4A1; Logic',
+            'nat_geog101':'&#x1F30D; Geography', 'soc_geog101':'&#x1F30D; Geography',
+            'nat_psych101':'&#x1F9E0; Psychology', 'soc_psych101':'&#x1F9E0; Psychology',
+            'nat_pe101':'&#x1F3CB;&#xFE0F; Health', 'soc_pe101':'&#x1F3CB;&#xFE0F; Health',
+            'nat_bio101':'&#x1F52C; Biology', 'coc_bio':'&#x1F52C; Biology',
+            'nat_hist101':'&#x1F4DA; History', 'soc_hist101':'&#x1F4DA; History',
+            'nat_ict101':'&#x1F4BB; ICT', 'soc_ict101':'&#x1F4BB; ICT',
+            'nat_civic101':'&#x2696;&#xFE0F; Civic', 'soc_civic101':'&#x2696;&#xFE0F; Civic',
+            'nat_incl101':'&#x1F91D; Inclusive', 'soc_incl101':'&#x1F91D; Inclusive',
+            'soc_bus101':'&#x1F680; Business', 'soc_anth101':'&#x1F4D6; Anthropology', 'soc_econ101':'&#x1F4C8; Economics',
+            'coc_anat_phys':'&#x2764;&#xFE0F; Anatomy', 'coc_pharm_basic':'&#x1F48A; Pharmacy',
+            'coc_ph_foundation':'&#x1F3E5; Public Health',
+            'coc_apt':'&#x1F4DD; Aptitude', 'coc_model_1':'&#x1F4DD; Model Exam', 'coc_model_2':'&#x1F4DD; Model Exam'
         };
 
         // -- icons8 3D Fluency card --------------------------------------------
@@ -547,7 +549,7 @@
                 '</div></div>' +
                 '<p style="margin:6px 0 0;font-size:0.75rem;color:#64748b">'+cat.desc+'</p></div>' +
                 '<button onclick="selectCat(null)" style="background:#1e293b;border:1px solid #334155;color:#64748b;'+
-                'padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">&#10005; ??</button></div>';
+                'padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">&#10005; ዝጋ</button></div>';
 
             var body = '';
             if(cat.streams){
@@ -557,11 +559,11 @@
                     '<button onclick="switchStream(\'natural\')" style="padding:8px 18px;border-radius:10px;border:none;'+
                     'font-weight:800;font-size:11px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;'+
                     (activeStream==='natural' ? 'background:#059669;color:white;box-shadow:0 2px 8px rgba(5,150,105,0.4)' : 'background:transparent;color:#64748b')+'">'+
-                    '&#128300; Natural Science</button>' +
+                    '&#x1F52C; Natural Science</button>' +
                     '<button onclick="switchStream(\'social\')" style="padding:8px 18px;border-radius:10px;border:none;'+
                     'font-weight:800;font-size:11px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;'+
                     (activeStream==='social' ? 'background:#7c3aed;color:white;box-shadow:0 2px 8px rgba(124,58,237,0.4)' : 'background:transparent;color:#64748b')+'">'+
-                    '&#127758; Social Science</button></div>';
+                    '&#x1F30F; Social Science</button></div>';
 
                 var courses = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">' +
                     (cat.streams[activeStream]||[]).map(function(c){ return courseCard(c,'#f59e0b'); }).join('') + '</div>';
@@ -604,7 +606,7 @@
                     <div style="width:56px;height:56px;border-radius:14px;
                         background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(234,88,12,0.2));
                         display:flex;align-items:center;justify-content:center;font-size:1.5rem;
-                        margin-bottom:20px">??</div>
+                        margin-bottom:20px"><i class="fa-solid fa-building-columns" style="color:#f59e0b"></i></div>
                     <h3 style="font-weight:800;font-size:1rem;color:white;margin:0 0 10px">Department Placement</h3>
                     <p style="color:#94a3b8;font-size:0.82rem;line-height:1.6;margin:0">
                         Students are placed into their chosen college/department based on Freshman GPA and entrance exam results.
@@ -619,7 +621,7 @@
                     <div style="width:56px;height:56px;border-radius:14px;
                         background:linear-gradient(135deg,rgba(239,68,68,0.2),rgba(236,72,153,0.2));
                         display:flex;align-items:center;justify-content:center;font-size:1.5rem;
-                        margin-bottom:20px">??</div>
+                        margin-bottom:20px"><i class="fa-solid fa-road" style="color:#ef4444"></i></div>
                     <h3 style="font-weight:800;font-size:1rem;color:white;margin:0 0 10px">Career Pathways</h3>
                     <p style="color:#94a3b8;font-size:0.82rem;line-height:1.6;margin:0">
                         Natural Science leads to Engineering, Medicine &amp; Natural Sciences. Social Science leads to Law, Business &amp; Social Sciences.
@@ -634,7 +636,7 @@
                     <div style="width:56px;height:56px;border-radius:14px;
                         background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(99,102,241,0.2));
                         display:flex;align-items:center;justify-content:center;font-size:1.5rem;
-                        margin-bottom:20px">??</div>
+                        margin-bottom:20px"><i class="fa-solid fa-calendar-days" style="color:#3b82f6"></i></div>
                     <h3 style="font-weight:800;font-size:1rem;color:white;margin:0 0 10px">6-Month Access</h3>
                     <p style="color:#94a3b8;font-size:0.82rem;line-height:1.6;margin:0">
                         All courses include 6 months of full access to materials, video lectures, and practice resources.
@@ -649,7 +651,7 @@
                     <div style="width:56px;height:56px;border-radius:14px;
                         background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(13,148,136,0.2));
                         display:flex;align-items:center;justify-content:center;font-size:1.5rem;
-                        margin-bottom:20px">??</div>
+                        margin-bottom:20px"><i class="fa-solid fa-chart-line" style="color:#10b981"></i></div>
                     <h3 style="font-weight:800;font-size:1rem;color:white;margin:0 0 10px">Progress Tracking</h3>
                     <p style="color:#94a3b8;font-size:0.82rem;line-height:1.6;margin:0">
                         Track your learning journey with detailed analytics, quiz scores, and lesson completion badges.
@@ -665,7 +667,7 @@
             <h2>Student Success Stories</h2>
             <div class="testimonials-grid">
                 <div class="testimonial-card">
-                    <div class="testimonial-rating">?????</div>
+                    <div class="testimonial-rating">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                     <p class="testimonial-text">"Alpha Freshman Tutorial helped me excel in my first year. The courses are well-structured and the AI assistant answered all my questions. I got placed in Engineering with a 3.8 GPA!"</p>
                     <div class="testimonial-author">
                         <strong>Abebe Tesfaye</strong>
@@ -673,7 +675,7 @@
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <div class="testimonial-rating">?????</div>
+                    <div class="testimonial-rating">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                     <p class="testimonial-text">"The study tips and exam preparation guidance were invaluable. I struggled with time management, but Alpha AI helped me create a perfect study schedule. Highly recommended!"</p>
                     <div class="testimonial-author">
                         <strong>Sara Mulugeta</strong>
@@ -681,7 +683,7 @@
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <div class="testimonial-rating">?????</div>
+                    <div class="testimonial-rating">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                     <p class="testimonial-text">"As a Social Science student, the courses on History, Economics, and English were exactly what I needed. The instructors are knowledgeable and supportive. Now I'm pursuing Law!"</p>
                     <div class="testimonial-author">
                         <strong>Daniel Kebede</strong>
@@ -816,10 +818,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 Alpha Freshman Tutorial. All rights reserved. | Way to Success</p>
-                <p style="margin-top:6px;font-size:0.82rem;color:rgba(255,255,255,0.5)">
-                    Developed by <strong style="color:rgba(255,255,255,0.75)">Rehima Ali</strong>
-                </p>
+                <p>&copy; 2026 Alpha Freshman Tutorial. All rights reserved. | Developed by ALPHA DEVELOPERS TEAM</p>
             </div>
         </div>
     </footer>
@@ -889,70 +888,8 @@
         });
         function installApp() {
             if (typeof triggerInstall === 'function') triggerInstall();
-            else alert('?? To install:\n\nAndroid: tap ? menu ? Add to Home Screen\niPhone: Share ? Add to Home Screen\nDesktop: click ? in address bar');
+            else alert('&#x1F4F1; To install:\n\nAndroid: tap ⋮ menu → Add to Home Screen\niPhone: Share → Add to Home Screen\nDesktop: click ⊕ in address bar');
         }
-    </script>
-        <!-- Site Footer -->
-    <footer class="site-footer">
-        <div class="site-footer-grid">
-            <!-- Col 1: Brand -->
-            <div class="site-footer-col">
-                <h3>Alpha Freshman Tutorial</h3>
-                <p>Way to Success — Empowering Ethiopian university freshmen with world-class learning tools.</p>
-            </div>
-            <!-- Col 2: Quick Links -->
-            <div class="site-footer-col">
-                <h4>Quick Links</h4>
-                <ul class="site-footer-links">
-                    <li><a href="home.html">Home</a></li>
-                    <li><a href="courses.html">Courses</a></li>
-                    <li><a href="study-hub.html">Study Hub</a></li>
-                    <li><a href="auth-register.html">Sign Up</a></li>
-                    <li><a href="auth-login.html">Login</a></li>
-                </ul>
-            </div>
-            <!-- Col 3: Social -->
-            <div class="site-footer-col">
-                <h4>Connect With Us</h4>
-                <div class="site-footer-socials">
-                    <a href="#" class="social-icon-btn" title="YouTube">YT</a>
-                    <a href="#" class="social-icon-btn" title="Telegram">TG</a>
-                    <a href="#" class="social-icon-btn" title="Instagram">IN</a>
-                    <a href="#" class="social-icon-btn" title="Facebook">FB</a>
-                </div>
-            </div>
-        </div>
-        <!-- Bottom bar -->
-        <div class="site-footer-bottom">
-            <p>&#169; 2026 Alpha Freshman Tutorial. All rights reserved.</p>
-            <p class="footer-dev-line">Developed with &#10084;&#65039; by
-                <button class="footer-team-btn" onclick="openTeamModal()">
-                    <span>ALPHA DEVELOPERS TEAM</span>
-                    <span class="badge-i">i</span>
-                </button>
-            </p>
-        </div>
-    </footer>
-
-    <!-- Team Modal -->
-    <div id="teamModal" onclick="if(event.target===this)closeTeamModal()">
-        <div class="team-modal-box">
-            <button class="team-modal-close" onclick="closeTeamModal()">?</button>
-            <div class="team-modal-avatar">RA</div>
-            <span class="team-modal-role">Lead Full-Stack Developer</span>
-            <h3 class="team-modal-name">Rehima Ali</h3>
-            <p class="team-modal-team">ALPHA DEVELOPERS TEAM</p>
-            <div class="team-modal-divider"></div>
-            <p class="team-modal-desc">
-                Lead architect and developer behind the <strong>Alpha Freshman Tutorial</strong> platform,
-                dedicated to empowering Ethiopian university freshmen with world-class learning tools.
-            </p>
-            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!</button>
-        </div>
-    </div>
-    <script>
-    function openTeamModal()  { document.getElementById('teamModal').classList.add('open'); }
-    function closeTeamModal() { document.getElementById('teamModal').classList.remove('open'); }
     </script>
 
     <!-- Mobile Bottom Navigation -->

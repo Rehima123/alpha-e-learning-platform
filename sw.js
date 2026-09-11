@@ -1,7 +1,8 @@
 // ─── Alpha Freshman Tutorial — Service Worker ─────────────────────────────────
 // CACHE_VERSION auto-bumped on each deploy via build timestamp
-const CACHE_VERSION  = 'v' + '2026091001';  // format: v{YYYYMMDDNN}
-const CACHE_NAME     = 'alpha-cache-' + CACHE_VERSION;
+const CACHE_VERSION    = 'v' + '2026091001';  // format: v{YYYYMMDDNN}
+const CACHE_NAME       = 'alpha-cache-' + CACHE_VERSION;
+const VIDEO_CACHE_NAME = 'course-videos-v1';  // for .mp4 offline video caching
 
 // ── Offline video playback guard ──────────────────────────────────────────────
 // We intercept requests to youtube.com/embed/* and verify they originate from
@@ -102,6 +103,46 @@ self.addEventListener('message', event => {
         // We reply with a simple ack — real verification is done via IndexedDB in the page
         event.source?.postMessage({ type: 'OFFLINE_VIDEO_ACK', id: event.data.id, ok: true });
     }
+    // Client asks SW to cache a specific .mp4 URL for offline playback
+    if (event.data?.type === 'CACHE_VIDEO') {
+        const videoUrl = event.data.url;
+        if (videoUrl) {
+            caches.open(VIDEO_CACHE_NAME).then(async (cache) => {
+                try {
+                    const existing = await cache.match(videoUrl);
+                    if (!existing) {
+                        const response = await fetch(videoUrl);
+                        if (response.ok) {
+                            await cache.put(videoUrl, response);
+                            event.source?.postMessage({ type: 'VIDEO_CACHED', url: videoUrl, ok: true });
+                        }
+                    } else {
+                        event.source?.postMessage({ type: 'VIDEO_CACHED', url: videoUrl, ok: true, alreadyCached: true });
+                    }
+                } catch (err) {
+                    event.source?.postMessage({ type: 'VIDEO_CACHE_ERROR', url: videoUrl, error: err.message });
+                }
+            });
+        }
+    }
+    // Client asks SW to delete a cached video
+    if (event.data?.type === 'DELETE_CACHED_VIDEO') {
+        const videoUrl = event.data.url;
+        if (videoUrl) {
+            caches.open(VIDEO_CACHE_NAME).then(async (cache) => {
+                await cache.delete(videoUrl);
+                event.source?.postMessage({ type: 'VIDEO_DELETED', url: videoUrl });
+            });
+        }
+    }
+    // Client asks for list of cached video URLs
+    if (event.data?.type === 'LIST_CACHED_VIDEOS') {
+        caches.open(VIDEO_CACHE_NAME).then(async (cache) => {
+            const keys = await cache.keys();
+            const urls = keys.map(r => r.url);
+            event.source?.postMessage({ type: 'CACHED_VIDEOS_LIST', urls });
+        });
+    }
 });
 
 // ── Fetch strategy ────────────────────────────────────────────────────────────
@@ -111,6 +152,33 @@ self.addEventListener('fetch', event => {
     // Skip non-GET and chrome-extension requests
     if (event.request.method !== 'GET') return;
     if (url.protocol === 'chrome-extension:') return;
+
+    // ── .mp4 video files: Cache API offline playback ────────────────────────
+    // Cache-first for saved videos, network-and-cache for new requests
+    if (url.pathname.endsWith('.mp4') || event.request.destination === 'video') {
+        event.respondWith(
+            caches.open(VIDEO_CACHE_NAME).then(async (cache) => {
+                const cachedResponse = await cache.match(event.request);
+                if (cachedResponse) {
+                    // Serve from cache — enables offline playback
+                    return cachedResponse;
+                }
+                // Not cached: fetch from network and cache for future offline use
+                return fetch(event.request).then((networkResponse) => {
+                    if (networkResponse && networkResponse.status === 200) {
+                        cache.put(event.request, networkResponse.clone());
+                    }
+                    return networkResponse;
+                }).catch(() => {
+                    return new Response('Video not available offline.', {
+                        status: 503,
+                        headers: { 'Content-Type': 'text/plain' }
+                    });
+                });
+            })
+        );
+        return;
+    }
 
     // ── Block YouTube embed requests that don't originate from our app ──────
     // Prevents someone copy-pasting the embed URL directly into the browser.
