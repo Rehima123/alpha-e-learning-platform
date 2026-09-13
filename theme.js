@@ -47,7 +47,16 @@ document.addEventListener('DOMContentLoaded', () => {
     hamburger.setAttribute('aria-label', 'Toggle navigation menu');
     hamburger.setAttribute('aria-expanded', 'false');
     hamburger.innerHTML = '<span></span><span></span><span></span>';
-    navbarContainer.appendChild(hamburger);
+
+    // Insert hamburger after the logo (first child) so layout is:
+    // [LOGO]  ·····  [HAMBURGER]   on mobile (nav-links hidden)
+    // [LOGO] [NAV-LINKS] [HAMBURGER] on desktop (hamburger hidden)
+    const navLinks = navbarContainer.querySelector('.nav-links');
+    if (navLinks) {
+        navbarContainer.insertBefore(hamburger, navLinks);
+    } else {
+        navbarContainer.appendChild(hamburger);
+    }
 
     function getNavLinks() {
         return document.querySelector('.navbar .nav-links');

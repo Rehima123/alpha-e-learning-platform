@@ -3,21 +3,37 @@ const User = require('../models/User');
 const { validationResult } = require('express-validator');
 
 // @desc    Get all approved courses
+// @query   stream=Common|Natural|Social  semester=1|2  category  search  sort
 exports.getCourses = async (req, res, next) => {
     try {
-        const { category, search, sort } = req.query;
+        const { category, stream, semester, search, sort } = req.query;
 
         // Build query
         let query = { status: 'approved', isPublished: true };
 
+        // Legacy category filter
         if (category && category !== 'all') {
             query.category = category;
         }
 
+        // New stream filter  e.g. ?stream=Natural
+        if (stream && stream !== 'all') {
+            query.stream = stream;
+        }
+
+        // New semester filter  e.g. ?semester=1
+        if (semester && semester !== 'all') {
+            const semNum = parseInt(semester, 10);
+            if ([1, 2].includes(semNum)) {
+                query.semester = semNum;
+            }
+        }
+
         if (search) {
             query.$or = [
-                { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } }
+                { title:       { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } },
+                { courseCode:  { $regex: search, $options: 'i' } }
             ];
         }
 
@@ -133,7 +149,7 @@ exports.updateCourse = async (req, res, next) => {
     }
 };
 
-// @desc    Delete course
+// @desc    Delete course — admin only
 exports.deleteCourse = async (req, res, next) => {
     try {
         const course = await Course.findById(req.params.id);
@@ -145,11 +161,12 @@ exports.deleteCourse = async (req, res, next) => {
             });
         }
 
-        // Check ownership
-        if (course.instructor.toString() !== req.user.id && req.user.role !== 'admin') {
+        // Only admins can delete — instructors cannot
+        const adminRoles = ['admin', 'super_admin', 'content_admin'];
+        if (!adminRoles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                message: 'Not authorized to delete this course'
+                message: 'Only admins can delete courses'
             });
         }
 

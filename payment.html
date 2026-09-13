@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -55,6 +55,8 @@
         @media(max-width:768px){ .payment-methods{grid-template-columns:1fr 1fr} }
         @media(max-width:768px){ .checkout-layout{grid-template-columns:1fr} .order-box{position:static} }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -126,6 +128,82 @@
                     <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:0.5rem">
                         Transfer the exact amount shown in the order summary to one of these accounts, then upload your payment screenshot.
                     </p>
+
+                    <!-- Package selector -->
+                    <div style="background:rgba(102,126,234,0.07);border:1.5px solid rgba(102,126,234,0.3);
+                        border-radius:12px;padding:16px 18px;margin-bottom:1rem">
+                        <div style="font-weight:700;color:var(--text-primary);margin-bottom:12px;font-size:0.95rem">
+                            🎓 Select Your Package <span style="color:#e74c3c">*</span>
+                        </div>
+                        <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 12px">
+                            Choose your semester and stream. You'll get access to all courses in that package including Common courses.
+                        </p>
+                        <div style="display:flex;flex-direction:column;gap:8px">
+                            <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+                                border:1.5px solid var(--border-color);border-radius:8px;cursor:pointer;
+                                transition:all 0.2s" id="pkg-label-1st-nat"
+                                onclick="selectPackage('1st Semester Natural')">
+                                <input type="radio" name="enrolledPackage" value="1st Semester Natural"
+                                    id="pkg-1st-nat" style="accent-color:#667eea;width:16px;height:16px">
+                                <div>
+                                    <div style="font-weight:600;color:var(--text-primary);font-size:0.9rem">
+                                        📐 1st Semester — Natural Science
+                                    </div>
+                                    <div style="font-size:0.78rem;color:var(--text-secondary)">
+                                        Includes: Math, Physics, Chemistry, Psychology + All Common courses
+                                    </div>
+                                </div>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+                                border:1.5px solid var(--border-color);border-radius:8px;cursor:pointer;
+                                transition:all 0.2s" id="pkg-label-1st-soc"
+                                onclick="selectPackage('1st Semester Social')">
+                                <input type="radio" name="enrolledPackage" value="1st Semester Social"
+                                    id="pkg-1st-soc" style="accent-color:#667eea;width:16px;height:16px">
+                                <div>
+                                    <div style="font-weight:600;color:var(--text-primary);font-size:0.9rem">
+                                        📊 1st Semester — Social Science
+                                    </div>
+                                    <div style="font-size:0.78rem;color:var(--text-secondary)">
+                                        Includes: Math (Social), Economics, Inclusiveness, Anthropology + All Common courses
+                                    </div>
+                                </div>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+                                border:1.5px solid var(--border-color);border-radius:8px;cursor:pointer;
+                                transition:all 0.2s" id="pkg-label-2nd-nat"
+                                onclick="selectPackage('2nd Semester Natural')">
+                                <input type="radio" name="enrolledPackage" value="2nd Semester Natural"
+                                    id="pkg-2nd-nat" style="accent-color:#667eea;width:16px;height:16px">
+                                <div>
+                                    <div style="font-weight:600;color:var(--text-primary);font-size:0.9rem">
+                                        🔬 2nd Semester — Natural Science
+                                    </div>
+                                    <div style="font-size:0.78rem;color:var(--text-secondary)">
+                                        Includes: Calculus, Biology, Emerging Technologies + All Common courses
+                                    </div>
+                                </div>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+                                border:1.5px solid var(--border-color);border-radius:8px;cursor:pointer;
+                                transition:all 0.2s" id="pkg-label-2nd-soc"
+                                onclick="selectPackage('2nd Semester Social')">
+                                <input type="radio" name="enrolledPackage" value="2nd Semester Social"
+                                    id="pkg-2nd-soc" style="accent-color:#667eea;width:16px;height:16px">
+                                <div>
+                                    <div style="font-weight:600;color:var(--text-primary);font-size:0.9rem">
+                                        📈 2nd Semester — Social Science
+                                    </div>
+                                    <div style="font-size:0.78rem;color:var(--text-secondary)">
+                                        Includes: Basic Statistics + All Common courses
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <p id="pkgError" style="color:#e74c3c;font-size:0.82rem;margin:8px 0 0;display:none">
+                            ⚠️ Please select a package before submitting.
+                        </p>
+                    </div>
 
                     <!-- Bank details -->
                     <div class="bank-detail-box">
@@ -229,7 +307,7 @@
 
                 <div class="order-row"><span>Subtotal</span><span id="subtotalDisplay">—</span></div>
                 <div class="order-row discount" id="discountRow" style="display:none"><span>Discount</span><span id="discountDisplay"></span></div>
-                <div class="order-row"><span>Tax (15%)</span><span id="taxDisplay">—</span></div>
+                <div class="order-row" id="taxRow" style="display:none"><span>Tax</span><span id="taxDisplay">0 ETB</span></div>
                 <div class="order-row total"><span>Total</span><span id="totalDisplay">—</span></div>
 
                 <p style="font-size:0.78rem;color:#888;margin-top:12px;text-align:center">
@@ -244,8 +322,66 @@
     <script src="notifications.js"></script>
     <script src="payment.js"></script>
     <script src="/pwa.js"></script>
+
+    
+
+    <!-- Team Modal -->
+    <div id="teamModal" onclick="if(event.target===this)closeTeamModal()">
+        <div class="team-modal-box">
+            <button class="team-modal-close" onclick="closeTeamModal()">?</button>
+            <div class="team-modal-avatar">RA</div>
+            <span class="team-modal-role">Lead Full-Stack Developer</span>
+            <h3 class="team-modal-name">Rehima Ali</h3>
+            <p class="team-modal-team">ALPHA DEVELOPERS TEAM</p>
+            <div class="team-modal-divider"></div>
+            <p class="team-modal-desc">
+                Lead architect and developer behind the <strong>Alpha Freshman Tutorial</strong> platform,
+                dedicated to empowering Ethiopian university freshmen with world-class learning tools.
+            </p>
+            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!</button>
+        </div>
+    </div>
+    <script>
+    function openTeamModal()  { document.getElementById('teamModal').classList.add('open'); }
+    function closeTeamModal() { document.getElementById('teamModal').classList.remove('open'); }
+    </script>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <a href="home.html" class="nav-item" id="mbn-home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="courses.html" class="nav-item" id="mbn-courses">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5Z"/></svg>
+            <span>Courses</span>
+        </a>
+        <a href="study-hub.html" class="nav-item" id="mbn-study">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span>Study</span>
+        </a>
+        <a href="student-dashboard.html" class="nav-item" id="mbn-dashboard">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+    <script>
+    (function() {
+        var page = window.location.pathname.split('/').pop() || 'home.html';
+        var map = { 'home.html': 'mbn-home', 'courses.html': 'mbn-courses',
+                    'study-hub.html': 'mbn-study', 'dashboard.html': 'mbn-dashboard', 'student-dashboard.html': 'mbn-dashboard',
+                    'course-detail.html': 'mbn-courses', 'offline.html': 'mbn-study' };
+        Object.values(map).forEach(function(id){ var el = document.getElementById(id); if(el) el.classList.remove('active'); });
+        if (map[page]) { var el = document.getElementById(map[page]); if(el) el.classList.add('active'); }
+    })();
+    </script>
+
+<footer class="bg-[#2c3e50] text-slate-200 pt-12 pb-8"><div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left"><div><h3 class="text-lg font-bold text-white mb-2">Alpha Freshman Tutorial</h3><p class="text-sm text-slate-300">Way to Success &#8212; Empowering Freshman Students</p></div><div><h4 class="text-md font-semibold text-white mb-3">Quick Links</h4><ul class="space-y-2 text-sm"><li><a href="home.html" class="hover:text-amber-400">Home</a></li><li><a href="courses.html" class="hover:text-amber-400">Courses</a></li><li><a href="auth-register.html" class="hover:text-amber-400">Sign Up</a></li><li><a href="auth-login.html" class="hover:text-amber-400">Login</a></li></ul></div><div><h4 class="text-md font-semibold text-white mb-3">Connect With Us</h4><div class="flex justify-center md:justify-start gap-3"><a href="https://youtube.com/@alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-youtube"></i></a><a href="https://t.me/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-telegram"></i></a><a href="https://linkedin.com/company/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-linkedin"></i></a><a href="https://facebook.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-facebook"></i></a><a href="https://instagram.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-instagram"></i></a><a href="https://wa.me/1234567890" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-whatsapp"></i></a></div></div></div><div class="max-w-6xl mx-auto px-6 mt-8 pt-6 border-t border-slate-600/50 text-center text-xs text-slate-300">&copy; 2026 Alpha Freshman Tutorial. All rights reserved. | Developed by ALPHA DEVELOPERS TEAM</div></footer>
 </body>
 </html>
+
+
+
 
 
 

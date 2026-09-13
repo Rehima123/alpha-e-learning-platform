@@ -7,12 +7,14 @@ async function initFirebaseLogin() {
         const cfg = window.FIREBASE_CONFIG;
         if (!cfg || cfg.apiKey === 'YOUR_API_KEY') return null;
 
-        const { initializeApp }   = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { initializeApp, getApps } =
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
         const { getAuth, signInWithEmailAndPassword, signOut, sendEmailVerification } =
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
 
         if (!firebaseAuthLogin) {
-            const app = initializeApp(cfg, 'login-app');
+            const existing = getApps().find(a => a.name === 'login-app');
+            const app = existing || initializeApp(cfg, 'login-app');
             firebaseAuthLogin = getAuth(app);
         }
         return { firebaseAuthLogin, signInWithEmailAndPassword, signOut, sendEmailVerification };
@@ -21,134 +23,168 @@ async function initFirebaseLogin() {
     }
 }
 
+// ── Helper: is identifier an email? ──────────────────────────────────────────
+function isEmail(identifier) {
+    return identifier.includes('@');
+}
+
+// ── Helper: show/hide messages ────────────────────────────────────────────────
+function showError(msg) {
+    const el = document.getElementById('errorMessage');
+    if (!el) return;
+    el.innerHTML = msg;
+    el.style.display = 'block';
+    document.getElementById('successMessage').style.display = 'none';
+}
+function showSuccess(msg) {
+    const el = document.getElementById('successMessage');
+    if (!el) return;
+    el.innerHTML = msg;
+    el.style.display = 'block';
+    document.getElementById('errorMessage').style.display = 'none';
+}
+function clearMessages() {
+    document.getElementById('errorMessage').style.display  = 'none';
+    document.getElementById('successMessage').style.display = 'none';
+}
+
 // ── Login form ────────────────────────────────────────────────────────────────
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const email    = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const errorDiv = document.getElementById('errorMessage');
-    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const identifier = document.getElementById('email').value.trim();
+    const password   = document.getElementById('password').value;
+    const submitBtn  = document.getElementById('loginBtn');
 
-    errorDiv.style.display = 'none';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Logging in...';
+    if (!identifier || !password) {
+        showError('Email/phone number እና password ያስፈልጋሉ።');
+        return;
+    }
+
+    clearMessages();
+    submitBtn.disabled    = true;
+    submitBtn.textContent = '⏳ Logging in...';
 
     try {
-        // Try Firebase first (if configured)
-        const fb = await initFirebaseLogin();
-        if (fb) {
-            let firebaseUser = null;
-            try {
-                const { firebaseAuthLogin, signInWithEmailAndPassword, signOut, sendEmailVerification } = fb;
-                const userCredential = await signInWithEmailAndPassword(firebaseAuthLogin, email, password);
-                firebaseUser = userCredential.user;
+        // ── Path A: Email login (try Firebase first, then backend) ────────────
+        if (isEmail(identifier)) {
+            const fb = await initFirebaseLogin();
 
-                // Try backend login first
+            if (fb) {
                 try {
-                    const backendRes = await api.login({ email, password });
-                    if (backendRes.success) {
-                        api.setAuthToken(backendRes.token);
-                        localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
-                        redirectByRole(backendRes.user);
+                    const { firebaseAuthLogin, signInWithEmailAndPassword, signOut } = fb;
+                    const userCredential = await signInWithEmailAndPassword(firebaseAuthLogin, identifier, password);
+                    const firebaseUser   = userCredential.user;
+
+                    // Always try backend login too (gets role/subscription data)
+                    try {
+                        const backendRes = await api.login({ email: identifier, password });
+                        if (backendRes.success) {
+                            api.setAuthToken(backendRes.token);
+                            localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
+                            showSuccess('✅ Login successful! Redirecting...');
+                            setTimeout(() => redirectByRole(backendRes.user), 600);
+                            return;
+                        }
+                    } catch (_) {}
+
+                    // Backend failed — check email verification
+                    if (!firebaseUser.emailVerified) {
+                        await signOut(firebaseAuthLogin);
+                        showError(`
+                            አካውንትዎ ገና አልተረጋገጠም።<br>
+                            <small>ወደ <strong>${identifier}</strong> ማረጋገጫ ኢሜይል ይፈልጉ።</small><br>
+                            <button onclick="resendVerification('${identifier}','${encodeURIComponent(password)}')"
+                                style="margin-top:8px;background:#e74c3c;border:none;color:white;
+                                padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.82rem">
+                                📧 ድጋሚ ማረጋገጫ ኢሜይል ላክ
+                            </button>`);
                         return;
                     }
-                } catch (_) {}
 
-                // Backend failed — check Firebase email verification
-                if (!firebaseUser.emailVerified) {
-                    await signOut(firebaseAuthLogin);
-                    errorDiv.innerHTML = `
-                        <div>
-                            አካውንትዎ ገና አልተረጋገጠም።<br>
-                            <small style="opacity:0.85">ወደ <strong>${email}</strong> ማረጋገጫ ኢሜይል ይላካሉ።</small><br>
-                            <button onclick="resendVerification('${email}','${password}')"
-                                style="margin-top:8px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);
-                                color:inherit;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.82rem">
-                                📧 ድጋሚ ማረጋገጫ ኢሜይል ላክ
-                            </button>
-                        </div>`;
-                    errorDiv.style.display = 'block';
+                    // Firebase verified — use as fallback
+                    const fbUser = {
+                        id: firebaseUser.uid,
+                        fullName: firebaseUser.displayName || identifier.split('@')[0],
+                        email: firebaseUser.email,
+                        role: 'student'
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(fbUser));
+                    api.setAuthToken('firebase-' + firebaseUser.uid);
+                    showSuccess('✅ Login successful! Redirecting...');
+                    setTimeout(() => redirectByRole(fbUser), 600);
                     return;
-                }
 
-                // Firebase verified, use Firebase user as fallback
-                const fbUser = {
-                    id: firebaseUser.uid, fullName: firebaseUser.displayName || email.split('@')[0],
-                    email: firebaseUser.email, role: 'student'
-                };
-                localStorage.setItem('currentUser', JSON.stringify(fbUser));
-                api.setAuthToken('firebase-' + firebaseUser.uid);
-                redirectByRole(fbUser);
-                return;
-
-            } catch (firebaseErr) {
-                // Firebase network error — fall through to backend-only login
-                if (firebaseErr.code === 'auth/network-request-failed') {
-                    console.warn('Firebase unreachable, trying backend only...');
-                    // Fall through to backend login below
-                } else {
-                    throw firebaseErr; // re-throw other Firebase errors
+                } catch (firebaseErr) {
+                    if (firebaseErr.code === 'auth/network-request-failed') {
+                        // Firebase unreachable — fall through to backend-only
+                    } else if (firebaseErr.code === 'auth/too-many-requests') {
+                        let secs = 60;
+                        showError(`⚠️ ብዙ ጊዜ ሞክረዋል። እባክዎ <span id="countdown">${secs}</span> ሰከንድ ይጠብቁ።`);
+                        submitBtn.disabled = true;
+                        const timer = setInterval(() => {
+                            secs--;
+                            const el = document.getElementById('countdown');
+                            if (el) el.textContent = secs;
+                            if (secs <= 0) { clearInterval(timer); submitBtn.disabled = false; clearMessages(); }
+                        }, 1000);
+                        return;
+                    } else {
+                        const fbErrors = {
+                            'auth/user-not-found':     'ይህ ኢሜይል አልተመዘገበም።',
+                            'auth/wrong-password':     'የይለፍ ቃሉ ስህተት ነው።',
+                            'auth/invalid-email':      'ትክክለኛ ኢሜይል ያስፈልጋል።',
+                            'auth/invalid-credential': 'ኢሜይሉ ወይም የይለፍ ቃሉ ስህተት ነው።',
+                        };
+                        // Don't show Firebase error yet — try backend first
+                        if (!['auth/user-not-found','auth/wrong-password','auth/invalid-credential'].includes(firebaseErr.code)) {
+                            showError(fbErrors[firebaseErr.code] || firebaseErr.message);
+                            return;
+                        }
+                        // Fall through to backend
+                    }
                 }
             }
-        }            // Firebase verified, use Firebase user as fallback
-            const fbUser = {
-                id: user.uid, fullName: user.displayName || email.split('@')[0],
-                email: user.email, role: 'student'
-            };
-            localStorage.setItem('currentUser', JSON.stringify(fbUser));
-            api.setAuthToken('firebase-' + user.uid);
-            redirectByRole(fbUser);
-            return;
-        }
 
-        // Fallback: backend-only login
-        const response = await api.login({ email, password });
-        if (response.success) {
-            api.setAuthToken(response.token);
-            localStorage.setItem('currentUser', JSON.stringify(response.user));
-            redirectByRole(response.user);
+            // ── Backend-only email login ──────────────────────────────────────
+            const response = await api.login({ email: identifier, password });
+            if (response.success) {
+                api.setAuthToken(response.token);
+                localStorage.setItem('currentUser', JSON.stringify(response.user));
+                showSuccess('✅ Login successful! Redirecting...');
+                setTimeout(() => redirectByRole(response.user), 600);
+            } else {
+                showError(response.message || 'ኢሜይሉ ወይም የይለፍ ቃሉ ስህተት ነው።');
+            }
+
         } else {
-            errorDiv.textContent = response.message || 'Login failed';
-            errorDiv.style.display = 'block';
+            // ── Path B: Phone number login (backend only — no Firebase) ──────
+            const response = await api.login({ phoneNumber: identifier, password });
+            if (response.success) {
+                api.setAuthToken(response.token);
+                localStorage.setItem('currentUser', JSON.stringify(response.user));
+                showSuccess('✅ Login successful! Redirecting...');
+                setTimeout(() => redirectByRole(response.user), 600);
+            } else {
+                showError(response.message || 'Phone number ወይም password ስህተት ነው።');
+            }
         }
 
     } catch (error) {
-        const fbErrors = {
-            'auth/user-not-found':        'ይህ ኢሜይል አልተመዘገበም።',
-            'auth/wrong-password':        'የይለፍ ቃሉ ስህተት ነው።',
-            'auth/invalid-email':         'ትክክለኛ ኢሜይል ያስፈልጋል።',
-            'auth/invalid-credential':    'ኢሜይሉ ወይም የይለፍ ቃሉ ስህተት ነው።',
-            'auth/network-request-failed':'የኔትወርክ ስህተት። Backend ን እየሞክር ነው...'
-        };
-
-        if (error.code === 'auth/too-many-requests') {
-            let secs = 60;
-            errorDiv.innerHTML = `⚠️ ብዙ ጊዜ ሞክረዋል። እባክዎ <span id="countdown">${secs}</span> ሰከንድ ይጠብቁ።`;
-            errorDiv.style.display = 'block';
-            submitBtn.disabled = true;
-            const timer = setInterval(() => {
-                secs--;
-                const el = document.getElementById('countdown');
-                if (el) el.textContent = secs;
-                if (secs <= 0) {
-                    clearInterval(timer);
-                    errorDiv.style.display = 'none';
-                    submitBtn.disabled = false;
-                }
-            }, 1000);
-            return;
-        }
-
-        errorDiv.textContent = fbErrors[error.code] || error.message || 'Login failed.';
-        errorDiv.style.display = 'block';
+        showError(error.message || 'Login failed. Please try again.');
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign In';
+        submitBtn.disabled    = false;
+        submitBtn.textContent = '🔐 Login';
     }
 });
 
 function redirectByRole(user) {
+    // Check if there's a redirect param from ticker/promo button
+    const redirectTo = new URLSearchParams(window.location.search).get('redirect');
+    if (redirectTo) {
+        window.location.href = decodeURIComponent(redirectTo);
+        return;
+    }
     const adminRoles = ['admin','super_admin','content_admin','finance_admin','support_admin'];
     if (adminRoles.includes(user.role)) {
         window.location.href = 'admin-dashboard.html';
@@ -159,7 +195,31 @@ function redirectByRole(user) {
     }
 }
 
-async function resendVerification(email, password) {
+// ── Forgot Password ───────────────────────────────────────────────────────────
+document.getElementById('forgotPwdLink')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const identifier = document.getElementById('email').value.trim();
+    if (!identifier || !isEmail(identifier)) {
+        showError('Password reset ለማድረግ email address ይጻፉ።');
+        return;
+    }
+    try {
+        const res = await api.request('/auth/forgot-password', {
+            method: 'POST',
+            body: JSON.stringify({ email: identifier })
+        });
+        if (res.success) {
+            showSuccess(`✅ Password reset link ወደ ${identifier} ተልኳል።`);
+        } else {
+            showError(res.message || 'Password reset failed.');
+        }
+    } catch {
+        showError('Password reset request failed. Please try again.');
+    }
+});
+
+async function resendVerification(email, passwordEncoded) {
+    const password = decodeURIComponent(passwordEncoded);
     try {
         const fb = await initFirebaseLogin();
         if (!fb) { alert('Firebase not configured'); return; }
@@ -176,8 +236,8 @@ async function resendVerification(email, password) {
 // ── Google Sign-In ────────────────────────────────────────────────────────────
 document.querySelector('.btn-google')?.addEventListener('click', async () => {
     const btn = document.querySelector('.btn-google');
-    btn.disabled = true;
-    btn.textContent = '⏳ Connecting to Google...';
+    btn.disabled     = true;
+    btn.textContent  = '⏳ Connecting to Google...';
 
     try {
         const cfg = window.FIREBASE_CONFIG;
@@ -186,13 +246,13 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
             return;
         }
 
-        const { initializeApp }   = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { initializeApp, getApps, getApp } =
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
         const { getAuth, signInWithPopup, GoogleAuthProvider } =
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
 
-        let app;
-        try { app = initializeApp(cfg, 'google-login'); }
-        catch { app = (await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js")).getApp('google-login'); }
+        const existing = getApps().find(a => a.name === 'google-login');
+        const app      = existing || initializeApp(cfg, 'google-login');
 
         const auth     = getAuth(app);
         const provider = new GoogleAuthProvider();
@@ -202,87 +262,71 @@ document.querySelector('.btn-google')?.addEventListener('click', async () => {
         const result = await signInWithPopup(auth, provider);
         const user   = result.user;
 
-        // Register/login in backend
         const gFullName = user.displayName || user.email.split('@')[0];
         const gEmail    = user.email;
         const gPassword = 'google-oauth-' + user.uid;
 
-        try {
-            let isNewUser = false;
+        // Try backend login first, then register if new user
+        let backendRes  = await api.login({ email: gEmail, password: gPassword });
+        let isNewUser   = false;
 
-            // Try login first
-            let backendRes = await api.login({ email: gEmail, password: gPassword });
+        if (!backendRes.success) {
+            backendRes = await api.register({
+                fullName: gFullName,
+                email:    gEmail,
+                password: gPassword,
+                role:     'student'
+            });
+            if (backendRes.success) isNewUser = true;
+        }
 
-            if (!backendRes.success) {
-                // New user — auto-register
-                backendRes = await api.register({
-                    fullName: gFullName,
-                    email:    gEmail,
-                    password: gPassword,
-                    role:     'student'
+        if (backendRes.success) {
+            api.setAuthToken(backendRes.token);
+            localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
+
+            // Optional EmailJS (only if configured)
+            if (isNewUser && window.emailjsService && window.EMAILJS_CONFIG?.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+                window.emailjsService.sendRegistrationEmails({
+                    fullName: backendRes.user.fullName,
+                    email:    backendRes.user.email,
+                    role:     backendRes.user.role
                 });
-                if (backendRes.success) isNewUser = true;
             }
 
-            if (backendRes.success) {
-                api.setAuthToken(backendRes.token);
-                localStorage.setItem('currentUser', JSON.stringify(backendRes.user));
+            redirectByRole(backendRes.user);
+            return;
+        }
 
-                // Backend already sends welcome email on register.
-                // EmailJS is optional extra — only if properly configured.
-                if (isNewUser && window.emailjsService && window.EMAILJS_CONFIG?.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
-                    window.emailjsService.sendRegistrationEmails({
-                        fullName: backendRes.user.fullName,
-                        email:    backendRes.user.email,
-                        role:     backendRes.user.role
-                    });
-                }
-
-                redirectByRole(backendRes.user);
-                return;
-            }
-        } catch (_) {}
-
-        // Fallback: use Firebase user directly (no email verification needed for Google)
+        // Backend unavailable — use Firebase user directly as fallback
         const fbUser = {
-            id: user.uid,
-            fullName: gFullName,
-            email: gEmail,
-            role: 'student',
-            avatar: user.photoURL,
+            id:            user.uid,
+            fullName:      gFullName,
+            email:         gEmail,
+            role:          'student',
+            avatar:        user.photoURL,
             emailVerified: true
         };
         api.setAuthToken('firebase-' + user.uid);
         localStorage.setItem('currentUser', JSON.stringify(fbUser));
-        localStorage.setItem('authToken', 'firebase-' + user.uid);
-
-        // Only send EmailJS if properly configured
-        if (window.emailjsService && window.EMAILJS_CONFIG?.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
-            window.emailjsService.sendRegistrationEmails({
-                fullName: fbUser.fullName,
-                email:    fbUser.email,
-                role:     fbUser.role
-            });
-        }
-
+        localStorage.setItem('authToken',   'firebase-' + user.uid);
         redirectByRole(fbUser);
 
     } catch (error) {
         const msg = {
-            'auth/popup-closed-by-user':        'Google login cancelled.',
-            'auth/popup-blocked':               'Popup was blocked. Please allow popups for this site.',
-            'auth/cancelled-popup-request':     'Google login cancelled.',
-            'auth/unauthorized-domain':         'ይህ domain Firebase ላይ authorized አልሆነም። Firebase Console → Authentication → Settings → Authorized domains ይፈትሹ።',
-            'auth/operation-not-allowed':       'Google Sign-In Firebase Console ላይ enabled አልሆነም።',
-            'auth/network-request-failed':      'የኔትወርክ ስህተት። Internet connection ይፈትሹ።'
+            'auth/popup-closed-by-user':    'Google login cancelled.',
+            'auth/popup-blocked':           'Popup was blocked. Please allow popups for this site.',
+            'auth/cancelled-popup-request': 'Google login cancelled.',
+            'auth/unauthorized-domain':     'ይህ domain Firebase ላይ authorized አልሆነም። Firebase Console → Authentication → Settings → Authorized domains ይፈትሹ።',
+            'auth/operation-not-allowed':   'Google Sign-In Firebase Console ላይ enabled አልሆነም።',
+            'auth/network-request-failed':  'የኔትወርክ ስህተት። Internet connection ይፈትሹ።'
         };
         const errorDiv = document.getElementById('errorMessage');
         if (errorDiv) {
-            errorDiv.textContent = msg[error.code] || 'Google login failed: ' + error.message;
+            errorDiv.textContent   = msg[error.code] || 'Google login failed: ' + error.message;
             errorDiv.style.display = 'block';
         }
     } finally {
-        btn.disabled = false;
+        btn.disabled  = false;
         btn.innerHTML = '🔍 Continue with Google';
     }
 });

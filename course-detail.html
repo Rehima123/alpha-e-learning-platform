@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -17,6 +17,52 @@
     <link rel="apple-touch-icon" sizes="120x120" href="logo.png">
     <link rel="apple-touch-icon" sizes="76x76" href="logo.png">
     <style>
+        /* ══════════════════════════════════════════════════════════════════
+           SCREENSHOT / SCREEN-RECORD PREVENTION
+           ══════════════════════════════════════════════════════════════════ */
+
+        /* 1. Prevent text selection on protected content */
+        .lesson-viewer, #lessonViewer, .lesson-notes, .notes-content,
+        iframe, video, #videoWrapper {
+            -webkit-user-select: none !important;
+            -moz-user-select:    none !important;
+            -ms-user-select:     none !important;
+            user-select:         none !important;
+        }
+
+        /* 2. Prevent image/element drag-save */
+        img, iframe, video {
+            -webkit-user-drag: none !important;
+            user-drag:         none !important;
+            pointer-events:    none;
+        }
+        /* Re-enable pointer for clickable lesson rows */
+        .lesson-row, .chapter-header, button, a { pointer-events: auto !important; }
+
+        /* 3. CSS-only print blackout — hides content when printing (Ctrl+P screenshot) */
+        @media print {
+            body * { visibility: hidden !important; }
+            body::after {
+                content: "⛔ Printing is not allowed — Alpha Freshman Tutorial";
+                visibility: visible !important;
+                position: fixed; inset: 0;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.5rem; font-weight: bold; color: #e74c3c;
+                background: white;
+            }
+        }
+
+        /* 4. Screen-capture shield (shown by JS on PrintScreen/tab-switch) */
+        #alpha-screen-shield {
+            position: fixed; inset: 0; z-index: 2147483647;
+            background: #000;
+            display: none;
+            align-items: center; justify-content: center; flex-direction: column;
+            color: #fff; font-family: sans-serif;
+            pointer-events: none; user-select: none;
+        }
+        #alpha-screen-shield.active { display: flex; }
+
         /* ── Breadcrumb ── */
         .breadcrumb {
             display: flex; align-items: center; gap: 6px;
@@ -134,12 +180,26 @@
         .lesson-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .lesson-actions .btn { flex: 1; min-width: 140px; text-align: center; }
 
+        /* ── Secure Player: prevent text selection on video area ── */
+        #securePlayerMount,
+        #securePlayerMount * {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        /* Hide video when browser print dialog opens (deters screenshot-via-print) */
+        @media print {
+            #securePlayerMount,
+            #videoWrapper { display: none !important; }
+        }
+
         /* Layout: sidebar + viewer on desktop */
         @media (min-width: 900px) {
             .course-layout { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; align-items: start; }
             .course-sidebar { position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -154,6 +214,7 @@
                 <li><a href="study-hub.html">📚 Study Hub</a></li>
                 <li><a href="department-guide.html">🎓 Departments</a></li>
                 <li><a href="ai-study.html">🤖 AI Study</a></li>
+                <li><a href="offline.html">📥 Offline Videos</a></li>
                 <li><a href="#" id="logoutBtn">Logout</a></li>
             </ul>
         </div>
@@ -188,12 +249,157 @@
     <script src="ai-assistant.js"></script>
     <script src="ai-engine.js"></script>
     <script src="lesson-download.js"></script>
+    <script src="secure-player.js"></script>
+    <script src="offline-video-player.js"></script>
     <script src="course-detail.js"></script>
     <script src="video-security.js"></script>
-    <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
+
+    <!-- ── Extra screenshot / screen-record deterrence ── -->
+    <div id="alpha-screen-shield">
+        <div style="font-size:3rem;margin-bottom:16px">⛔</div>
+        <p style="font-size:1.1rem;font-weight:700;margin:0">Screen capture is not permitted.</p>
+        <p id="shield-user" style="font-size:0.75rem;opacity:0.4;margin:10px 0 0;font-family:monospace"></p>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        function getUserLabel() {
+            try {
+                const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                return [u.fullName, u.phoneNumber || u.email].filter(Boolean).join(' | ') || 'Alpha Freshman Tutorial';
+            } catch { return 'Alpha Freshman Tutorial'; }
+        }
+
+        let shieldTimer = null;
+        function showShield() {
+            const shield = document.getElementById('alpha-screen-shield');
+            const label  = document.getElementById('shield-user');
+            if (!shield) return;
+            if (label) label.textContent = getUserLabel();
+            shield.classList.add('active');
+            clearTimeout(shieldTimer);
+            shieldTimer = setTimeout(() => shield.classList.remove('active'), 3000);
+        }
+
+        // Block PrintScreen + Mac/Win screenshot shortcuts
+        document.addEventListener('keydown', function(e) {
+            // PrintScreen
+            if (e.key === 'PrintScreen') { e.preventDefault(); showShield(); return; }
+            // Mac: Cmd+Shift+3, Cmd+Shift+4, Cmd+Shift+5, Cmd+Shift+6
+            if (e.metaKey && e.shiftKey && ['3','4','5','6','s','S'].includes(e.key)) {
+                e.preventDefault(); showShield(); return;
+            }
+            // Windows: Win+Shift+S (Snip & Sketch), Win+PrtScn
+            if (e.key === 'PrintScreen' || (e.metaKey && e.shiftKey && e.key === 's')) {
+                e.preventDefault(); showShield(); return;
+            }
+            // Block Ctrl+P (print to PDF / screenshot via print)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                if (typeof toast !== 'undefined') toast.warning('⚠️ Printing is not allowed.');
+                return;
+            }
+            // Block Ctrl+S (save page)
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault(); return;
+            }
+            // Block F12 / DevTools
+            if (e.key === 'F12') { e.preventDefault(); return; }
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i','I','j','J','c','C'].includes(e.key)) {
+                e.preventDefault(); return;
+            }
+        }, true);
+
+        // Visibility-change heuristic (PrintScreen briefly hides tab on Windows)
+        let lastHidden = 0;
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                lastHidden = Date.now();
+            } else {
+                const elapsed = Date.now() - lastHidden;
+                // Very brief hide (<800ms) is likely a screenshot action
+                if (elapsed > 0 && elapsed < 800) showShield();
+            }
+        });
+
+        // Block right-click on entire page (prevents "Save image as")
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault(); return false;
+        }, true);
+
+        // Block drag-to-save on images and iframes
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.tagName === 'IMG' || e.target.tagName === 'IFRAME' ||
+                e.target.tagName === 'VIDEO') {
+                e.preventDefault();
+            }
+        }, true);
+
+    })();
+    </script>
     <script src="/pwa.js"></script>
+
+    
+
+    <!-- Team Modal -->
+    <div id="teamModal" onclick="if(event.target===this)closeTeamModal()">
+        <div class="team-modal-box">
+            <button class="team-modal-close" onclick="closeTeamModal()">?</button>
+            <div class="team-modal-avatar">RA</div>
+            <span class="team-modal-role">Lead Full-Stack Developer</span>
+            <h3 class="team-modal-name">Rehima Ali</h3>
+            <p class="team-modal-team">ALPHA DEVELOPERS TEAM</p>
+            <div class="team-modal-divider"></div>
+            <p class="team-modal-desc">
+                Lead architect and developer behind the <strong>Alpha Freshman Tutorial</strong> platform,
+                dedicated to empowering Ethiopian university freshmen with world-class learning tools.
+            </p>
+            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!</button>
+        </div>
+    </div>
+    <script>
+    function openTeamModal()  { document.getElementById('teamModal').classList.add('open'); }
+    function closeTeamModal() { document.getElementById('teamModal').classList.remove('open'); }
+    </script>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <a href="home.html" class="nav-item" id="mbn-home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="courses.html" class="nav-item" id="mbn-courses">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5Z"/></svg>
+            <span>Courses</span>
+        </a>
+        <a href="study-hub.html" class="nav-item" id="mbn-study">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span>Study</span>
+        </a>
+        <a href="student-dashboard.html" class="nav-item" id="mbn-dashboard">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+    <script>
+    (function() {
+        var page = window.location.pathname.split('/').pop() || 'home.html';
+        var map = { 'home.html': 'mbn-home', 'courses.html': 'mbn-courses',
+                    'study-hub.html': 'mbn-study', 'dashboard.html': 'mbn-dashboard', 'student-dashboard.html': 'mbn-dashboard',
+                    'course-detail.html': 'mbn-courses', 'offline.html': 'mbn-study' };
+        Object.values(map).forEach(function(id){ var el = document.getElementById(id); if(el) el.classList.remove('active'); });
+        if (map[page]) { var el = document.getElementById(map[page]); if(el) el.classList.add('active'); }
+    })();
+    </script>
+
+<footer class="bg-[#2c3e50] text-slate-200 pt-12 pb-8"><div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left"><div><h3 class="text-lg font-bold text-white mb-2">Alpha Freshman Tutorial</h3><p class="text-sm text-slate-300">Way to Success &#8212; Empowering Freshman Students</p></div><div><h4 class="text-md font-semibold text-white mb-3">Quick Links</h4><ul class="space-y-2 text-sm"><li><a href="home.html" class="hover:text-amber-400">Home</a></li><li><a href="courses.html" class="hover:text-amber-400">Courses</a></li><li><a href="auth-register.html" class="hover:text-amber-400">Sign Up</a></li><li><a href="auth-login.html" class="hover:text-amber-400">Login</a></li></ul></div><div><h4 class="text-md font-semibold text-white mb-3">Connect With Us</h4><div class="flex justify-center md:justify-start gap-3"><a href="https://youtube.com/@alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-youtube"></i></a><a href="https://t.me/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-telegram"></i></a><a href="https://linkedin.com/company/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-linkedin"></i></a><a href="https://facebook.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-facebook"></i></a><a href="https://instagram.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-instagram"></i></a><a href="https://wa.me/1234567890" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-whatsapp"></i></a></div></div></div><div class="max-w-6xl mx-auto px-6 mt-8 pt-6 border-t border-slate-600/50 text-center text-xs text-slate-300">&copy; 2026 Alpha Freshman Tutorial. All rights reserved. | Developed by ALPHA DEVELOPERS TEAM</div></footer>
 </body>
 </html>
+
+
+
 
 
 

@@ -61,6 +61,166 @@ app.get('/api/health', (req, res) => {
     res.json({ success: true, message: 'API is running', timestamp: new Date().toISOString() });
 });
 
+// ── Seed Admin endpoint ───────────────────────────────────────────────────────
+app.get('/api/seed-admin', async (req, res) => {
+    const secret = req.query.secret;
+    if (secret !== (process.env.SEED_SECRET || 'alpha-seed-2024')) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    try {
+        const User     = require('../server/models/User');
+        const bcrypt   = require('bcryptjs');
+        const email    = req.query.email    || 'supportalphafreshman@gmail.com';
+        const name     = req.query.name     || null;
+        const newPass  = req.query.password || null;
+
+        const updateFields = { role: 'admin', isActive: true };
+        if (name)    updateFields.fullName = name;
+
+        // If a new password is provided, hash it and update
+        if (newPass) {
+            const salt = await bcrypt.genSalt(10);
+            updateFields.password = await bcrypt.hash(newPass, salt);
+        }
+
+        const user = await User.findOneAndUpdate(
+            { email },
+            updateFields,
+            { new: true }
+        );
+        if (!user) {
+            return res.status(404).json({ success: false, message: `User not found: ${email}. Register first at /auth-register.html` });
+        }
+        res.json({
+            success: true,
+            message: `✅ ${user.fullName} is now ADMIN${newPass ? ' with new password' : ''}`,
+            user: { id: user._id, email: user.email, role: user.role, fullName: user.fullName }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ── Seed Courses endpoint ─────────────────────────────────────────────────────
+app.get('/api/seed-courses', async (req, res) => {
+    const secret = req.query.secret;
+    if (secret !== (process.env.SEED_SECRET || 'alpha-seed-2024')) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    try {
+        const Course = require('../server/models/Course');
+        const User   = require('../server/models/User');
+
+        const COURSES = [
+          // ── SEMESTER 1 — COMMON
+          { courseCode:'FLEN1011', title:'Communicative English Language Skills I',   stream:'Common',  semester:1, icon:'📖', category:'semester1', level:'Beginner',     duration:'16 weeks', description:'Develop foundational English communication skills for academic and everyday contexts. Covers reading, writing, listening, and speaking at the freshman level.' },
+          { courseCode:'LOCT1011', title:'Logic and Critical Thinking',               stream:'Common',  semester:1, icon:'🧠', category:'semester1', level:'Beginner',     duration:'12 weeks', description:'Master logical reasoning, argument analysis, and problem-solving techniques essential for all academic disciplines in Ethiopian universities.' },
+          { courseCode:'HPED1011', title:'Physical Fitness and Health Education',     stream:'Common',  semester:1, icon:'🏃', category:'semester1', level:'Beginner',     duration:'8 weeks',  description:'Physical education, nutrition, mental health, and wellness strategies for academic success and lifelong fitness.' },
+          { courseCode:'GEEHO1011',title:'Geography of Ethiopia and the Horn',        stream:'Common',  semester:1, icon:'🌍', category:'semester1', level:'Beginner',     duration:'14 weeks', description:'Physical and human geography of Ethiopia and the Horn of Africa. Covers climate, landforms, ecosystems, population, and socioeconomic development.' },
+          // ── SEMESTER 1 — NATURAL
+          { courseCode:'MATH1011', title:'Mathematics for Natural Science',           stream:'Natural', semester:1, icon:'📐', category:'semester1', level:'Intermediate', duration:'16 weeks', description:'Covers functions, limits, differentiation, integration, and analytical geometry. Foundation for engineering, medicine, and natural science students.' },
+          { courseCode:'PHYS1011', title:'General Physics',                           stream:'Natural', semester:1, icon:'⚛️', category:'semester1', level:'Intermediate', duration:'16 weeks', description:'Mechanics, thermodynamics, waves, and optics. Core physics course for Natural Science stream freshmen.' },
+          { courseCode:'CHEM1011', title:'General Chemistry',                         stream:'Natural', semester:1, icon:'⚗️', category:'semester1', level:'Intermediate', duration:'16 weeks', description:'Atomic structure, chemical bonding, reactions, stoichiometry, and thermochemistry for Natural Science stream students.' },
+          { courseCode:'PSYC1011', title:'General Psychology and Life Skills',        stream:'Natural', semester:1, icon:'🧩', category:'semester1', level:'Beginner',     duration:'14 weeks', description:'Introduction to psychological principles covering behavior, cognition, emotion, personality, human development, and practical life skills.' },
+          // ── SEMESTER 1 — SOCIAL
+          { courseCode:'MATH1012', title:'Mathematics for Social Science',            stream:'Social',  semester:1, icon:'📊', category:'semester1', level:'Beginner',     duration:'16 weeks', description:'Sets, functions, linear algebra, matrices, and basic calculus tailored for Social Science stream freshmen.' },
+          { courseCode:'ECON1011', title:'Introduction to Economics',                 stream:'Social',  semester:1, icon:'💹', category:'semester1', level:'Beginner',     duration:'14 weeks', description:'Microeconomics and macroeconomics fundamentals. Supply, demand, markets, GDP, inflation, and monetary policy for Social Science freshmen.' },
+          { courseCode:'INCL1011', title:'Inclusiveness',                             stream:'Social',  semester:1, icon:'🤝', category:'semester1', level:'Beginner',     duration:'10 weeks', description:'Explore gender, disability, ethnicity, and social inclusion in Ethiopian and global contexts to foster equitable development.' },
+          { courseCode:'ANTH1011', title:'Social Anthropology',                       stream:'Social',  semester:1, icon:'🏛️', category:'semester1', level:'Beginner',     duration:'12 weeks', description:"Study human societies, cultures, and social structures. Understand Ethiopia's diverse cultural heritage and anthropological research methods." },
+          // ── SEMESTER 2 — COMMON
+          { courseCode:'FLEN1012', title:'Communicative English Language Skills II',  stream:'Common',  semester:2, icon:'✍️', category:'semester2', level:'Intermediate', duration:'16 weeks', description:'Advanced academic writing, research skills, and presentation techniques. Builds on Communicative English I.' },
+          { courseCode:'MGMT1012', title:'Entrepreneurship',                          stream:'Common',  semester:2, icon:'💡', category:'semester2', level:'Beginner',     duration:'10 weeks', description:'Learn to identify business opportunities, develop ideas, and build an entrepreneurial mindset for the modern Ethiopian and global economy.' },
+          { courseCode:'MCED1012', title:'Moral and Civic Education',                 stream:'Common',  semester:2, icon:'⚖️', category:'semester2', level:'Beginner',     duration:'12 weeks', description:"Rights and responsibilities of citizens, democratic governance, constitutional law, and Ethiopia's political system." },
+          { courseCode:'GLTR1012', title:'Global Trends',                             stream:'Common',  semester:2, icon:'🌐', category:'semester2', level:'Beginner',     duration:'12 weeks', description:"International organizations, foreign policy, global challenges, sustainable development, and Ethiopia's role in the African Union and world affairs." },
+          // ── SEMESTER 2 — NATURAL
+          { courseCode:'MATH1021', title:'Applied Mathematics / Calculus',            stream:'Natural', semester:2, icon:'📏', category:'semester2', level:'Advanced',     duration:'16 weeks', description:'Integral calculus, differential equations, linear algebra, and vector calculus for engineering and science majors. Builds on Math 1011.' },
+          { courseCode:'BIOL1012', title:'General Biology',                           stream:'Natural', semester:2, icon:'🔬', category:'semester2', level:'Intermediate', duration:'16 weeks', description:'Cell biology, genetics, evolution, ecology, and physiology. Foundation course for Medicine and Natural Science students.' },
+          { courseCode:'EMTE1012', title:'Introduction to Emerging Technologies',     stream:'Natural', semester:2, icon:'💻', category:'semester2', level:'Beginner',     duration:'12 weeks', description:'Practical introduction to Artificial Intelligence, Machine Learning, Cloud Computing, Cybersecurity, and the Internet of Things for Natural Science freshmen.' },
+          // ── SEMESTER 2 — SOCIAL
+          { courseCode:'STAT1012', title:'Basic Statistics',                          stream:'Social',  semester:2, icon:'📈', category:'semester2', level:'Beginner',     duration:'14 weeks', description:'Descriptive and inferential statistics, data collection, probability, frequency distributions, hypothesis testing, and statistical software for Social Science students.' },
+        ];
+
+        const admin = await User.findOne({ role: 'admin' });
+        if (!admin) return res.status(404).json({ success: false, message: 'No admin found. Create admin first via /api/seed-admin' });
+
+        // Delete previously seeded courses only
+        await Course.deleteMany({ courseCode: { $exists: true, $ne: null } });
+
+        let count = 0;
+        for (const c of COURSES) {
+            const isPremium = true;
+            await Course.create({
+                ...c,
+                price:          1000,
+                isPremium,
+                isLocked:       true,
+                isFreePreview:  true,
+                isPublished:    true,
+                status:         'approved',
+                instructor:     admin._id,
+                instructorName: admin.fullName || 'Alpha Freshman Tutorial',
+                department:     c.stream === 'Common'  ? `Semester ${c.semester} – Common` :
+                                c.stream === 'Natural' ? `Semester ${c.semester} – Natural Science` :
+                                                        `Semester ${c.semester} – Social Science`,
+                videos:    [],
+                chapters:  [],
+                totalLessons: 0
+            });
+            count++;
+        }
+
+        res.json({
+            success: true,
+            message: `✅ Seeded ${count} courses successfully!`,
+            breakdown: {
+                semester1: COURSES.filter(c => c.semester === 1).length,
+                semester2: COURSES.filter(c => c.semester === 2).length,
+                common:    COURSES.filter(c => c.stream === 'Common').length,
+                natural:   COURSES.filter(c => c.stream === 'Natural').length,
+                social:    COURSES.filter(c => c.stream === 'Social').length,
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+app.get('/api/test-email', async (req, res) => {
+    const secret = req.query.secret;
+    if (secret !== (process.env.SEED_SECRET || 'alpha-seed-2024')) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    const { sendEmail } = require('../server/utils/sendEmail');
+    const to = req.query.to || process.env.OWNER_EMAIL || process.env.SMTP_USER;
+    if (!to) return res.status(400).json({ success: false, message: 'No recipient. Set OWNER_EMAIL env var.' });
+
+    const smtpConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASS) || !!process.env.RESEND_API_KEY;
+
+    try {
+        await sendEmail({
+            to,
+            subject: '✅ Alpha Freshman Tutorial — SMTP Test',
+            html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+                <h2 style="color:#667eea">✅ SMTP is working!</h2>
+                <p>This is a test email from Alpha Freshman Tutorial.</p>
+                <p><strong>SMTP_USER:</strong> ${process.env.SMTP_USER || 'NOT SET ❌'}</p>
+                <p><strong>SMTP configured:</strong> ${smtpConfigured ? 'YES ✅' : 'NO ❌'}</p>
+                <p><strong>NODE_ENV:</strong> ${process.env.NODE_ENV || 'not set'}</p>
+                <p><strong>Sent at:</strong> ${new Date().toLocaleString()}</p>
+            </div>`
+        });
+        res.json({ success: true, message: `Test email sent to ${to}`, smtpConfigured });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: `Email failed: ${err.message}`,
+            smtpConfigured,
+            smtpUser: process.env.SMTP_USER ? '✅ set' : '❌ NOT SET',
+            smtpPass: process.env.SMTP_PASS ? '✅ set' : '❌ NOT SET',
+            hint: 'Check SMTP_USER and SMTP_PASS in Vercel env vars, then Redeploy'
+        });
+    }
+});
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth',        authRoutes);
 

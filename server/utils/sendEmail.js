@@ -162,7 +162,7 @@ const templates = {
                 <li>Browse 22 Ethiopian Freshman courses</li>
                 <li>Request enrollment in your desired courses</li>
                 <li>Track your progress on the dashboard</li>
-                <li>Earn certificates upon completion</li>
+                <li>Study with AI-powered quizzes and notes</li>
               </ul>
             </div>
             <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/courses.html"
@@ -177,14 +177,23 @@ const templates = {
 async function sendEmail({ to, subject, html, attachments }) {
     const hasConfig = process.env.RESEND_API_KEY || process.env.SMTP_USER;
     if (!hasConfig) {
-        console.log(`[Email skipped — no SMTP/Resend config] To: ${to} | Subject: ${subject}`);
+        console.warn(`[Email SKIPPED — no SMTP/Resend config set in env vars]`);
+        console.warn(`  → To: ${to}`);
+        console.warn(`  → Subject: ${subject}`);
+        console.warn(`  → Fix: Set SMTP_USER and SMTP_PASS in Vercel environment variables`);
         return;
     }
     const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@alpha-freshman-tutorial.com';
     const mailOpts = { from: `"Alpha Freshman Tutorial" <${fromAddress}>`, to, subject, html };
     if (attachments && attachments.length > 0) mailOpts.attachments = attachments;
-    await transporter.sendMail(mailOpts);
-    console.log(`[Email sent] To: ${to} | Subject: ${subject}`);
+    try {
+        const info = await transporter.sendMail(mailOpts);
+        console.log(`[Email sent ✅] To: ${to} | Subject: ${subject} | MsgId: ${info.messageId}`);
+    } catch (err) {
+        console.error(`[Email FAILED ❌] To: ${to} | Error: ${err.message}`);
+        // Re-throw so callers can handle it
+        throw err;
+    }
 }
 
 // ── Owner notification (payment or enrollment event) ─────────────────────────

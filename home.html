@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alpha Freshman Tutorial - Learn Anything</title>
+    <!-- v2.1 -->
     <link rel="stylesheet" href="elearning.css">
     <meta name="theme-color" content="#3B82F6">
     <meta name="mobile-web-app-capable" content="yes">
@@ -16,6 +17,9 @@
     <link rel="apple-touch-icon" sizes="152x152" href="logo.png">
     <link rel="apple-touch-icon" sizes="120x120" href="logo.png">
     <link rel="apple-touch-icon" sizes="76x76" href="logo.png">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -26,20 +30,21 @@
             <ul class="nav-links">
                 <li><a href="home.html">Home</a></li>
                 <li><a href="courses.html">Courses</a></li>
-                <li><a href="study-hub.html">📚 Study Hub</a></li>
-                <li><a href="department-guide.html">🎓 Departments</a></li>
-                <li><button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button></li>
+                <li><a href="study-hub.html"><i class="fa-solid fa-book-open" style="margin-right:4px"></i> Study Hub</a></li>
+                <li><a href="department-guide.html"><i class="fa-solid fa-building" style="margin-right:4px"></i> Departments</a></li>
+                <li><a href="offline.html"><i class="fa-solid fa-video" style="margin-right:4px"></i> Offline Videos</a></li>
+                <li><button id="themeToggle" class="theme-toggle" title="Toggle theme"</button></li>
                 <li><button id="installAppBtn" onclick="installApp()" style="
                     background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;
                     padding:7px 16px;border-radius:20px;font-weight:700;cursor:pointer;
                     font-size:0.82rem;white-space:nowrap;display:none">
-                    📲 Install App
+                    <i class="fa-solid fa-download" style="margin-right:4px"></i> Install App
                 </button></li>
                 <li><a href="download.html" style="
                     background:linear-gradient(135deg,#27ae60,#1a7030);color:white;
                     padding:7px 16px;border-radius:20px;font-weight:700;font-size:0.82rem;
                     text-decoration:none;white-space:nowrap">
-                    📲 Get App
+                    <i class="fa-solid fa-mobile-screen" style="margin-right:4px"></i> Get App
                 </a></li>
                 <li><a href="auth-login.html" class="btn-nav-login">Login</a></li>
                 <li><a href="auth-register.html" class="btn-nav-register">Sign Up</a></li>
@@ -47,87 +52,613 @@
         </div>
     </nav>
 
-    <section class="hero-home">
-        <div class="container">
-            <h1>Way to Success</h1>
-            <p>Complete Ethiopian Freshman Curriculum - First Year Foundation Courses</p>
-            <div class="hero-search">
-                <input type="text" placeholder="Search courses, topics, instructors..." id="heroSearch">
-                <button class="btn" onclick="searchFromHero()">Search</button>
+    <!-- -- Modern Hero Section v3 ---------------------------------------------- -->
+    <style>
+    .hero-v3-grid { display:grid; grid-template-columns:7fr 5fr; gap:48px; align-items:center; }
+    @media(max-width:900px){ .hero-v3-grid { grid-template-columns:1fr; } .hero-v3-card { display:none !important; } }
+    .hero-search-bar { display:flex; align-items:center; gap:8px; background:rgba(15,23,42,0.8); border:1px solid #1e293b; padding:8px; border-radius:20px; max-width:480px; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+    .hero-search-bar input { background:transparent; border:none; outline:none; color:white; font-size:0.88rem; flex:1; padding:6px 8px; }
+    .hero-search-bar input::placeholder { color:#64748b; }
+    .hero-search-btn { padding:10px 22px; background:linear-gradient(135deg,#f59e0b,#ea580c); color:#0f172a; font-weight:900; font-size:0.82rem; border:none; border-radius:14px; cursor:pointer; white-space:nowrap; }
+    .hero-nav-btn { display:block; padding:14px; background:#0a0f1e; border:1px solid #1e293b; border-radius:16px; text-align:center; text-decoration:none; transition:all 0.2s; }
+    .hero-nav-btn:hover { border-color:#4f46e5; background:rgba(79,70,229,0.1); }
+    .hero-nav-btn:hover .hero-nav-icon { transform:scale(1.15); }
+    .hero-nav-icon { font-size:1.4rem; display:block; margin-bottom:4px; transition:transform 0.2s; }
+    @keyframes hero-pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+    </style>
+    <section style="position:relative;background:linear-gradient(135deg,#020817,#0f172a,#020817);
+        color:white;overflow:hidden;padding:72px 24px;border-bottom:1px solid #0f172a">
+
+        <!-- Decorative blurs -->
+        <div style="position:absolute;top:-80px;left:-80px;width:360px;height:360px;
+            background:rgba(168,85,247,0.12);border-radius:50%;filter:blur(80px);pointer-events:none"></div>
+        <div style="position:absolute;bottom:-80px;right:-80px;width:360px;height:360px;
+            background:rgba(99,102,241,0.12);border-radius:50%;filter:blur(80px);pointer-events:none"></div>
+
+        <div style="max-width:1200px;margin:0 auto;position:relative;z-index:1" class="hero-v3-grid">
+
+            <!-- Left: text + search -->
+            <div>
+                <span style="display:inline-block;padding:5px 16px;border-radius:50px;
+                    background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);
+                    color:#818cf8;font-weight:700;font-size:0.72rem;letter-spacing:0.1em;
+                    text-transform:uppercase;margin-bottom:20px">
+                    <i class="fa-solid fa-graduation-cap" style="margin-right:4px"></i> THE #1 FRESHMAN LEARNING PLATFORM
+                </span>
+
+                <h1 style="font-size:clamp(2.2rem,5vw,3.8rem);font-weight:900;line-height:1.08;
+                    margin:0 0 18px;color:white;letter-spacing:-0.02em">
+                    Your Gateway to<br>
+                    <span style="background:linear-gradient(135deg,#fbbf24,#f97316,#fbbf24);
+                        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                        background-clip:text">Academic Success</span>
+                </h1>
+
+                <p style="color:#94a3b8;font-size:0.95rem;margin:0 0 28px;line-height:1.65;max-width:480px">
+                    Complete Ethiopian Freshman Curriculum &amp; Health Science CoC Preparation
+                    with top-tier materials.
+                </p>
+
+                <!-- Search -->
+                <div class="hero-search-bar" style="margin-bottom:32px">
+                    <span style="color:#64748b;font-size:1rem;padding-left:4px"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" id="heroSearch"
+                        placeholder="Search courses, topics, instructors..."
+                        onkeydown="if(event.key==='Enter')searchFromHero()">
+                    <button class="hero-search-btn" onclick="searchFromHero()">Search</button>
+                </div>
+
+                <!-- Stats bar -->
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+                    padding-top:24px;border-top:1px solid rgba(30,41,59,0.9)">
+                    <div><h3 style="font-size:1.35rem;font-weight:900;color:#fbbf24;margin:0"><span id="stat-users">1,200+</span></h3><p style="font-size:0.7rem;color:#64748b;margin:3px 0 0">Students</p></div>
+                    <div><h3 style="font-size:1.35rem;font-weight:900;color:#fbbf24;margin:0"><span id="stat-courses">22</span></h3><p style="font-size:0.7rem;color:#64748b;margin:3px 0 0">Courses</p></div>
+                    <div><h3 style="font-size:1.35rem;font-weight:900;color:#fbbf24;margin:0"><span id="stat-instructors">15+</span></h3><p style="font-size:0.7rem;color:#64748b;margin:3px 0 0">Instructors</p></div>
+                    <div><h3 style="font-size:1.35rem;font-weight:900;color:#fbbf24;margin:0">2</h3><p style="font-size:0.7rem;color:#64748b;margin:3px 0 0">Semesters</p></div>
+                </div>
             </div>
-            <div class="hero-stats">
-                <div class="stat">
-                    <h3 id="stat-users">—</h3>
-                    <p>Students</p>
-                </div>
-                <div class="stat">
-                    <h3 id="stat-courses">—</h3>
-                    <p>Courses</p>
-                </div>
-                <div class="stat">
-                    <h3 id="stat-instructors">—</h3>
-                    <p>Instructors</p>
-                </div>
-                <div class="stat">
-                    <h3>2</h3>
-                    <p>Semesters</p>
+
+            <!-- Right: interactive card -->
+            <div class="hero-v3-card">
+                <div style="background:rgba(15,23,42,0.9);border:1px solid #1e293b;
+                    padding:24px;border-radius:28px;box-shadow:0 30px 60px rgba(0,0,0,0.6);
+                    display:flex;flex-direction:column;gap:20px">
+
+                    <!-- Interactive Learning row -->
+                    <a href="courses.html" style="display:flex;align-items:center;gap:16px;
+                        padding:12px;border-radius:18px;text-decoration:none;
+                        transition:background 0.2s"
+                        onmouseover="this.style.background='rgba(30,41,59,0.7)'"
+                        onmouseout="this.style.background='transparent'">
+                        <div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;
+                            background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);
+                            display:flex;align-items:center;justify-content:center;font-size:1.5rem"><i class="fa-solid fa-laptop-code" style="color:#818cf8"></i></div>
+                        <div>
+                            <h4 style="font-weight:800;color:white;margin:0;font-size:0.95rem">Interactive Learning</h4>
+                            <p style="font-size:0.72rem;color:#64748b;margin:3px 0 0">High quality modules &amp; practice exams</p>
+                        </div>
+                    </a>
+
+                    <!-- Progress preview -->
+                    <div style="background:#020817;padding:16px;border-radius:14px;border:1px solid #1e293b">
+                        <div style="display:flex;justify-content:space-between;font-size:0.72rem;
+                            font-weight:700;color:#64748b;margin-bottom:8px">
+                            <span>Curriculum Progress</span><span style="color:#818cf8">75%</span>
+                        </div>
+                        <div style="height:8px;background:#0f172a;border-radius:8px;overflow:hidden">
+                            <div style="height:100%;width:75%;border-radius:8px;
+                                background:linear-gradient(90deg,#4f46e5,#f59e0b);
+                                animation:hero-pulse 2s infinite"></div>
+                        </div>
+                    </div>
+
+                    <!-- Quick nav: 2�2 grid -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                        <a href="courses.html" class="hero-nav-btn">
+                            <span class="hero-nav-icon"><i class="fa-solid fa-book" style="color:#fbbf24"></i></span>
+                            <span style="font-size:0.72rem;font-weight:700;color:#e2e8f0">20+ Courses</span>
+                        </a>
+                        <a href="offline.html" class="hero-nav-btn">
+                            <span class="hero-nav-icon"><i class="fa-solid fa-user-doctor" style="color:#fbbf24"></i></span>
+                            <span style="font-size:0.72rem;font-weight:700;color:#e2e8f0">CoC Prep</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="features">
-        <div class="container">
-            <h2>Ethiopian Freshman Year Structure</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">📚</div>
-                    <h3>First Semester</h3>
-                    <p>Common foundation courses: English, Critical Thinking, Math, Geography, Psychology, Physical Fitness, and Physics</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎓</div>
-                    <h3>Second Semester</h3>
-                    <p>Continuation courses: Advanced English, Anthropology, ICT, Entrepreneurship, History, Civic Education, Global Affairs, Economics, and Inclusiveness</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔬</div>
-                    <h3>Natural Science Stream</h3>
-                    <p>Focus on Physics, Biology, Chemistry, and Advanced Math - leads to Engineering, Medicine, and Natural Sciences</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🌍</div>
-                    <h3>Social Science Stream</h3>
-                    <p>Focus on Economics, Geography, History, and Communication - leads to Law, Social Sciences, Education, and Business</p>
-                </div>
+    <!-- -- Promo Ticker Banner ------------------------------------------------ -->
+    <div id="promoTicker" style="
+        width:100%;
+        background:linear-gradient(90deg,#f59e0b,#f43f5e,#4f46e5);
+        color:white;
+        padding:10px 8px;
+        box-shadow:0 3px 12px rgba(0,0,0,0.25);
+        border-top:1px solid rgba(255,255,255,0.15);
+        border-bottom:1px solid rgba(255,255,255,0.15);
+        position:relative;
+        z-index:20;
+        display:block">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;max-width:1200px;margin:0 auto">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;overflow:hidden">
+                <span style="background:white;color:#0f172a;font-size:0.72rem;font-weight:900;
+                    padding:3px 10px;border-radius:50px;white-space:nowrap;flex-shrink:0;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.2)">399 ETB <i class="fa-solid fa-fire" style="color:#f43f5e"></i></span>
+                <marquee behavior="scroll" direction="left" scrollamount="5"
+                    style="font-size:0.82rem;font-weight:700;letter-spacing:0.03em;line-height:1.4;display:block">
+                    &#x1F393; ሁሉም Freshman ኮርሶች &#8212; አሁን ተመዝገቡ!
+                    &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
+                    &#x1F4E5; ቪዲዮ ወርዶ ያለ ኢንተርኔት ይማሩ
+                    &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
+                    &#x2728; Alpha Freshman Tutorial
+                    &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
+                </marquee>
             </div>
+            <button onclick="tickerHandleClick()"
+                style="flex-shrink:0;background:#0f172a;color:#fbbf24;font-weight:900;font-size:0.75rem;
+                padding:7px 16px;border-radius:50px;border:1.5px solid rgba(251,191,36,0.5);
+                white-space:nowrap;cursor:pointer;z-index:30;transition:background 0.2s,transform 0.15s;
+                box-shadow:0 2px 8px rgba(0,0,0,0.3)"
+                onmouseover="this.style.background='#000';this.style.transform='scale(1.05)'"
+                onmouseout="this.style.background='#0f172a';this.style.transform='scale(1)'">
+                <span id="tickerBtnLabel">399 ETB | &#x2192; ተመዝገቡ</span>
+            </button>
+        </div>
+    </div>
+    <script>
+    function tickerHandleClick() {
+        var user = null; try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
+        if (user && user.id) { window.location.href = 'payment.html?method=manual'; }
+        else { window.location.href = 'auth-login.html?redirect=' + encodeURIComponent('payment.html?method=manual'); }
+    }
+    (function() {
+        var user = null; try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
+        var el = document.getElementById('tickerBtnLabel');
+        if (el && user && user.id) el.textContent = '399 ETB | &#x2192; ይቀጥሉ';    })();
+    </script>
+
+    <!-- -- Categories Section (4 Cards) ----------------------------------------------- -->
+    <style>
+    .cat-card {
+        background:#0f172a; border:1px solid #1e293b; border-radius:24px;
+        padding:32px 20px; text-align:center; display:block; text-decoration:none;
+        transition:transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        cursor:pointer; position:relative; color:inherit; width:100%;
+    }
+    .cat-card:hover { transform:translateY(-8px); border-color:#4f46e5; box-shadow:0 16px 40px rgba(99,102,241,0.15); }
+    .cat-icon-ring { width:64px; height:64px; border-radius:18px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; }
+    .cat-badge { position:absolute; top:14px; right:14px; color:white; font-size:10px; font-weight:900; padding:3px 10px; border-radius:50px; }
+    .cat-cards-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+    @media(max-width:900px){ .cat-cards-grid { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:480px){ .cat-cards-grid { grid-template-columns:1fr; } }
+    #offlineModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:9000;
+        align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(6px); }
+    #offlineModal.open { display:flex; }
+    .offline-modal-box { background:#0f172a; border:1px solid #1e293b; border-radius:28px;
+        width:100%; max-width:700px; max-height:88vh; overflow-y:auto; padding:28px; }
+    </style>
+
+    <section style="padding:64px 24px;background:#020817">
+        <div style="max-width:1200px;margin:0 auto;text-align:center">
+            <h2 style="font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:900;color:white;margin:0 0 10px">
+                Ethiopian Freshman &amp; Health Science CoC
+            </h2>
+            <p style="color:#64748b;font-size:0.88rem;margin:0 0 40px">
+                ሁሉም ፍሬሽማን ኮርሶች በአንድ ቦታ &#8212; ቀላል፣ ፈጣን፣ ውጤታማ
+            </p>
+            <div class="cat-cards-grid">
+                <button class="cat-card" onclick="selectCat('sem1')">
+                    <div class="cat-icon-ring" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.25)"><i class="fa-solid fa-sun" style="color:#f59e0b;font-size:1.8rem"></i></div>
+                    <h3 style="font-weight:800;color:white;font-size:1rem;margin:0 0 6px">First Semester</h3>
+                    <p style="font-size:11px;color:#818cf8;margin:0">ሴሚስተር አንድ &#8212; ኮርሶች</p>
+                </button>
+                <button class="cat-card" onclick="selectCat('sem2')">
+                    <div class="cat-icon-ring" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25)"><i class="fa-solid fa-moon" style="color:#818cf8;font-size:1.8rem"></i></div>
+                    <h3 style="font-weight:800;color:white;font-size:1rem;margin:0 0 6px">Second Semester</h3>
+                    <p style="font-size:11px;color:#818cf8;margin:0">ሴሚስተር ሁለት &#8212; ኮርሶች</p>
+                </button>
+                <button class="cat-card" onclick="selectCat('coc')">
+                    <span class="cat-badge" style="background:#dc2626">NEW</span>
+                    <div class="cat-icon-ring" style="background:rgba(244,63,94,0.15);border:1px solid rgba(244,63,94,0.25)"><i class="fa-solid fa-heart-pulse" style="color:#f43f5e;font-size:1.8rem"></i></div>
+                    <h3 style="font-weight:800;color:white;font-size:1rem;margin:0 0 4px">CoC for Health Science</h3>
+                    <p style="font-size:10px;color:#fb7185;font-weight:700;margin:0 0 4px">For All Health Science Students</p>
+                    <p style="font-size:11px;color:#818cf8;margin:0">የጤና ሳይንስ ተማሪዎች</p>
+                </button>
+                <button class="cat-card" onclick="openOfflineModal()">
+                    <span class="cat-badge" style="background:#059669">OFFLINE</span>
+                    <div class="cat-icon-ring" style="background:rgba(5,150,105,0.15);border:1px solid rgba(5,150,105,0.25)"><i class="fa-solid fa-download" style="color:#34d399;font-size:1.8rem"></i></div>
+                    <h3 style="font-weight:800;color:white;font-size:1rem;margin:0 0 6px">Offline Downloads</h3>
+                    <p style="font-size:11px;color:#34d399;margin:0">ያለ ኢንተርኔት ይማሩ</p>
+                </button>
+            </div>
+            <div id="catDrawer" style="display:none;background:#0f172a;color:white;border-radius:20px;
+                padding:24px;border:1px solid rgba(99,102,241,0.3);margin-top:16px;text-align:left;
+                max-width:900px;margin-left:auto;margin-right:auto"></div>
         </div>
     </section>
 
-    <section class="features" style="background: var(--bg-primary);">
-        <div class="container">
-            <h2>After Freshman Year</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">📋</div>
-                    <h3>Department Placement</h3>
-                    <p>Students are placed into their chosen college/department based on Freshman GPA and entrance exam results</p>
+    <!-- Offline Modal -->
+    <div id="offlineModal">
+        <div class="offline-modal-box">
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                padding-bottom:18px;margin-bottom:20px;border-bottom:1px solid #1e293b">
+                <div style="display:flex;align-items:center;gap:12px">
+                    <span style="font-size:1.6rem"><i class="fa-solid fa-download" style="color:#34d399"></i></span>
+                    <div>
+                        <h3 style="color:white;font-size:1.1rem;font-weight:900;margin:0">Offline Library</h3>
+                        <p style="color:#64748b;font-size:0.78rem;margin:3px 0 0">
+                            የወረዱ ቪዲዮዎች እና PDF ፋይሎች ያለ ኢንተርኔት ይታያሉ
+                        </p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3>Career Pathways</h3>
-                    <p>Natural Science leads to Engineering, Medicine, Natural Sciences. Social Science leads to Law, Business, Education, Social Sciences</p>
+                <button onclick="closeOfflineModal()"
+                    style="width:38px;height:38px;border-radius:50%;background:#1e293b;border:none;
+                    color:#94a3b8;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;
+                    justify-content:center;font-weight:700">&#10005;</button>
+            </div>
+            <div id="offlineModalContent">
+                <div style="text-align:center;padding:2rem;color:#64748b">
+                    <div style="font-size:2rem;margin-bottom:8px">?</div>
+                    <p style="font-size:0.85rem">Loading...</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⏱️</div>
-                    <h3>6-Month Access</h3>
-                    <p>All courses include 6 months of full access to materials and resources</p>
+            </div>
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid #1e293b;
+                display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                <a href="offline.html" style="padding:10px 24px;background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                    color:white;border-radius:14px;font-size:0.85rem;font-weight:700;text-decoration:none">
+                    <i class="fa-solid fa-download" style="margin-right:4px"></i> Full Offline Library &#x2192;
+                </a>
+                <a href="courses.html" style="padding:10px 24px;background:#1e293b;color:#94a3b8;
+                    border:1px solid #334155;border-radius:14px;font-size:0.85rem;font-weight:700;text-decoration:none">
+                    <i class="fa-solid fa-book" style="margin-right:4px"></i> Browse Courses
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function openOfflineModal() {
+        document.getElementById('offlineModal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+        loadOfflineModalContent();
+    }
+    function closeOfflineModal() {
+        document.getElementById('offlineModal').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    document.getElementById('offlineModal').addEventListener('click', function(e) {
+        if (e.target === this) closeOfflineModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeOfflineModal();
+    });
+    async function loadOfflineModalContent() {
+        var box = document.getElementById('offlineModalContent');
+        try {
+            var openDB = function(name, ver, upgrade) {
+                return new Promise(function(res, rej) {
+                    var r = indexedDB.open(name, ver);
+                    if (upgrade) r.onupgradeneeded = upgrade;
+                    r.onsuccess = function() { res(r.result); };
+                    r.onerror   = function() { rej(r.error); };
+                });
+            };
+            var getAll = function(db, store) {
+                return new Promise(function(res, rej) {
+                    var req = db.transaction(store,'readonly').objectStore(store).getAll();
+                    req.onsuccess = function() { res(req.result || []); };
+                    req.onerror   = function() { rej(req.error); };
+                });
+            };
+            var db1 = await openDB('alpha-offline-db', 2, function(e) {
+                var d = e.target.result;
+                if (!d.objectStoreNames.contains('videos')) d.createObjectStore('videos', { keyPath:'id' });
+            });
+            var db2 = await openDB('AlphaOfflineDB', 2, function(e) {
+                var d = e.target.result;
+                if (!d.objectStoreNames.contains('videos')) d.createObjectStore('videos');
+            });
+            var a1 = await getAll(db1, 'videos').catch(function(){return [];});
+            var a2 = await getAll(db2, 'videos').catch(function(){return [];});
+            var all = a1.concat(a2);
+            if (all.length === 0) {
+                box.innerHTML = '<div style="text-align:center;padding:2.5rem;color:#64748b">' +
+                    '<div style="font-size:2.5rem;margin-bottom:10px">&#x1F4C2;</div>' +
+                    '<p style="font-size:0.88rem">ምንም ያወረደ ቪዲዮ የለም</p>' +
+                    '<p style="font-size:0.78rem;margin-top:6px">Offline page ላይ "&#x1F4BE; Save Offline" ይጫኑ</p></div>';
+                return;
+            }
+            var groups = {};
+            all.forEach(function(v) {
+                var label = v.courseTitle || v.course || 'Saved Videos';
+                if (!groups[label]) groups[label] = [];
+                groups[label].push(v);
+            });
+            var html = '<div style="display:flex;flex-direction:column;gap:12px">';
+            Object.keys(groups).forEach(function(label) {
+                html += '<div style="background:#020817;border:1px solid #1e293b;border-radius:16px;padding:14px">' +
+                    '<h4 style="color:#818cf8;font-size:0.8rem;font-weight:700;margin:0 0 10px">&#x1F4DA; ' + label + '</h4>' +
+                    '<div style="display:flex;flex-direction:column;gap:7px">';
+                groups[label].forEach(function(v) {
+                    var title = v.title || v.lessonTitle || 'Lesson';
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;' +
+                        'background:#0f172a;padding:10px 14px;border-radius:12px;border:1px solid #1e293b">' +
+                        '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">' +
+                        '<span style="font-size:1rem;flex-shrink:0">&#x1F3AC;</span>' +
+                        '<p style="color:#e2e8f0;font-size:0.82rem;font-weight:600;margin:0;' +
+                        'white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + title + '</p></div>' +
+                        (v.youtubeId ?
+                            '<a href="offline.html" style="padding:5px 12px;background:#4f46e5;color:white;font-size:11px;font-weight:700;border-radius:10px;text-decoration:none;white-space:nowrap">&#x25B6; Watch</a>'
+                            : '<span style="color:#64748b;font-size:11px;white-space:nowrap">No video</span>') +
+                        '</div>';
+                });
+                html += '</div></div>';
+            });
+            html += '</div>';
+            box.innerHTML = html;
+        } catch(err) {
+            box.innerHTML = '<p style="color:#f87171;text-align:center;font-size:0.85rem">' + err.message + '</p>';
+        }
+    }
+    </script>
+
+    <script>
+    (function() {
+        var CATS = [
+            { id:'sem1', icon:'&#x2600;&#xFE0F;', title:'First Semester', gradient:'linear-gradient(135deg,#f59e0b,#ea580c)',
+              desc:'የፍሬሽማን ዓመት ሴሚስተር አንድ — Natural እና Social Science ኮርሶች',
+              streams:{ natural:[{id:'nat_eng101',name:'Communicative English Skills I'},{id:'nat_math101',name:'Applied Mathematics I'},{id:'nat_phys101',name:'General Physics'},{id:'nat_chem101',name:'General Chemistry'},{id:'nat_crit101',name:'Critical Thinking (Logic)'},{id:'nat_geog101',name:'Geography of Ethiopia and the Horn'},{id:'nat_psych101',name:'General Psychology'},{id:'nat_pe101',name:'Physical Fitness & Health'}], social:[{id:'soc_eng101',name:'Communicative English Skills I'},{id:'soc_math101',name:'General Mathematics for Social Science'},{id:'soc_econ101',name:'Introduction to Economics'},{id:'soc_geog101',name:'Geography of Ethiopia and the Horn'},{id:'soc_crit101',name:'Critical Thinking (Logic)'},{id:'soc_psych101',name:'General Psychology'},{id:'soc_pe101',name:'Physical Fitness & Health'}] }
+            },
+            { id:'sem2', icon:'&#x1F319;', title:'Second Semester', gradient:'linear-gradient(135deg,#3b82f6,#4f46e5)',
+              desc:'ሁለተኛ ሴሚስተር ኮርሶች — Natural እና Social Science ኮርሶች',
+              streams:{ natural:[{id:'nat_eng102',name:'Academic Writing (English II)'},{id:'nat_math102',name:'Applied Mathematics II'},{id:'nat_bio101',name:'General Biology'},{id:'nat_ict101',name:'Emerging Technologies / ICT'},{id:'nat_hist101',name:'History of Ethiopia and the Horn'},{id:'nat_civic101',name:'Moral and Civic Education'},{id:'nat_incl101',name:'Inclusiveness'}], social:[{id:'soc_eng102',name:'Academic Writing (English II)'},{id:'soc_bus101',name:'Entrepreneurship'},{id:'soc_anth101',name:'Social Anthropology'},{id:'soc_ict101',name:'Emerging Technologies / ICT'},{id:'soc_hist101',name:'History of Ethiopia and the Horn'},{id:'soc_civic101',name:'Moral and Civic Education'},{id:'soc_incl101',name:'Inclusiveness'}] }
+            },
+            { id:'coc', icon:'&#x2695;&#xFE0F;', title:'CoC for Health Science', subTitleTag:'For All Health Science Students',
+              gradient:'linear-gradient(135deg,#f43f5e,#dc2626)', isHot:true,
+              desc:'ለጤና ሳይንስ ተማሪዎች CoC ፈተና ዝግጅት — ሁሉም ትምህርቶች በአንድ ቦታ',
+              subjects:[{id:'coc_anat_phys',name:'Human Anatomy & Physiology Review'},{id:'coc_bio',name:'General Biology CoC Prep'},{id:'coc_chem',name:'General Chemistry CoC Prep'},{id:'coc_ph_foundation',name:'Public Health & Epidemiology Basics'},{id:'coc_pharm_basic',name:'Basic Pharmacology & Therapeutics'},{id:'coc_eng',name:'English Language Competency Test'},{id:'coc_apt',name:'Scholastic Aptitude Test (CoC Special)'},{id:'coc_model_1',name:'Comprehensive Health Science Model Exam 1'},{id:'coc_model_2',name:'Comprehensive Health Science Model Exam 2'}]
+            }
+        ];
+        var selectedId = null;
+        var activeStream = 'natural';
+        function getUser(){try{return JSON.parse(localStorage.getItem('currentUser'));}catch(e){return null;}}
+        function isPaid(){var u=getUser();return u&&(u.paymentStatus==='APPROVED'||u.role==='admin'||u.role==='super_admin');}
+
+        // -- Course image map (icons8 3D Fluency - free, reliable) -------------
+        var COURSE_IMGS = {
+            'nat_eng101': 'https://img.icons8.com/3d-fluency/186/chat--v1.png',
+            'soc_eng101': 'https://img.icons8.com/3d-fluency/186/chat--v1.png',
+            'nat_eng102': 'https://img.icons8.com/3d-fluency/186/chat--v1.png',
+            'soc_eng102': 'https://img.icons8.com/3d-fluency/186/chat--v1.png',
+            'coc_eng':    'https://img.icons8.com/3d-fluency/186/chat--v1.png',
+            'nat_math101':'https://img.icons8.com/3d-fluency/186/math.png',
+            'soc_math101':'https://img.icons8.com/3d-fluency/186/math.png',
+            'nat_math102':'https://img.icons8.com/3d-fluency/186/math.png',
+            'nat_phys101':'https://img.icons8.com/3d-fluency/186/physics.png',
+            'nat_chem101':'https://img.icons8.com/3d-fluency/186/test-tube.png',
+            'coc_chem':   'https://img.icons8.com/3d-fluency/186/test-tube.png',
+            'nat_crit101':'https://img.icons8.com/3d-fluency/186/idea.png',
+            'soc_crit101':'https://img.icons8.com/3d-fluency/186/idea.png',
+            'nat_geog101':'https://img.icons8.com/3d-fluency/186/globe.png',
+            'soc_geog101':'https://img.icons8.com/3d-fluency/186/globe.png',
+            'nat_psych101':'https://img.icons8.com/3d-fluency/186/brain.png',
+            'soc_psych101':'https://img.icons8.com/3d-fluency/186/brain.png',
+            'nat_pe101':  'https://img.icons8.com/3d-fluency/186/dumbbell.png',
+            'soc_pe101':  'https://img.icons8.com/3d-fluency/186/dumbbell.png',
+            'nat_bio101': 'https://img.icons8.com/3d-fluency/186/microscope.png',
+            'coc_bio':    'https://img.icons8.com/3d-fluency/186/microscope.png',
+            'nat_hist101':'https://img.icons8.com/3d-fluency/186/books.png',
+            'soc_hist101':'https://img.icons8.com/3d-fluency/186/books.png',
+            'nat_ict101': 'https://img.icons8.com/3d-fluency/186/laptop.png',
+            'soc_ict101': 'https://img.icons8.com/3d-fluency/186/laptop.png',
+            'nat_civic101':'https://img.icons8.com/3d-fluency/186/scales.png',
+            'soc_civic101':'https://img.icons8.com/3d-fluency/186/scales.png',
+            'nat_incl101':'https://img.icons8.com/3d-fluency/186/handshake.png',
+            'soc_incl101':'https://img.icons8.com/3d-fluency/186/handshake.png',
+            'soc_bus101': 'https://img.icons8.com/3d-fluency/186/rocket.png',
+            'soc_anth101':'https://img.icons8.com/3d-fluency/186/library.png',
+            'soc_econ101':'https://img.icons8.com/3d-fluency/186/increase.png',
+            'coc_anat_phys':'https://img.icons8.com/3d-fluency/186/heart-with-pulse.png',
+            'coc_pharm_basic':'https://img.icons8.com/3d-fluency/186/pill.png',
+            'coc_ph_foundation':'https://img.icons8.com/3d-fluency/186/hospital.png',
+            'coc_apt':    'https://img.icons8.com/3d-fluency/186/test-passed.png',
+            'coc_model_1':'https://img.icons8.com/3d-fluency/186/test-passed.png',
+            'coc_model_2':'https://img.icons8.com/3d-fluency/186/test-passed.png'
+        };
+        var FALLBACK_IMG = 'https://img.icons8.com/3d-fluency/186/books.png';
+
+        // -- Subject tag map ----------------------------------------------------
+        var COURSE_TAGS = {
+            'nat_eng101':'&#x1F4AC; English', 'soc_eng101':'&#x1F4AC; English', 'nat_eng102':'&#x1F4AC; English', 'soc_eng102':'&#x1F4AC; English', 'coc_eng':'&#x1F4AC; English',
+            'nat_math101':'&#x1F4D0; Math', 'soc_math101':'&#x1F4D0; Math', 'nat_math102':'&#x1F4D0; Math',
+            'nat_phys101':'&#x26A1; Physics',
+            'nat_chem101':'&#x1F9EA; Chemistry', 'coc_chem':'&#x1F9EA; Chemistry',
+            'nat_crit101':'&#x1F4A1; Logic', 'soc_crit101':'&#x1F4A1; Logic',
+            'nat_geog101':'&#x1F30D; Geography', 'soc_geog101':'&#x1F30D; Geography',
+            'nat_psych101':'&#x1F9E0; Psychology', 'soc_psych101':'&#x1F9E0; Psychology',
+            'nat_pe101':'&#x1F3CB;&#xFE0F; Health', 'soc_pe101':'&#x1F3CB;&#xFE0F; Health',
+            'nat_bio101':'&#x1F52C; Biology', 'coc_bio':'&#x1F52C; Biology',
+            'nat_hist101':'&#x1F4DA; History', 'soc_hist101':'&#x1F4DA; History',
+            'nat_ict101':'&#x1F4BB; ICT', 'soc_ict101':'&#x1F4BB; ICT',
+            'nat_civic101':'&#x2696;&#xFE0F; Civic', 'soc_civic101':'&#x2696;&#xFE0F; Civic',
+            'nat_incl101':'&#x1F91D; Inclusive', 'soc_incl101':'&#x1F91D; Inclusive',
+            'soc_bus101':'&#x1F680; Business', 'soc_anth101':'&#x1F4D6; Anthropology', 'soc_econ101':'&#x1F4C8; Economics',
+            'coc_anat_phys':'&#x2764;&#xFE0F; Anatomy', 'coc_pharm_basic':'&#x1F48A; Pharmacy',
+            'coc_ph_foundation':'&#x1F3E5; Public Health',
+            'coc_apt':'&#x1F4DD; Aptitude', 'coc_model_1':'&#x1F4DD; Model Exam', 'coc_model_2':'&#x1F4DD; Model Exam'
+        };
+
+        // -- icons8 3D Fluency card --------------------------------------------
+        function courseCard(c, accentColor){
+            var paid   = isPaid();
+            var img    = COURSE_IMGS[c.id] || FALLBACK_IMG;
+            var tag    = COURSE_TAGS[c.id] || '';
+            var accent = accentColor || '#f59e0b';
+            var btnBg  = paid ? '#16a34a' : accent;
+            var btnColor = paid ? 'white' : '#0f172a';
+            var btnLabel = paid ? 'Continue Learning &rarr;' : '&#128274; View Course';
+            var hoverBorder = accentColor === '#f43f5e' ? 'rgba(244,63,94,0.5)' : 'rgba(245,158,11,0.5)';
+            var glowColor  = accentColor === '#f43f5e' ? 'rgba(244,63,94,0.08)' : 'rgba(245,158,11,0.08)';
+            return '<div onclick="handleCourseClick(\''+c.id+'\')" ' +
+                'style="background:#111625;border:1px solid rgba(30,41,59,0.8);border-radius:18px;overflow:hidden;' +
+                'display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;' +
+                'transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s" ' +
+                'onmouseover="this.style.borderColor=\''+hoverBorder+'\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 16px 40px rgba(0,0,0,0.5)\';" ' +
+                'onmouseout="this.style.borderColor=\'rgba(30,41,59,0.8)\';this.style.transform=\'translateY(0)\';this.style.boxShadow=\'none\';">' +
+                // Image area with hover glow overlay
+                '<div style="height:176px;background:#171d2f;display:flex;align-items:center;justify-content:center;' +
+                'flex-shrink:0;position:relative;overflow:hidden;padding:16px">' +
+                // Glow overlay (shown via parent hover in vanilla JS)
+                '<div id="glow-'+c.id+'" style="position:absolute;inset:0;background:linear-gradient(to bottom,'+glowColor+',transparent);opacity:0;transition:opacity 0.3s;pointer-events:none"></div>' +
+                (tag ? '<span style="position:absolute;top:12px;left:12px;background:rgba(15,23,42,0.9);' +
+                'color:#e2e8f0;font-size:10px;font-weight:600;padding:3px 10px;border-radius:8px;' +
+                'border:1px solid rgba(71,85,105,0.6);z-index:10">'+tag+'</span>' : '') +
+                '<img src="'+img+'" alt="'+c.name+'" loading="lazy" width="96" height="96" ' +
+                'style="width:96px;height:96px;object-fit:contain;transition:transform 0.3s;' +
+                'filter:drop-shadow(0 10px 15px rgba(0,0,0,0.4));position:relative;z-index:1" ' +
+                'onmouseover="this.style.transform=\'scale(1.1)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+                '</div>' +
+                // Title
+                '<div style="padding:16px 18px 8px">' +
+                '<h4 style="margin:0;font-size:0.82rem;font-weight:700;color:#f1f5f9;line-height:1.4;min-height:40px;' +
+                'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+c.name+'</h4>' +
+                '</div>' +
+                // Button
+                '<div style="padding:0 18px 18px">' +
+                '<button onclick="event.stopPropagation();handleCourseClick(\''+c.id+'\')" ' +
+                'style="width:100%;padding:10px;border-radius:12px;border:none;font-weight:700;font-size:11px;cursor:pointer;' +
+                'background:'+btnBg+';color:'+btnColor+';' +
+                'display:flex;align-items:center;justify-content:center;gap:5px;transition:opacity 0.2s,transform 0.1s" ' +
+                'onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'" ' +
+                'onmousedown="this.style.transform=\'scale(0.95)\'" onmouseup="this.style.transform=\'scale(1)\'">'+btnLabel+'</button>' +
+                '</div></div>';
+        }
+
+        function renderDrawer(cat){
+            var drawer = document.getElementById('catDrawer');
+            if(!cat){ drawer.style.display='none'; return; }
+            drawer.style.display = 'block';
+
+            // Header
+            var hdr = '<div style="display:flex;justify-content:space-between;align-items:flex-start;'+
+                'margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08)">' +
+                '<div><div style="display:flex;align-items:center;gap:10px">' +
+                '<span style="font-size:2rem">'+cat.icon+'</span>' +
+                '<div><h3 style="margin:0;font-size:1.05rem;font-weight:900;color:#fbbf24">'+cat.title+'</h3>' +
+                (cat.subTitleTag ? '<span style="display:inline-block;background:rgba(244,63,94,0.2);color:#fb7185;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:4px">'+cat.subTitleTag+'</span>' : '') +
+                '</div></div>' +
+                '<p style="margin:6px 0 0;font-size:0.75rem;color:#64748b">'+cat.desc+'</p></div>' +
+                '<button onclick="selectCat(null)" style="background:#1e293b;border:1px solid #334155;color:#64748b;'+
+                'padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">&#10005; ዝጋ</button></div>';
+
+            var body = '';
+            if(cat.streams){
+                // Stream tabs
+                var tabBar = '<div style="display:flex;gap:8px;margin-bottom:20px;background:rgba(0,0,0,0.3);'+
+                    'padding:5px;border-radius:14px;width:fit-content;border:1px solid rgba(255,255,255,0.07)">' +
+                    '<button onclick="switchStream(\'natural\')" style="padding:8px 18px;border-radius:10px;border:none;'+
+                    'font-weight:800;font-size:11px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;'+
+                    (activeStream==='natural' ? 'background:#059669;color:white;box-shadow:0 2px 8px rgba(5,150,105,0.4)' : 'background:transparent;color:#64748b')+'">'+
+                    '&#x1F52C; Natural Science</button>' +
+                    '<button onclick="switchStream(\'social\')" style="padding:8px 18px;border-radius:10px;border:none;'+
+                    'font-weight:800;font-size:11px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;'+
+                    (activeStream==='social' ? 'background:#7c3aed;color:white;box-shadow:0 2px 8px rgba(124,58,237,0.4)' : 'background:transparent;color:#64748b')+'">'+
+                    '&#x1F30F; Social Science</button></div>';
+
+                var courses = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">' +
+                    (cat.streams[activeStream]||[]).map(function(c){ return courseCard(c,'#f59e0b'); }).join('') + '</div>';
+                body = tabBar + courses;
+            } else if(cat.subjects){
+                body = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">' +
+                    cat.subjects.map(function(c){ return courseCard(c,'#f43f5e'); }).join('') + '</div>';
+            }
+            drawer.innerHTML = hdr + body;
+            drawer.scrollIntoView({behavior:'smooth', block:'nearest'});
+        }
+        window.switchStream=function(stream){activeStream=stream;var cat=CATS.find(function(c){return c.id===selectedId;});if(cat&&cat.streams)renderDrawer(cat);};
+        window.selectCat=function(id){
+            selectedId=(selectedId===id)?null:id;
+            activeStream='natural';
+            document.querySelectorAll('.cat-card').forEach(function(el){el.style.borderColor='#1e293b';el.style.boxShadow='';});
+            if(selectedId){var idx=['sem1','sem2','coc'].indexOf(selectedId);var cards=document.querySelectorAll('.cat-card');if(idx>=0&&cards[idx]){cards[idx].style.borderColor='#4f46e5';cards[idx].style.boxShadow='0 0 0 3px rgba(99,102,241,0.2)';}}
+            var cat=selectedId?CATS.find(function(c){return c.id===selectedId;}):null;
+            renderDrawer(cat);
+        };
+        window.handleCourseClick=function(courseId){if(isPaid()){window.location.href='course-detail.html?id='+courseId;}else{window.location.href='payment.html?method=manual';}};
+    })();
+    </script>
+    <!-- -- After Freshman Year Section --------------------------------------- -->
+    <section style="padding:80px 24px;background:#0f172a;color:white">
+        <div style="max-width:1200px;margin:0 auto;text-align:center">
+            <h2 style="font-size:clamp(1.8rem,4vw,2.5rem);font-weight:900;margin:0 0 12px;color:white">
+                After Freshman Year
+            </h2>
+            <p style="color:#94a3b8;max-width:560px;margin:0 auto 56px;font-size:0.9rem;line-height:1.6">
+                What happens next in your academic journey and how Alpha Freshman Tutorial helps you reach your goals.
+            </p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px">
+
+                <!-- Card 1 -->
+                <div style="background:rgba(30,41,59,0.6);border:1px solid rgba(51,65,85,0.6);
+                    border-radius:24px;padding:32px;text-align:left;transition:all 0.3s;cursor:default"
+                    onmouseover="this.style.transform='translateY(-8px)';this.style.borderColor='rgba(99,102,241,0.5)';this.style.boxShadow='0 25px 50px rgba(99,102,241,0.1)'"
+                    onmouseout="this.style.transform='translateY(0)';this.style.borderColor='rgba(51,65,85,0.6)';this.style.boxShadow='none'">
+                    <div style="width:56px;height:56px;border-radius:14px;
+                        background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(234,88,12,0.2));
+                        display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+                        margin-bottom:20px"><i class="fa-solid fa-building-columns" style="color:#f59e0b"></i></div>
+                    <h3 style="font-weight:800;font-size:1rem;color:white;margin:0 0 10px">Department Placement</h3>
+                    <p style="color:#94a3b8;font-size:0.82rem;line-height:1.6;margin:0">
+                        Students are placed into their chosen college/department based on Freshman GPA and entrance exam results.
+                    </p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🏆</div>
-                    <h3>Certificates</h3>
-                    <p>Earn certificates upon completion with lifetime access to your achievements</p>
+
+                <!-- Card 2 -->
+                <div style="background:rgba(30,41,59,0.6);border:1px solid rgba(51,65,85,0.6);
+                    border-radius:24px;padding:32px;text-align:left;transition:all 0.3s;cursor:default"
+                    onmouseover="this.style.transform='translateY(-8px)';this.style.borderColor='rgba(99,102,241,0.5)';this.style.boxShadow='0 25px 50px rgba(99,102,241,0.1)'"
+                    onmouseout="this.style.transform='translateY(0)';this.style.borderColor='rgba(51,65,85,0.6)';this.style.boxShadow='none'">
+                    <div style="width:56px;height:56px;border-radius:14px;
+                        background:linear-gradient(135deg,rgba(239,68,68,0.2),rgba(236,72,153,0.2));
+                        display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+                        margin-bottom:20px"><i class="fa-solid fa-road" style="color:#ef4444"></i></div>
+                    <h3 style="font-weight:800;font-size:1rem;color:white;margin:0 0 10px">Career Pathways</h3>
+                    <p style="color:#94a3b8;font-size:0.82rem;line-height:1.6;margin:0">
+                        Natural Science leads to Engineering, Medicine &amp; Natural Sciences. Social Science leads to Law, Business &amp; Social Sciences.
+                    </p>
                 </div>
+
+                <!-- Card 3 -->
+                <div style="background:rgba(30,41,59,0.6);border:1px solid rgba(51,65,85,0.6);
+                    border-radius:24px;padding:32px;text-align:left;transition:all 0.3s;cursor:default"
+                    onmouseover="this.style.transform='translateY(-8px)';this.style.borderColor='rgba(99,102,241,0.5)';this.style.boxShadow='0 25px 50px rgba(99,102,241,0.1)'"
+                    onmouseout="this.style.transform='translateY(0)';this.style.borderColor='rgba(51,65,85,0.6)';this.style.boxShadow='none'">
+                    <div style="width:56px;height:56px;border-radius:14px;
+                        background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(99,102,241,0.2));
+                        display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+                        margin-bottom:20px"><i class="fa-solid fa-calendar-days" style="color:#3b82f6"></i></div>
+                    <h3 style="font-weight:800;font-size:1rem;color:white;margin:0 0 10px">6-Month Access</h3>
+                    <p style="color:#94a3b8;font-size:0.82rem;line-height:1.6;margin:0">
+                        All courses include 6 months of full access to materials, video lectures, and practice resources.
+                    </p>
+                </div>
+
+                <!-- Card 4 -->
+                <div style="background:rgba(30,41,59,0.6);border:1px solid rgba(51,65,85,0.6);
+                    border-radius:24px;padding:32px;text-align:left;transition:all 0.3s;cursor:default"
+                    onmouseover="this.style.transform='translateY(-8px)';this.style.borderColor='rgba(99,102,241,0.5)';this.style.boxShadow='0 25px 50px rgba(99,102,241,0.1)'"
+                    onmouseout="this.style.transform='translateY(0)';this.style.borderColor='rgba(51,65,85,0.6)';this.style.boxShadow='none'">
+                    <div style="width:56px;height:56px;border-radius:14px;
+                        background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(13,148,136,0.2));
+                        display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+                        margin-bottom:20px"><i class="fa-solid fa-chart-line" style="color:#10b981"></i></div>
+                    <h3 style="font-weight:800;font-size:1rem;color:white;margin:0 0 10px">Progress Tracking</h3>
+                    <p style="color:#94a3b8;font-size:0.82rem;line-height:1.6;margin:0">
+                        Track your learning journey with detailed analytics, quiz scores, and lesson completion badges.
+                    </p>
+                </div>
+
             </div>
         </div>
     </section>
@@ -137,7 +668,7 @@
             <h2>Student Success Stories</h2>
             <div class="testimonials-grid">
                 <div class="testimonial-card">
-                    <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                    <div class="testimonial-rating">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                     <p class="testimonial-text">"Alpha Freshman Tutorial helped me excel in my first year. The courses are well-structured and the AI assistant answered all my questions. I got placed in Engineering with a 3.8 GPA!"</p>
                     <div class="testimonial-author">
                         <strong>Abebe Tesfaye</strong>
@@ -145,7 +676,7 @@
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                    <div class="testimonial-rating">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                     <p class="testimonial-text">"The study tips and exam preparation guidance were invaluable. I struggled with time management, but Alpha AI helped me create a perfect study schedule. Highly recommended!"</p>
                     <div class="testimonial-author">
                         <strong>Sara Mulugeta</strong>
@@ -153,7 +684,7 @@
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                    <div class="testimonial-rating">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                     <p class="testimonial-text">"As a Social Science student, the courses on History, Economics, and English were exactly what I needed. The instructors are knowledgeable and supportive. Now I'm pursuing Law!"</p>
                     <div class="testimonial-author">
                         <strong>Daniel Kebede</strong>
@@ -174,7 +705,7 @@
                         <span class="faq-icon">+</span>
                     </div>
                     <div class="faq-answer">
-                        <p>All courses include 6 months of full access to materials, videos, and resources. Certificates remain accessible for lifetime once earned.</p>
+                        <p>All courses include 6 months of full access to materials, videos, and resources.</p>
                     </div>
                 </div>
                 <div class="faq-item">
@@ -233,68 +764,7 @@
         </div>
     </section>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Alpha Freshman Tutorial</h3>
-                    <p>Way to Success - Empowering Freshman Students</p>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Quick Links</h3>
-                    <ul class="footer-links">
-                        <li><a href="home.html">Home</a></li>
-                        <li><a href="courses.html">Courses</a></li>
-                        <li><a href="auth-register.html">Sign Up</a></li>
-                        <li><a href="auth-login.html">Login</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Connect With Us</h3>
-                    <div class="social-links">
-                        <a href="https://youtube.com/@alphatutorial" target="_blank" title="YouTube" class="social-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                            </svg>
-                        </a>
-                        <a href="https://t.me/alphatutorial" target="_blank" title="Telegram" class="social-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                            </svg>
-                        </a>
-                        <a href="https://linkedin.com/company/alphatutorial" target="_blank" title="LinkedIn" class="social-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                            </svg>
-                        </a>
-                        <a href="https://facebook.com/alphatutorial" target="_blank" title="Facebook" class="social-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                            </svg>
-                        </a>
-                        <a href="https://instagram.com/alphatutorial" target="_blank" title="Instagram" class="social-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
-                            </svg>
-                        </a>
-                        <a href="https://wa.me/1234567890" target="_blank" title="WhatsApp" class="social-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Alpha Freshman Tutorial. All rights reserved. | Way to Success</p>
-                <p style="margin-top:6px;font-size:0.82rem;color:rgba(255,255,255,0.5)">
-                    Developed by <strong style="color:rgba(255,255,255,0.75)">Rehima Ali</strong>
-                </p>
-            </div>
-        </div>
-    </footer>
+    
 
     <script src="theme.js"></script>
     <script src="api.js"></script>
@@ -327,7 +797,7 @@
             if (query.trim()) window.location.href = `courses.html?search=${encodeURIComponent(query)}`;
         }
 
-        // ── Load live stats from API ──────────────────────────────────────────
+        // -- Load live stats from API ------------------------------------------
         async function loadLiveStats() {
             try {
                 const res = await api.getAdminStats();
@@ -361,11 +831,48 @@
         });
         function installApp() {
             if (typeof triggerInstall === 'function') triggerInstall();
-            else alert('📲 To install:\n\nAndroid: tap ⋮ menu → Add to Home Screen\niPhone: Share → Add to Home Screen\nDesktop: click ⊕ in address bar');
+            else alert('&#x1F4F1; To install:\n\nAndroid: tap ⋮ menu → Add to Home Screen\niPhone: Share → Add to Home Screen\nDesktop: click ⊕ in address bar');
         }
     </script>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <a href="home.html" class="nav-item active" id="mbn-home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="courses.html" class="nav-item" id="mbn-courses">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5Z"/></svg>
+            <span>Courses</span>
+        </a>
+        <a href="study-hub.html" class="nav-item" id="mbn-study">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span>Study</span>
+        </a>
+        <a href="student-dashboard.html" class="nav-item" id="mbn-dashboard">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+    <script>
+    // Highlight active tab based on current page
+    (function() {
+        const page = window.location.pathname.split('/').pop() || 'home.html';
+        const map = { 'home.html': 'mbn-home', 'courses.html': 'mbn-courses',
+                      'study-hub.html': 'mbn-study', 'dashboard.html': 'mbn-dashboard', 'student-dashboard.html': 'mbn-dashboard' };
+        Object.values(map).forEach(id => document.getElementById(id)?.classList.remove('active'));
+        if (map[page]) document.getElementById(map[page])?.classList.add('active');
+    })();
+    </script>
+
+<footer class="bg-[#2c3e50] text-slate-200 pt-12 pb-8"><div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left"><div><h3 class="text-lg font-bold text-white mb-2">Alpha Freshman Tutorial</h3><p class="text-sm text-slate-300">Way to Success &#8212; Empowering Freshman Students</p></div><div><h4 class="text-md font-semibold text-white mb-3">Quick Links</h4><ul class="space-y-2 text-sm"><li><a href="home.html" class="hover:text-amber-400">Home</a></li><li><a href="courses.html" class="hover:text-amber-400">Courses</a></li><li><a href="auth-register.html" class="hover:text-amber-400">Sign Up</a></li><li><a href="auth-login.html" class="hover:text-amber-400">Login</a></li></ul></div><div><h4 class="text-md font-semibold text-white mb-3">Connect With Us</h4><div class="flex justify-center md:justify-start gap-3"><a href="https://youtube.com/@alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-youtube"></i></a><a href="https://t.me/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-telegram"></i></a><a href="https://linkedin.com/company/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-linkedin"></i></a><a href="https://facebook.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-facebook"></i></a><a href="https://instagram.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-instagram"></i></a><a href="https://wa.me/1234567890" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-whatsapp"></i></a></div></div></div><div class="max-w-6xl mx-auto px-6 mt-8 pt-6 border-t border-slate-600/50 text-center text-xs text-slate-300">&copy; 2026 Alpha Freshman Tutorial. All rights reserved. | Developed by ALPHA DEVELOPERS TEAM</div></footer>
 </body>
 </html>
+
+
+
+
+
 
 
 

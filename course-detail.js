@@ -216,6 +216,16 @@ async function loadCourseDetail() {
                         userEnrollment = er.enrollments.find(e => (e.course?._id || e.course) === courseId);
                     }
                 } catch {}
+
+                // Fetch payment status (3-state)
+                try {
+                    const ps = await api.getPaymentStatus();
+                    if (ps.success) {
+                        currentUser.paymentStatus   = ps.paymentStatus;
+                        currentUser.enrolledPackage = ps.enrolledPackage;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+                } catch {}
             }
 
             // Check per-user course access via API
@@ -255,92 +265,118 @@ async function loadCourseDetail() {
 // ── Course header ─────────────────────────────────────────────────────────────
 function renderCourseHeader() {
     const c = currentCourse;
-    const isEnrolled = userEnrollment?.status === 'approved';
-    const isPending  = userEnrollment?.status === 'pending';
-    const isRejected = userEnrollment?.status === 'rejected';
-    const isFree     = !c.isPremium || c.price === 0;
-    const hasActiveSub = JSON.parse(localStorage.getItem('currentUser'))?.subscription?.plan === 'monthly'
-                      || JSON.parse(localStorage.getItem('currentUser'))?.subscription?.plan === 'annual';
-    const canAccess  = canAccessCourse || isFree || isEnrolled || hasActiveSub;
-    const progress   = userEnrollment?.progress || 0;
-    const totalLessons = c.chapters?.reduce((s, ch) => s + (ch.lessons?.length || 0), 0)
-                      || c.totalLessons || c.lessons?.length || 0;
-    const totalChapters = c.chapters?.length || 0;
+    const currentUser    = JSON.parse(localStorage.getItem('currentUser'));
+    const paymentStatus  = currentUser?.paymentStatus  || 'UNPAID';
+    const isEnrolled     = userEnrollment?.status === 'approved' || paymentStatus === 'APPROVED';
+    const isFree         = !c.isPremium || c.price === 0;
+    const canAccess      = canAccessCourse || isFree || isEnrolled;
+    const progress       = userEnrollment?.progress || 0;
+    const totalLessons   = c.chapters?.reduce((s, ch) => s + (ch.lessons?.length || 0), 0)
+                        || c.totalLessons || c.lessons?.length || 0;
+    const totalChapters  = c.chapters?.length || 0;
 
-    // Locked premium banner
-    const lockedBanner = (!canAccess && c.isPremium) ? `
-        <div style="background:rgba(231,76,60,0.1);border:1px solid #e74c3c;border-radius:12px;
-            padding:16px;margin:12px 0;text-align:center">
-            🔒 This is a premium course. Pay to access all lessons.
-            <br><a href="payment.html?courseId=${c._id}&method=manual" class="btn btn-success" style="margin-top:8px">💳 Pay to Unlock</a>
-        </div>` : '';
+    // ── Build payment state block ─────────────────────────────────────────────
+    let paymentBlock = '';
+
+    if (!currentUser) {
+        // Not logged in
+        paymentBlock = `
+            <div style="background:rgba(102,126,234,0.08);border:1px solid rgba(102,126,234,0.3);
+                border-radius:14px;padding:20px;margin:12px 0;text-align:center">
+                <p style="margin:0 0 12px;font-size:0.95rem;color:var(--text-primary);font-weight:600">
+                    🔐 ትምህርቱን ለማየት መግባት ያስፈልጋል
+                </p>
+                <a href="auth-login.html" class="btn btn-large">🔐 Login to Access</a>
+            </div>`;
+
+    } else if (!isFree && paymentStatus === 'UNPAID') {
+        // STATE 1: No receipt uploaded yet — show payment form
+        paymentBlock = `
+            <div style="background:rgba(231,76,60,0.06);border:1.5px solid rgba(231,76,60,0.35);
+                border-radius:14px;padding:20px;margin:12px 0">
+                <div style="font-size:1.6rem;text-align:center;margin-bottom:8px">🔒</div>
+                <p style="text-align:center;font-weight:700;font-size:0.95rem;color:var(--text-primary);margin:0 0 6px">
+                    ትምህርቱን ለመክፈት እባክዎን ክፍያ ፈጽመው ደረሰኝ ይላኩ
+                </p>
+                <p style="text-align:center;font-size:0.82rem;color:var(--text-secondary);margin:0 0 16px">
+                    Package ምረጡ → ደረሰኝ ጥፏ → Admin ያፀድቃል → ሙሉ access ይከፈታል
+                </p>
+                <div style="text-align:center">
+                    <a href="payment.html?courseId=${c._id}&method=manual"
+                        class="btn btn-large btn-success"
+                        style="font-size:1rem;padding:14px 32px">
+                        💳 ክፍያ ፈጽሙ / Upload Receipt
+                    </a>
+                </div>
+            </div>`;
+
+    } else if (!isFree && paymentStatus === 'PENDING') {
+        // STATE 2: Receipt uploaded, waiting for admin
+        paymentBlock = `
+            <div style="background:rgba(243,156,18,0.08);border:1.5px solid rgba(243,156,18,0.45);
+                border-radius:14px;padding:24px;margin:12px 0;text-align:center">
+                <div style="font-size:2.5rem;margin-bottom:10px">⏳</div>
+                <p style="font-weight:700;font-size:1rem;color:#b7770d;margin:0 0 8px">
+                    ደረሰኝዎ በተሳካ ሁኔታ ተልኳል!
+                </p>
+                <p style="font-size:0.88rem;color:var(--text-secondary);margin:0;line-height:1.6">
+                    በ Admin እየተጣራ ስለሆነ እባክዎን ትንሽ ታግሰው ይጠብቁ።<br>
+                    <strong>እንደፀደቀልዎ ሙሉ በሙሉ ይከፈትልዎታል።</strong>
+                </p>
+                <p style="font-size:0.78rem;color:#aaa;margin:12px 0 0">
+                    ⏱️ ብዙ ጊዜ 24 ሰዓት ይወስዳል
+                </p>
+            </div>`;
+
+    } else if (!isFree && canAccess) {
+        // STATE 3: APPROVED — show progress
+        paymentBlock = isEnrolled ? `
+            <div style="background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.3);
+                border-radius:12px;padding:12px 16px;margin:12px 0">
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;
+                    color:var(--text-secondary);margin-bottom:4px">
+                    <span>✅ Access Approved — Your progress</span><span>${Math.round(progress)}%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+            </div>` : '';
+    }
 
     document.getElementById('courseDetail').innerHTML = `
         <div style="background:var(--bg-secondary);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;
             box-shadow:0 2px 12px var(--shadow)">
-            ${lockedBanner}
+            ${paymentBlock}
             <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
                 <div style="font-size:3.5rem;line-height:1">${c.icon || '📚'}</div>
                 <div style="flex:1;min-width:200px">
-                    <!-- Department path -->
                     <div style="font-size:0.78rem;color:#667eea;font-weight:600;margin-bottom:6px">
                         ${c.department || c.category} › ${c.title}
                     </div>
                     <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);margin:0 0 8px">${c.title}</h1>
                     <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 12px">${c.description}</p>
 
-                    <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.82rem;color:var(--text-secondary);margin-bottom:12px">
-                        <span>👤 ${c.instructorName || 'Unknown'}</span>
-                        <span>📚 ${totalChapters} chapters · ${totalLessons} lessons</span>
-                        <span>⭐ ${(c.rating||0).toFixed(1)}</span>
-                        <span>👥 ${(c.enrolledStudents||0).toLocaleString()} students</span>
-                        <span>⏱️ ${c.duration}</span>
-                    </div>
-
-                    ${isEnrolled ? `
-                        <div style="margin-bottom:12px">
-                            <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-secondary);margin-bottom:4px">
-                                <span>Your progress</span><span>${Math.round(progress)}%</span>
-                            </div>
-                            <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
-                        </div>` : ''}
-
-                    <div style="display:flex;gap:10px;flex-wrap:wrap">
-                        ${!JSON.parse(localStorage.getItem('currentUser')) ? `
-                            <a href="auth-login.html" class="btn btn-large">🔐 Login to Enroll</a>
-                        ` : isEnrolled ? `
-                            <button class="btn btn-large btn-success" onclick="scrollToChapters()">▶ Continue Learning</button>
-                        ` : isPending ? `
-                            <div style="background:rgba(243,156,18,0.1);border:1px solid #f39c12;border-radius:10px;padding:12px 16px;font-size:0.88rem">
-                                ⏳ Enrollment pending admin approval
-                            </div>
-                        ` : isRejected ? `
-                            <div style="background:rgba(231,76,60,0.1);border:1px solid #e74c3c;border-radius:10px;padding:12px 16px;font-size:0.88rem">
-                                ❌ Enrollment rejected. <a href="subscription.html" style="color:#3498db">Get Premium</a>
-                            </div>
-                        ` : `
-                            <button class="btn btn-large" id="enrollBtn">
-                                ${isFree ? '🎓 Enroll Free' : '💳 Pay to Enroll'}
-                            </button>
-                            ${!isFree ? `<a href="payment.html?courseId=${c._id}&method=manual" class="btn btn-large btn-success">🏦 Pay via Bank Transfer</a>` : ''}
-                        `}
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+                        ${canAccess ? `
+                            <button class="btn btn-large btn-success" onclick="scrollToChapters()">▶ ትምህርቱን ጀምር</button>
+                        ` : paymentStatus === 'PENDING' ? '' : !currentUser ? `
+                            <a href="auth-login.html" class="btn btn-large">🔐 Login</a>
+                        ` : ''}
                         <a href="ai-study.html?courseId=${courseId}" class="btn" style="font-size:0.85rem">🤖 AI Study Tools</a>
                     </div>
                 </div>
             </div>
         </div>
     `;
-
-    document.getElementById('enrollBtn')?.addEventListener('click', enrollCourse);
 }
 
 // ── Chapter sidebar ───────────────────────────────────────────────────────────
 function renderChapterSidebar() {
     const c = currentCourse;
-    const chapters = c.chapters || [];
-    const isEnrolled = userEnrollment?.status === 'approved';
-    const isFree     = !c.isPremium || c.price === 0;
-    const canAccess  = canAccessCourse || isFree || isEnrolled;
+    const chapters   = c.chapters || [];
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const paymentStatus = currentUser?.paymentStatus || 'UNPAID';
+    const isEnrolled  = userEnrollment?.status === 'approved' || paymentStatus === 'APPROVED';
+    const isFree      = !c.isPremium || c.price === 0;
+    const canAccess   = canAccessCourse || isFree || isEnrolled;
 
     if (chapters.length === 0) {
         // Fallback: render flat lessons
@@ -498,25 +534,9 @@ function openLesson(chapterIdx, lessonIdx) {
                 ${lesson.videoUrl ? '<span>🎬 Video available</span>' : '<span>📄 Reading lesson</span>'}
             </div>
 
-            <!-- Video (if available) -->
+            <!-- Video (if available) — rendered by buildSecurePlayer/buildSecureVideoPlayer after innerHTML is set -->
             ${lesson.videoUrl ? `
-                <div id="videoWrapper" style="position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;margin-bottom:1.5rem"
-                    oncontextmenu="return false;">
-                    <!-- YouTube iframe with protection params -->
-                    <iframe id="lessonIframe"
-                        src="${getYouTubeEmbed(lesson.videoUrl)}?rel=0&modestbranding=1&disablekb=1&iv_load_policy=3&fs=0&playsinline=1&color=white"
-                        style="width:100%;height:100%;border:none;pointer-events:none"
-                        allowfullscreen title="${lesson.title}"
-                        sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
-                    <!-- Click interceptor: blocks title bar click-through to YouTube -->
-                    <div id="ytClickBlocker" style="position:absolute;top:0;left:0;width:100%;height:40px;z-index:10;cursor:default"></div>
-                    <!-- Dynamic watermark overlay -->
-                    <div id="videoWatermark" style="
-                        position:absolute;top:0;left:0;width:100%;height:100%;
-                        pointer-events:none;z-index:20;user-select:none;
-                        -webkit-user-select:none;overflow:hidden">
-                    </div>
-                </div>
+                <div id="securePlayerMount" style="margin-bottom:1.5rem"></div>
             ` : `
                 <div style="aspect-ratio:16/9;background:linear-gradient(135deg,rgba(102,126,234,0.1),rgba(118,75,162,0.1));
                     border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem">
@@ -526,6 +546,11 @@ function openLesson(chapterIdx, lessonIdx) {
                     </div>
                 </div>
             `}
+
+            <!-- PDF/Doc Note viewer (if pdfNoteUrl exists) — rendered by buildSecureDocViewer -->
+            ${lesson.pdfNoteUrl ? `
+                <div id="pdfNoteMount" style="margin-bottom:1.5rem"></div>
+            ` : ''}
 
             <!-- Study Notes -->
             <div style="margin-bottom:1.5rem">
@@ -590,6 +615,46 @@ function openLesson(chapterIdx, lessonIdx) {
             </div>
         </div>
     `;
+
+    // ── Mount secure video player (after innerHTML is set) ───────────────────
+    if (lesson.videoUrl) {
+        const mount = document.getElementById('securePlayerMount');
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        const isDriveUrl = lesson.videoUrl.includes('drive.google.com');
+
+        if (mount) {
+            if (isDriveUrl && typeof buildSecureVideoPlayer === 'function') {
+                // Google Drive video → use custom player with blob download
+                const driveId = lesson.videoUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1]
+                    || lesson.videoUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/)?.[1]
+                    || '';
+                if (driveId) {
+                    buildSecureVideoPlayer(driveId, lesson.title, currentUser, mount);
+                } else {
+                    mount.innerHTML = '<p style="color:var(--text-secondary);padding:1rem">⚠️ Drive link invalid.</p>';
+                }
+            } else if (typeof buildSecurePlayer === 'function') {
+                // YouTube → use existing secure player
+                buildSecurePlayer(
+                    { ...lesson, course: currentCourse?.title },
+                    currentUser,
+                    mount,
+                    { autoplay: false, allowOffline: true }
+                );
+            }
+        }
+    }
+
+    // ── Mount PDF/Doc viewer if pdfNoteUrl exists ────────────────────────────
+    const pdfMount = document.getElementById('pdfNoteMount');
+    if (pdfMount && lesson.pdfNoteUrl) {
+        const driveDocId = lesson.pdfNoteUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1]
+            || lesson.pdfNoteUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/)?.[1]
+            || '';
+        if (driveDocId && typeof buildSecureDocViewer === 'function') {
+            buildSecureDocViewer(driveDocId, (lesson.title || 'Notes') + ' — PDF', pdfMount);
+        }
+    }
 
     // Scroll viewer into view on mobile
     if (window.innerWidth < 900) {

@@ -48,6 +48,13 @@ const manualPaymentSchema = new mongoose.Schema({
     studentName:  { type: String, default: '' },
     studentEmail: { type: String, default: '' },
     studentPhone: { type: String, default: '' },
+    // Semester + stream package the student selected at payment time
+    enrolledPackage: {
+        type: String,
+        enum: ['None', '1st Semester Natural', '1st Semester Social',
+               '2nd Semester Natural', '2nd Semester Social', null],
+        default: null
+    },
     reviewedBy: {
         type: mongoose.Schema.Types.Mixed,
         ref: 'User',

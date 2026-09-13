@@ -1,107 +1,1121 @@
-<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline — Alpha Freshman Tutorial</title>
+    <title>Offline Videos — Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <meta name="theme-color" content="#3B82F6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AlphaFT">
     <link rel="icon" href="logo.png" type="image/png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#3B82F6">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* ── Offline page styles ── */
+        .offline-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             color: white;
-            text-align: center;
-            padding: 20px;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
         }
-        .card {
-            background: rgba(255,255,255,0.12);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 24px;
-            padding: 3rem 2.5rem;
-            max-width: 480px;
-            width: 100%;
+        .offline-header h1 { font-size: 1.6rem; font-weight: 800; margin: 0 0 6px; }
+        .offline-header p  { font-size: 0.9rem; opacity: 0.7; margin: 0; }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+            margin-top: 10px;
         }
-        .icon { font-size: 5rem; margin-bottom: 1.5rem; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
-        h1 { font-size: 1.8rem; margin-bottom: 0.8rem; }
-        p  { opacity: 0.85; line-height: 1.7; margin-bottom: 1.5rem; }
-        .btn {
-            display: inline-block;
-            background: white;
-            color: #667eea;
-            padding: 12px 28px;
-            border-radius: 30px;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            font-size: 0.95rem;
-            margin: 6px;
-            text-decoration: none;
-            transition: transform 0.2s;
+        .status-badge.online  { background: rgba(39,174,96,0.15);  color: #27ae60; border: 1px solid rgba(39,174,96,0.3); }
+        .status-badge.offline { background: rgba(243,156,18,0.15); color: #f39c12; border: 1px solid rgba(243,156,18,0.3); }
+
+        .tab-bar {
+            display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap;
         }
-        .btn:hover { transform: translateY(-2px); }
-        .cached-section { margin-top: 2rem; text-align: left; }
-        .cached-section h3 { font-size: 1rem; opacity: 0.8; margin-bottom: 1rem; }
-        .cached-link {
-            display: block;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            color: white;
-            text-decoration: none;
-            font-size: 0.9rem;
+        .tab-btn {
+            padding: 8px 18px; border-radius: 12px; border: 2px solid var(--border-color);
+            background: var(--bg-secondary); color: var(--text-primary);
+            font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; border-color: transparent;
+            box-shadow: 0 4px 12px rgba(102,126,234,0.35);
+        }
+
+        .video-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 16px;
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 10px;
+            transition: box-shadow 0.2s;
+        }
+        .video-card:hover { box-shadow: 0 4px 16px var(--shadow); }
+        .video-card .thumb { font-size: 2rem; flex-shrink: 0; }
+        .video-card .info  { flex: 1; min-width: 0; }
+        .video-card .info h4 { font-size: 0.9rem; font-weight: 700; margin: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .video-card .info p  { font-size: 0.75rem; color: var(--text-secondary); margin: 3px 0 0; }
+        .video-card .actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+        .btn-play   { background: #3498db; color: white; }
+        .btn-play:hover { background: #2980b9; }
+        .btn-save   { background: #9b59b6; color: white; }
+        .btn-save:hover { background: #8e44ad; }
+        .btn-remove { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+        .btn-remove:hover { background: rgba(231,76,60,0.2); }
+
+        .progress-bar-mini {
+            width: 100%; height: 4px; background: var(--border-color);
+            border-radius: 4px; overflow: hidden; margin-top: 6px;
+        }
+        .progress-bar-mini .fill {
+            height: 100%; background: #667eea; border-radius: 4px; transition: width 0.3s;
+        }
+
+        .empty-state {
+            text-align: center; padding: 4rem 2rem; color: var(--text-secondary);
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+        /* ── Secure Player overlay ── */
+        #playerOverlay {
+            display: none;
+            position: fixed; inset: 0; z-index: 9999;
+            background: #000; flex-direction: column;
+        }
+        #playerOverlay.active { display: flex; }
+        #playerOverlay .player-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+        #playerOverlay .player-header h3  { color: white; font-size: 0.9rem; margin: 0; }
+        #playerOverlay .player-header p   { color: rgba(255,255,255,0.5); font-size: 0.75rem; margin: 2px 0 0; }
+        #playerOverlay .close-btn {
+            background: rgba(255,255,255,0.1); border: none; color: white;
+            width: 36px; height: 36px; border-radius: 10px; cursor: pointer;
+            font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
             transition: background 0.2s;
         }
-        .cached-link:hover { background: rgba(255,255,255,0.2); }
-        #status { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+        #playerOverlay .close-btn:hover { background: rgba(255,255,255,0.2); }
+        #playerBody { flex: 1; position: relative; overflow: hidden; }
+
+        /* Watermark in player overlay */
+        #playerWatermark {
+            position: absolute; inset: 0;
+            pointer-events: none; user-select: none; z-index: 20; overflow: hidden;
+        }
+        #wm-main {
+            position: absolute;
+            color: rgba(255,255,255,0.22);
+            font-size: clamp(10px, 1.5vw, 14px);
+            font-family: monospace; font-weight: 700;
+            white-space: nowrap;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+            transition: top 1.2s ease-in-out, left 1.2s ease-in-out;
+            pointer-events: none;
+        }
+        .wm-corner {
+            position: absolute;
+            color: rgba(255,255,255,0.10);
+            font-size: 9px; font-family: monospace; white-space: nowrap;
+            pointer-events: none;
+        }
+
+        /* Security info box */
+        .security-info {
+            background: rgba(102,126,234,0.06);
+            border: 1px solid rgba(102,126,234,0.2);
+            border-radius: 14px; padding: 1.2rem 1.4rem; margin-top: 2rem;
+        }
+        .security-info h3 { font-size: 0.88rem; font-weight: 700; color: #667eea; margin: 0 0 10px; }
+        .security-info ul { list-style: none; padding: 0; margin: 0; }
+        .security-info li { font-size: 0.8rem; color: var(--text-secondary); padding: 3px 0; }
+
+        @media (max-width: 600px) {
+            .video-card { flex-wrap: wrap; }
+            .video-card .actions { width: 100%; justify-content: flex-end; }
+        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-    <div class="card">
-        <div class="icon">📡</div>
-        <h1>You're Offline</h1>
-        <p>No internet connection detected. You can still access cached courses and your learning progress.</p>
-
-        <button class="btn" onclick="window.location.reload()">🔄 Try Again</button>
-        <a href="/courses.html" class="btn">📚 Cached Courses</a>
-        <a href="/dashboard.html" class="btn">📊 My Progress</a>
-
-        <div class="cached-section">
-            <h3>📂 Available Offline:</h3>
-            <a href="/home.html" class="cached-link">🏠 Home Page</a>
-            <a href="/courses.html" class="cached-link">📚 Course Catalog</a>
-            <a href="/dashboard.html" class="cached-link">📊 My Learning Dashboard</a>
-            <a href="/auth-login.html" class="cached-link">🔐 Login</a>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="dashboard.html">My Learning</a></li>
+                <li><a href="study-hub.html">📚 Study Hub</a></li>
+                <li><a href="offline.html" style="color:#a78bfa;font-weight:700">📥 Offline Videos</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            </ul>
         </div>
+    </nav>
 
-        <div id="status">Checking connection...</div>
+    <!-- Secure Player Overlay -->
+    <div id="playerOverlay">
+        <div class="player-header">
+            <div>
+                <h3 id="playerTitle">Lesson</h3>
+                <p id="playerCourse">Course</p>
+            </div>
+            <button class="close-btn" onclick="closePlayer()" aria-label="Close player">✕</button>
+        </div>
+        <div id="playerBody">
+            <iframe id="playerIframe"
+                style="width:100%;height:100%;border:none;pointer-events:none"
+                allow="autoplay; encrypted-media"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
+                title="Secure Lesson Player"
+                allowfullscreen="false">
+            </iframe>
+            <!-- Watermark -->
+            <div id="playerWatermark">
+                <div id="wm-main"></div>
+                <div class="wm-corner" style="top:4px;left:4px"  id="wm-tl"></div>
+                <div class="wm-corner" style="top:4px;right:4px" id="wm-tr"></div>
+                <div class="wm-corner" style="bottom:4px;left:4px" id="wm-bl"></div>
+                <div class="wm-corner" style="bottom:4px;right:4px" id="wm-br"></div>
+                <!-- Diagonal ghost -->
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+                    pointer-events:none;overflow:hidden;transform:rotate(-25deg)">
+                    <span id="wm-diag" style="color:rgba(255,255,255,0.04);font-size:clamp(10px,2.5vw,22px);
+                        font-weight:700;letter-spacing:4px;white-space:nowrap;font-family:monospace"></span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="pwa.js"></script>
+    <!-- Main content -->
+    <div class="offline-header">
+        <div class="container">
+            <h1>📥 Offline Videos</h1>
+            <p>Save lessons to watch without internet — secure, watermarked, app-only playback</p>
+            <div class="status-badge online" id="statusBadge">🟢 Online</div>
+        </div>
+    </div>
+
+    <main class="container" style="padding-bottom:3rem">
+
+        <!-- Offline-mode warning -->
+        <div id="offlineWarning" style="display:none"
+            class="security-info" style="border-color:rgba(243,156,18,0.3);background:rgba(243,156,18,0.06)">
+            <h3 style="color:#f39c12">📡 You are offline — only saved videos are playable.</h3>
+        </div>
+
+        <!-- Download All Courses — single big button -->
+        <div style="background:linear-gradient(135deg,rgba(102,126,234,0.15),rgba(118,75,162,0.15));
+            border:1.5px solid rgba(102,126,234,0.35);border-radius:20px;padding:24px 20px;
+            text-align:center;margin-bottom:1.5rem">
+            <div style="font-size:2.5rem;margin-bottom:8px">📥</div>
+            <h3 style="color:var(--text-primary);margin:0 0 6px;font-size:1.1rem;font-weight:800">
+                Download All 12 Courses
+            </h3>
+            <p style="color:var(--text-secondary);font-size:0.84rem;margin:0 0 14px;max-width:400px;margin-left:auto;margin-right:auto">
+                አንዴ download ካደረጉ ሁሉም ኮርሶች ቪዲዮዎች internet ሳያስፈልግ ይሠራሉ።<br>
+                <em style="font-size:0.78rem">Once downloaded — watch all videos offline anytime.</em>
+            </p>
+            <div id="downloadAllProgress" style="display:none;margin-bottom:12px">
+                <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;margin-bottom:6px">
+                    <div id="downloadAllBar" style="height:100%;width:0;background:linear-gradient(90deg,#667eea,#27ae60);border-radius:8px;transition:width 0.4s"></div>
+                </div>
+                <span id="downloadAllStatus" style="font-size:0.8rem;color:var(--text-secondary)">Preparing...</span>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                <button id="downloadAllBtn" onclick="downloadAllCourses()"
+                    style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;
+                    padding:14px 32px;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;
+                    box-shadow:0 6px 20px rgba(102,126,234,0.4);transition:all 0.2s">
+                    📥 Download All Courses
+                </button>
+                <button onclick="checkDownloadedCourses()"
+                    style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border-color);
+                    padding:14px 20px;border-radius:14px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s">
+                    🔍 Check Status
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-bar">
+            <button class="tab-btn active" id="tabAvailable" onclick="switchTab('available')">
+                🎬 Available (<span id="availCount">0</span>)
+            </button>
+            <button class="tab-btn" id="tabSaved" onclick="switchTab('saved')">
+                💾 Saved Offline (<span id="savedCount">0</span>)
+            </button>
+        </div>
+
+        <!-- Available tab -->
+        <div id="panelAvailable">
+            <div id="videoList"></div>
+        </div>
+
+        <!-- Saved tab -->
+        <div id="panelSaved" style="display:none">
+            <div id="savedList"></div>
+        </div>
+
+        <!-- Security info -->
+        <div class="security-info">
+            <h3>🔒 Security & Privacy</h3>
+            <ul>
+                <li>• Video files are <strong>never saved</strong> to your device gallery or file browser</li>
+                <li>• All content is stored securely in browser IndexedDB — only playable inside this app</li>
+                <li>• Every video displays a personalised watermark with your name and phone number</li>
+                <li>• Right-click and screenshot shortcuts are blocked during playback</li>
+                <li>• Watermark position drifts every 4 seconds to appear in screen recordings</li>
+            </ul>
+        </div>
+    </main>
+
+    <script src="theme.js"></script>
+    <script src="api.js"></script>
+    <script src="auth-guard.js"></script>
+    <script src="offline-db.js"></script>
+    <script src="video-security.js"></script>
+
     <script>
-        // Auto-redirect when back online
-        window.addEventListener('online', () => {
-            document.getElementById('status').textContent = '✅ Back online! Redirecting...';
-            setTimeout(() => window.history.back(), 1500);
+    // ── Sample catalogue (same as React OfflineVideos.jsx SAMPLE_VIDEOS) ──────
+    const SAMPLE_VIDEOS = [
+        { id:'eng1011-l1', title:'Introduction to Academic Reading',  course:'Communicative English I',       duration:'45 min', youtubeId:'dQw4w9WgXcQ', thumbnail:'📖' },
+        { id:'eng1011-l2', title:'Skimming & Scanning Techniques',    course:'Communicative English I',       duration:'40 min', youtubeId:'dQw4w9WgXcQ', thumbnail:'📖' },
+        { id:'math1011-l1',title:'Introduction to Functions',          course:'Mathematics for Natural Science',duration:'50 min', youtubeId:'dQw4w9WgXcQ', thumbnail:'📐' },
+        { id:'math1011-l2',title:'Limits and Continuity',              course:'Mathematics for Natural Science',duration:'55 min', youtubeId:'dQw4w9WgXcQ', thumbnail:'📐' },
+        { id:'phys1011-l1',title:'General Physics — Motion & Forces',  course:'General Physics I',             duration:'52 min', youtubeId:'dQw4w9WgXcQ', thumbnail:'⚛️' },
+        { id:'logic1011-l1',title:'What is Critical Thinking?',        course:'Critical Thinking & Logic',     duration:'40 min', youtubeId:'dQw4w9WgXcQ', thumbnail:'🧠' },
+    ];
+
+    // ── IndexedDB helpers (same DB as secure-player.js / React offlineDB.js) ──
+    const _DB_NAME = 'alpha-offline-db';
+    const _DB_VER  = 2;
+    let   _db      = null;
+
+    function _openDB() {
+        if (_db) return Promise.resolve(_db);
+        return new Promise((res, rej) => {
+            const req = indexedDB.open(_DB_NAME, _DB_VER);
+            req.onupgradeneeded = e => {
+                const d = e.target.result;
+                if (!d.objectStoreNames.contains('videos'))  d.createObjectStore('videos',  { keyPath:'id'  });
+                if (!d.objectStoreNames.contains('courses')) d.createObjectStore('courses', { keyPath:'_id' });
+            };
+            req.onsuccess = () => { _db = req.result; res(_db); };
+            req.onerror   = () => rej(req.error);
+        });
+    }
+    async function dbPut(record)  { const d = await _openDB(); const tx = d.transaction('videos','readwrite'); tx.objectStore('videos').put(record); return new Promise((r,j)=>{ tx.oncomplete=()=>r(true); tx.onerror=()=>j(tx.error); }); }
+    async function dbGetAll()     { const d = await _openDB(); const req = d.transaction('videos','readonly').objectStore('videos').getAll(); return new Promise((r,j)=>{ req.onsuccess=()=>r(req.result||[]); req.onerror=()=>j(req.error); }); }
+    async function dbDelete(id)   { const d = await _openDB(); const tx = d.transaction('videos','readwrite'); tx.objectStore('videos').delete(id); return new Promise((r,j)=>{ tx.oncomplete=()=>r(true); tx.onerror=()=>j(tx.error); }); }
+    async function dbGet(id)      { const d = await _openDB(); const req = d.transaction('videos','readonly').objectStore('videos').get(id); return new Promise((r,j)=>{ req.onsuccess=()=>r(req.result||null); req.onerror=()=>j(req.error); }); }
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    let savedIds      = new Set();
+    let downloading   = {};   // { id: progress }
+    let currentTab    = 'available';
+    let wmTimer       = null;
+    let wmPosIdx      = 0;
+
+    const WM_POSITIONS = [
+        { top:'8%',  left:'5%'  }, { top:'8%',  left:'60%' },
+        { top:'30%', left:'40%' }, { top:'55%', left:'10%' },
+        { top:'55%', left:'65%' }, { top:'78%', left:'30%' },
+    ];
+
+    // ── Watermark text ────────────────────────────────────────────────────────
+    function getWmText() {
+        try {
+            const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            return [u.fullName, u.phoneNumber || u.email].filter(Boolean).join(' | ') || 'Alpha Freshman Tutorial';
+        } catch { return 'Alpha Freshman Tutorial'; }
+    }
+
+    // ── Online/offline status ─────────────────────────────────────────────────
+    function updateStatus() {
+        const badge   = document.getElementById('statusBadge');
+        const warning = document.getElementById('offlineWarning');
+        if (navigator.onLine) {
+            badge.className   = 'status-badge online';
+            badge.textContent = '🟢 Online';
+            warning.style.display = 'none';
+        } else {
+            badge.className   = 'status-badge offline';
+            badge.textContent = '🔴 Offline';
+            warning.style.display = 'block';
+        }
+    }
+    window.addEventListener('online',  updateStatus);
+    window.addEventListener('offline', updateStatus);
+    updateStatus();
+
+    // ── Tab switch ────────────────────────────────────────────────────────────
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('panelAvailable').style.display = tab === 'available' ? '' : 'none';
+        document.getElementById('panelSaved').style.display     = tab === 'saved'     ? '' : 'none';
+        document.getElementById('tabAvailable').className = 'tab-btn' + (tab === 'available' ? ' active' : '');
+        document.getElementById('tabSaved').className     = 'tab-btn' + (tab === 'saved'     ? ' active' : '');
+        if (tab === 'saved') renderSaved();
+    }
+
+    // ── Build video URL from saved metadata ───────────────────────────────────
+    function buildEmbedUrl(ytId) {
+        const origin = encodeURIComponent(window.location.origin);
+        return `https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1&disablekb=1&fs=0&iv_load_policy=3&origin=${origin}&autoplay=1`;
+    }
+
+    // ── Render available videos ───────────────────────────────────────────────
+    function renderAvailable() {
+        const list = document.getElementById('videoList');
+        document.getElementById('availCount').textContent = SAMPLE_VIDEOS.length;
+        list.innerHTML = SAMPLE_VIDEOS.map(v => {
+            const saved = savedIds.has(v.id);
+            const dl    = downloading[v.id];
+            return `
+            <div class="video-card" id="card-${v.id}">
+                <div class="thumb">${v.thumbnail}</div>
+                <div class="info">
+                    <h4>${v.title}</h4>
+                    <p>${v.course} · ${v.duration}</p>
+                    ${dl !== undefined ? `<div class="progress-bar-mini"><div class="fill" id="prog-${v.id}" style="width:${dl}%"></div></div>` : ''}
+                </div>
+                <div class="actions">
+                    <button class="btn btn-play" onclick="playVideo('${v.id}','${v.youtubeId}','${v.title}','${v.course}')">▶ Play</button>
+                    ${saved
+                        ? `<button class="btn btn-remove" onclick="removeVideo('${v.id}')">🗑️</button>
+                           <span style="font-size:0.75rem;color:#27ae60;font-weight:700;align-self:center">✓ Saved</span>`
+                        : dl !== undefined
+                            ? `<span style="font-size:0.78rem;color:var(--text-secondary);align-self:center">${dl}%</span>`
+                            : `<button class="btn btn-save" onclick="saveVideo('${v.id}')">💾 Save</button>`
+                    }
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── AlphaOfflineDB helpers (lesson-download.js + React db.js stores) ──────
+    let _alphaDb = null;
+    function _openAlphaDB() {
+        if (_alphaDb) return Promise.resolve(_alphaDb);
+        return new Promise((res, rej) => {
+            // Version 3 adds the 'downloaded_files' store used by the React db.js
+            const req = indexedDB.open('AlphaOfflineDB', 3);
+            req.onupgradeneeded = e => {
+                const d = e.target.result;
+                if (!d.objectStoreNames.contains('videos'))
+                    d.createObjectStore('videos');
+                if (!d.objectStoreNames.contains('lessons'))
+                    d.createObjectStore('lessons');
+                // React db.js uses this store with courseId + semester indexes
+                if (!d.objectStoreNames.contains('downloaded_files')) {
+                    const store = d.createObjectStore('downloaded_files', { keyPath: 'id' });
+                    store.createIndex('courseId',  'courseId',  { unique: false });
+                    store.createIndex('semester',  'semester',  { unique: false });
+                }
+            };
+            req.onsuccess = () => { _alphaDb = req.result; res(_alphaDb); };
+            req.onerror   = () => rej(req.error);
+        });
+    }
+    // Read from AlphaOfflineDB/videos (lesson-download.js)
+    async function alphaDbGetAll() {
+        const d = await _openAlphaDB();
+        return new Promise((res, rej) => {
+            const req = d.transaction('videos','readonly').objectStore('videos').getAll();
+            req.onsuccess = () => res(req.result || []);
+            req.onerror   = () => rej(req.error);
+        });
+    }
+    // Read from AlphaOfflineDB/downloaded_files (React db.js)
+    async function alphaDbGetDownloadedFiles() {
+        const d = await _openAlphaDB();
+        return new Promise((res, rej) => {
+            if (!d.objectStoreNames.contains('downloaded_files')) { res([]); return; }
+            const req = d.transaction('downloaded_files','readonly')
+                          .objectStore('downloaded_files').getAll();
+            req.onsuccess = () => res(req.result || []);
+            req.onerror   = () => rej(req.error);
+        });
+    }
+    async function alphaDbDelete(key, storeName) {
+        const store = storeName || 'videos';
+        const d = await _openAlphaDB();
+        return new Promise((res, rej) => {
+            const tx = d.transaction(store, 'readwrite');
+            tx.objectStore(store).delete(key);
+            tx.oncomplete = () => res(true);
+            tx.onerror    = () => rej(tx.error);
+        });
+    }
+
+    // ── Group helpers ─────────────────────────────────────────────────────────
+    function groupBySemesterAndCourse(rawItems) {
+        return rawItems.reduce((acc, item) => {
+            const semLabel = item.semester || item.department || item.course || 'Saved Videos';
+            const courseTitle = item.courseTitle || item.course || 'General';
+            let semObj = acc.find(s => s.semester === semLabel);
+            if (!semObj) { semObj = { semester: semLabel, courses: [] }; acc.push(semObj); }
+            let courseObj = semObj.courses.find(c => c.title === courseTitle);
+            if (!courseObj) { courseObj = { title: courseTitle, items: [] }; semObj.courses.push(courseObj); }
+            courseObj.items.push(item);
+            return acc;
+        }, []);
+    }
+
+    // Track open accordions
+    const openAccordions = new Set();
+
+    function toggleAccordion(key) {
+        if (openAccordions.has(key)) openAccordions.delete(key);
+        else openAccordions.add(key);
+        renderSaved();
+    }
+
+    // ── Render saved videos ── upgraded with grouped view ─────────────────────
+    async function renderSaved() {
+        const list = document.getElementById('savedList');
+        list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">⏳ Loading...</div>';
+
+        // Load from all stores: legacy, AlphaOfflineDB/videos, AlphaOfflineDB/downloaded_files, SecureCourseAppDB
+        const [legacyItems, alphaItems, dlFiles, secureItems] = await Promise.all([
+            dbGetAll().catch(() => []),
+            alphaDbGetAll().catch(() => []),
+            alphaDbGetDownloadedFiles().catch(() => []),
+            (typeof _sdbGetAll === 'function' ? _sdbGetAll() : Promise.resolve([])).catch(() => [])
+        ]);
+
+        // Normalise legacy items (alpha-offline-db/videos) → add semester label
+        const normLegacy = legacyItems.map(v => ({
+            _source:     'legacy',
+            id:          v.id,
+            title:       v.title,
+            courseTitle: v.course || '',
+            course:      v.course || '',
+            semester:    v.course || 'Saved Videos',
+            youtubeId:   v.youtubeId,
+            thumbnail:   v.thumbnail || '🎬',
+            savedAt:     v.savedAt,
+            type:        'video',
+            duration:    v.duration || '',
+        }));
+
+        // Normalise AlphaOfflineDB items (lesson-download.js)
+        const normAlpha = alphaItems.map(v => ({
+            _source:     'alpha',
+            id:          v.lessonId || v.id || String(v.savedAt),
+            title:       v.lessonTitle || v.title || 'Lesson',
+            courseTitle: v.courseTitle || v.course || '',
+            course:      v.courseTitle || v.course || '',
+            semester:    v.department || v.courseTitle || v.course || 'Saved Videos',
+            youtubeId:   v.youtubeId,
+            driveFileId: v.driveFileId || null,
+            isDriveVideo: v.isDriveVideo || (v.youtubeUrl && v.youtubeUrl.includes('drive.google.com')),
+            thumbnail:   (v.isDriveVideo || (v.youtubeUrl && v.youtubeUrl.includes('drive.google.com'))) ? '☁️' : '🎬',
+            savedAt:     v.savedAt,
+            type:        'video',
+            duration:    '',
+        }));
+
+        // Normalise AlphaOfflineDB/downloaded_files items (React db.js)
+        const normDlFiles = dlFiles.map(v => ({
+            _source:     'dlfiles',
+            id:          v.id,
+            title:       v.title || 'Download',
+            courseTitle: v.courseTitle || '',
+            course:      v.courseTitle || '',
+            semester:    v.semester || v.courseTitle || 'Saved Videos',
+            youtubeId:   v.youtubeId || null,
+            fileBlobUrl: v.blob ? URL.createObjectURL(v.blob) : null,
+            thumbnail:   v.type === 'video' ? '🎥' : '📄',
+            savedAt:     v.savedAt,
+            type:        v.type || 'video',
+            duration:    v.size || '',
+        }));
+
+        // Normalise SecureCourseAppDB/secureFiles items (buildSecureVideoPlayer / buildSecureDocViewer)
+        const normSecure = secureItems.map(v => ({
+            _source:      'secure',
+            id:           v.id,
+            title:        v.title || 'Secure File',
+            courseTitle:  v.title || '',
+            course:       v.title || '',
+            semester:     'Secure Downloads',
+            youtubeId:    null,
+            driveFileId:  v.id,            // id IS the driveFileId
+            isDriveVideo: v.fileType === 'video',
+            fileBlobUrl:  v.fileBlob ? URL.createObjectURL(v.fileBlob) : null,
+            thumbnail:    v.fileType === 'document' ? '📄' : '🎬',
+            savedAt:      v.downloadedAt ? new Date(v.downloadedAt).getTime() : 0,
+            type:         v.fileType || 'video',
+            duration:     '',
+        }));
+
+        // Deduplicate: secure > dlFiles > alpha > legacy
+        const secureIds = new Set(normSecure.map(v => v.id));
+        const dlIds     = new Set(normDlFiles.map(v => v.id));
+        const alphaIds  = new Set(normAlpha.map(v => v.id));
+        const merged    = [
+            ...normSecure,
+            ...normDlFiles.filter(v => !secureIds.has(v.id)),
+            ...normAlpha.filter(v => !secureIds.has(v.id) && !dlIds.has(v.id)),
+            ...normLegacy.filter(v => !secureIds.has(v.id) && !dlIds.has(v.id) && !alphaIds.has(v.id))
+        ];
+
+        // Update badge count
+        document.getElementById('savedCount').textContent = merged.length;
+
+        if (merged.length === 0) {
+            list.innerHTML = `
+                <div style="background:#0f172a;border:1px solid rgba(99,102,241,0.25);border-radius:24px;
+                    padding:48px 24px;text-align:center">
+                    <div style="font-size:3.5rem;margin-bottom:12px">📁</div>
+                    <p style="color:#64748b;font-size:0.9rem;margin:0 0 16px">ምንም የወረደ ፋይል የለም።</p>
+                    <button class="btn" style="margin-top:0" onclick="switchTab('available')">
+                        🎬 Browse Available Videos →
+                    </button>
+                </div>`;
+            return;
+        }
+
+        // Group by semester → course
+        const grouped = groupBySemesterAndCourse(merged);
+
+        let html = `<div style="
+            max-width:900px;margin:0 auto;
+            background:#0f172a;border:1px solid rgba(99,102,241,0.25);
+            border-radius:24px;padding:24px 20px">
+
+            <!-- Header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.07)">
+                <div>
+                    <h2 style="color:white;font-size:1.2rem;font-weight:900;margin:0 0 4px;
+                        display:flex;align-items:center;gap:10px">
+                        📥 Offline Library
+                    </h2>
+                    <p style="color:#64748b;font-size:0.8rem;margin:0">
+                        Access your downloaded videos anytime without internet.
+                    </p>
+                </div>
+                <span style="padding:5px 14px;border-radius:50px;
+                    background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);
+                    color:#10b981;font-size:11px;font-weight:700;white-space:nowrap">
+                    ● Offline Ready
+                </span>
+            </div>`;
+
+        grouped.forEach((semObj, si) => {
+            html += `
+            <div style="margin-bottom:28px">
+                <!-- Semester label -->
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                    <span style="width:8px;height:8px;border-radius:50%;
+                        background:#f59e0b;display:inline-block;flex-shrink:0"></span>
+                    <h3 style="color:#f59e0b;font-size:11px;font-weight:900;text-transform:uppercase;
+                        letter-spacing:0.08em;margin:0">${escHtml(semObj.semester)}</h3>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">`;
+
+            semObj.courses.forEach((courseObj) => {
+                const accKey  = `${si}_${courseObj.title}`;
+                const isOpen  = openAccordions.has(accKey);
+                const count   = courseObj.items.length;
+
+                html += `
+                <div style="background:rgba(30,41,59,0.6);border:1px solid rgba(71,85,105,0.6);
+                    border-radius:16px;overflow:hidden;transition:all 0.2s">
+                    <!-- Course header / accordion trigger -->
+                    <button onclick="toggleAccordion('${accKey}')"
+                        style="width:100%;padding:16px 20px;background:transparent;border:none;
+                        display:flex;align-items:center;justify-content:space-between;
+                        cursor:pointer;text-align:left;transition:background 0.2s"
+                        onmouseover="this.style.background='rgba(99,102,241,0.07)'"
+                        onmouseout="this.style.background='transparent'">
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <span style="font-size:1.3rem">📚</span>
+                            <div>
+                                <h4 style="color:white;font-size:0.9rem;font-weight:700;margin:0 0 2px">
+                                    ${escHtml(courseObj.title)}
+                                </h4>
+                                <p style="color:#64748b;font-size:11px;margin:0">
+                                    ${count} Downloaded Video${count !== 1 ? 's' : ''}
+                                </p>
+                            </div>
+                        </div>
+                        <span style="color:#64748b;font-size:0.75rem;
+                            transform:${isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
+                            transition:transform 0.2s;display:inline-block">▼</span>
+                    </button>`;
+
+                if (isOpen) {
+                    html += `
+                    <div style="border-top:1px solid rgba(71,85,105,0.4);
+                        background:rgba(15,23,42,0.4)">`;
+
+                    courseObj.items.forEach((item, idx) => {
+                        const isLast = idx === courseObj.items.length - 1;
+                        const savedDate = item.savedAt
+                            ? new Date(item.savedAt).toLocaleDateString() : '';
+                        html += `
+                        <div style="padding:12px 20px;display:flex;align-items:center;
+                            justify-content:space-between;gap:12px;
+                            ${!isLast ? 'border-bottom:1px solid rgba(71,85,105,0.3)' : ''}">
+                            <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
+                                <span style="font-size:1.1rem;flex-shrink:0">${item.thumbnail}</span>
+                                <div style="min-width:0">
+                                    <h5 style="color:#e2e8f0;font-size:0.85rem;font-weight:600;
+                                        margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                        ${escHtml(item.title)}
+                                    </h5>
+                                    <span style="color:#64748b;font-size:10px;text-transform:uppercase">
+                                        video${item.duration ? ' · ' + item.duration : ''}${savedDate ? ' · ' + savedDate : ''}
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                                ${item.fileBlobUrl ? `
+                                <button onclick="playBlobVideo('${escHtml(item.fileBlobUrl)}','${escHtml(item.title)}','${escHtml(item.courseTitle)}')"
+                                    style="padding:6px 14px;background:#059669;color:white;border:none;
+                                    border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
+                                    transition:background 0.2s"
+                                    onmouseover="this.style.background='#047857'"
+                                    onmouseout="this.style.background='#059669'">
+                                    ▶ Watch
+                                </button>` : item.isDriveVideo && item.driveFileId ? `
+                                <button onclick="playDriveVideo('${item.driveFileId}','${escHtml(item.title)}','${escHtml(item.courseTitle)}')"
+                                    style="padding:6px 14px;background:#059669;color:white;border:none;
+                                    border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
+                                    transition:background 0.2s"
+                                    onmouseover="this.style.background='#047857'"
+                                    onmouseout="this.style.background='#059669'">
+                                    ☁️ Watch
+                                </button>` : item.youtubeId ? `
+                                <button onclick="playVideo('${escHtml(item.id)}','${item.youtubeId}','${escHtml(item.title)}','${escHtml(item.courseTitle)}')"
+                                    style="padding:6px 14px;background:#4f46e5;color:white;border:none;
+                                    border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
+                                    transition:background 0.2s"
+                                    onmouseover="this.style.background='#4338ca'"
+                                    onmouseout="this.style.background='#4f46e5'">
+                                    ▶ Watch
+                                </button>` : `
+                                <span style="color:#64748b;font-size:11px">No video</span>`}
+                                <button onclick="removeSavedItem('${escHtml(item.id)}','${item._source}')"
+                                    style="padding:6px 8px;background:transparent;color:#64748b;border:none;
+                                    font-size:0.9rem;cursor:pointer;border-radius:8px;transition:color 0.2s"
+                                    onmouseover="this.style.color='#f87171'"
+                                    onmouseout="this.style.color='#64748b'"
+                                    title="Delete">🗑️</button>
+                            </div>
+                        </div>`;
+                    });
+
+                    html += `</div>`; // close items container
+                }
+
+                html += `</div>`; // close course accordion
+            });
+
+            html += `</div></div>`; // close courses list + semester block
         });
 
-        if (navigator.onLine) {
-            document.getElementById('status').textContent = '✅ Connection restored';
-            setTimeout(() => window.history.back(), 1000);
+        html += `</div>`; // close main container
+        list.innerHTML = html;
+    }
+
+    // ── Remove item from either DB ────────────────────────────────────────────
+    async function removeSavedItem(id, source) {
+        if (!confirm('ይህን ቪዲዮ ከ Offline ላይ ማጥፋት ይፈልጋሉ?')) return;
+        if (source === 'secure') {
+            // SecureCourseAppDB — uses _sdbDelete exposed by secure-player.js
+            if (typeof _sdbDelete === 'function') {
+                await _sdbDelete(id).catch(() => {});
+            }
+        } else if (source === 'dlfiles') {
+            await alphaDbDelete(id, 'downloaded_files').catch(() => {});
+        } else if (source === 'alpha') {
+            await alphaDbDelete(id, 'videos').catch(() => {});
         } else {
-            document.getElementById('status').textContent = '❌ No internet connection';
+            await dbDelete(id).catch(() => {});
+            savedIds.delete(id);
         }
+        renderSaved();
+        if (typeof toast !== 'undefined') toast.success('🗑️ Removed from offline storage.');
+    }
+
+    // ── HTML escape helper ────────────────────────────────────────────────────
+    function escHtml(str) {
+        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // ── Save video for offline ────────────────────────────────────────────────
+    async function saveVideo(id) {
+        const v = SAMPLE_VIDEOS.find(x => x.id === id);
+        if (!v) return;
+
+        downloading[id] = 0;
+        renderAvailable();
+
+        let prog = 0;
+        const timer = setInterval(() => {
+            prog += Math.floor(Math.random() * 18) + 8;
+            if (prog >= 90) { clearInterval(timer); prog = 90; }
+            downloading[id] = prog;
+            const bar = document.getElementById('prog-' + id);
+            if (bar) bar.style.width = prog + '%';
+        }, 250);
+
+        try {
+            const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            await dbPut({
+                id:        v.id,
+                title:     v.title,
+                course:    v.course,
+                duration:  v.duration,
+                youtubeId: v.youtubeId,
+                thumbnail: v.thumbnail,
+                savedBy:   user._id || user.uid || 'guest',
+                savedAt:   Date.now(),
+                secure:    true,
+            });
+            clearInterval(timer);
+            downloading[id] = 100;
+            savedIds.add(id);
+            document.getElementById('savedCount').textContent = savedIds.size;
+            setTimeout(() => { delete downloading[id]; renderAvailable(); }, 600);
+            toast?.success(`✅ "${v.title}" saved for offline viewing.`);
+        } catch (err) {
+            clearInterval(timer);
+            delete downloading[id];
+            renderAvailable();
+            toast?.error('Save failed: ' + err.message);
+        }
+    }
+
+    // ── Remove video (legacy) ─────────────────────────────────────────────────
+    async function removeVideo(id) {
+        if (!confirm('Remove this video from offline storage?')) return;
+        await dbDelete(id);
+        savedIds.delete(id);
+        await init();
+        if (currentTab === 'saved') renderSaved();
+        toast?.success('🗑️ Removed from offline storage.');
+    }
+
+    // ── Play video ────────────────────────────────────────────────────────────
+    function playVideo(id, youtubeId, title, course) {
+        if (!youtubeId) { toast?.error('No video available.'); return; }
+
+        // Set up overlay
+        document.getElementById('playerTitle').textContent  = title;
+        document.getElementById('playerCourse').textContent = course;
+        document.getElementById('playerIframe').src = buildEmbedUrl(youtubeId);
+
+        // Watermark
+        const wm = getWmText();
+        ['wm-tl','wm-tr','wm-bl','wm-br'].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = wm; });
+        const diag = document.getElementById('wm-diag');
+        if (diag) diag.textContent = `${wm}   ${wm}`;
+        const main = document.getElementById('wm-main');
+        if (main) main.textContent = wm;
+
+        document.getElementById('playerOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Start drift
+        wmPosIdx = 0;
+        if (wmTimer) clearInterval(wmTimer);
+        wmTimer = setInterval(() => {
+            wmPosIdx = (wmPosIdx + 1) % WM_POSITIONS.length;
+            const p = WM_POSITIONS[wmPosIdx];
+            if (main) { main.style.top = p.top; main.style.left = p.left; }
+        }, 4000);
+    }
+
+    // ── Close player ──────────────────────────────────────────────────────────
+    function closePlayer() {
+        document.getElementById('playerIframe').src = '';
+        document.getElementById('playerIframe').style.display = '';
+        const blobVid = document.getElementById('blobVideoEl');
+        if (blobVid) { blobVid.src = ''; blobVid.remove(); }
+        document.getElementById('playerOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+        if (wmTimer) { clearInterval(wmTimer); wmTimer = null; }
+    }
+
+    // ── Play blob video (from downloaded_files store) ─────────────────────────
+    function playBlobVideo(blobUrl, title, course) {
+        if (!blobUrl) { toast?.error('No video file available.'); return; }
+
+        document.getElementById('playerTitle').textContent  = title;
+        document.getElementById('playerCourse').textContent = course;
+
+        // Replace iframe with a <video> element for blob playback
+        const playerBody = document.getElementById('playerBody');
+        const existingVideo = document.getElementById('blobVideoEl');
+        if (existingVideo) existingVideo.remove();
+
+        const video = document.createElement('video');
+        video.id      = 'blobVideoEl';
+        video.src     = blobUrl;
+        video.controls   = true;
+        video.autoplay   = true;
+        video.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000';
+        playerBody.appendChild(video);
+
+        // Hide iframe
+        document.getElementById('playerIframe').style.display = 'none';
+
+        // Watermark
+        const wm = getWmText();
+        ['wm-tl','wm-tr','wm-bl','wm-br'].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = wm; });
+        const diag = document.getElementById('wm-diag');
+        if (diag) diag.textContent = `${wm}   ${wm}`;
+        const main = document.getElementById('wm-main');
+        if (main) main.textContent = wm;
+
+        document.getElementById('playerOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        wmPosIdx = 0;
+        if (wmTimer) clearInterval(wmTimer);
+        wmTimer = setInterval(() => {
+            wmPosIdx = (wmPosIdx + 1) % WM_POSITIONS.length;
+            const p = WM_POSITIONS[wmPosIdx];
+            if (main) { main.style.top = p.top; main.style.left = p.left; }
+        }, 4000);
+    }
+
+    // ── Play Google Drive video via embed iframe ───────────────────────────────
+    function playDriveVideo(driveFileId, title, course) {
+        if (!driveFileId) { toast?.error('Drive video not available.'); return; }
+
+        document.getElementById('playerTitle').textContent  = title;
+        document.getElementById('playerCourse').textContent = course + ' ☁️';
+
+        // Remove any existing blob video element
+        const existingVideo = document.getElementById('blobVideoEl');
+        if (existingVideo) existingVideo.remove();
+
+        // Show iframe with Drive embed
+        const iframe = document.getElementById('playerIframe');
+        iframe.style.display = '';
+        iframe.src = `https://drive.google.com/file/d/${driveFileId}/preview`;
+        // Drive needs allow-popups in sandbox to work
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms');
+        iframe.setAttribute('allow', 'autoplay');
+
+        // Watermark
+        const wm = getWmText();
+        ['wm-tl','wm-tr','wm-bl','wm-br'].forEach(i => { const el = document.getElementById(i); if (el) el.textContent = wm; });
+        const diag = document.getElementById('wm-diag');
+        if (diag) diag.textContent = `${wm}   ${wm}`;
+        const main = document.getElementById('wm-main');
+        if (main) main.textContent = wm;
+
+        document.getElementById('playerOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        wmPosIdx = 0;
+        if (wmTimer) clearInterval(wmTimer);
+        wmTimer = setInterval(() => {
+            wmPosIdx = (wmPosIdx + 1) % WM_POSITIONS.length;
+            const p = WM_POSITIONS[wmPosIdx];
+            if (main) { main.style.top = p.top; main.style.left = p.left; }
+        }, 4000);
+    }
+
+    // ── Keyboard: Escape closes player ───────────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closePlayer();
+    });
+
+    // Disable right-click in player overlay
+    document.getElementById('playerOverlay').addEventListener('contextmenu', e => e.preventDefault());
+
+    // ── Download ALL courses at once ──────────────────────────────────────────
+    async function downloadAllCourses() {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (!user._id && !user.id) {
+            if (typeof toast !== 'undefined') toast.error('Please login first.');
+            window.location.href = 'auth-login.html';
+            return;
+        }
+
+        const btn      = document.getElementById('downloadAllBtn');
+        const progDiv  = document.getElementById('downloadAllProgress');
+        const progBar  = document.getElementById('downloadAllBar');
+        const progStat = document.getElementById('downloadAllStatus');
+
+        btn.disabled    = true;
+        btn.textContent = '⏳ Downloading...';
+        progDiv.style.display = 'block';
+
+        let completed = 0;
+        const total   = SAMPLE_VIDEOS.length;
+
+        for (const v of SAMPLE_VIDEOS) {
+            if (savedIds.has(v.id)) {
+                // Already saved — skip
+                completed++;
+            } else {
+                progStat.textContent = `Saving: "${v.title}" (${completed + 1}/${total})`;
+                try {
+                    await dbPut({
+                        id:        v.id,
+                        title:     v.title,
+                        course:    v.course,
+                        duration:  v.duration,
+                        youtubeId: v.youtubeId,
+                        thumbnail: v.thumbnail,
+                        savedBy:   user._id || user.id || 'guest',
+                        savedAt:   Date.now(),
+                        secure:    true,
+                    });
+                    savedIds.add(v.id);
+                    completed++;
+                } catch (err) {
+                    console.warn('[Offline] Failed to save', v.title, err.message);
+                    completed++;
+                }
+            }
+            // Update progress bar
+            const pct = Math.round((completed / total) * 100);
+            progBar.style.width = pct + '%';
+            progStat.textContent = `${completed}/${total} courses saved (${pct}%)`;
+            // Small delay so UI can update
+            await new Promise(r => setTimeout(r, 60));
+        }
+
+        document.getElementById('savedCount').textContent = savedIds.size;
+        btn.disabled    = false;
+        btn.textContent = '✅ All Downloaded!';
+        btn.style.background = 'linear-gradient(135deg,#27ae60,#1a7030)';
+        progStat.textContent = `✅ ${savedIds.size} courses saved for offline viewing!`;
+
+        if (typeof toast !== 'undefined') {
+            toast.success(`✅ All ${savedIds.size} courses saved for offline viewing!`);
+        }
+
+        renderAvailable();
+    }
+
+    // ── Check downloaded courses status ───────────────────────────────────────
+    async function checkDownloadedCourses() {
+        const all   = await dbGetAll();
+        const count = all.length;
+        const total = SAMPLE_VIDEOS.length;
+        if (typeof toast !== 'undefined') {
+            if (count === 0) {
+                toast.warning('No courses downloaded yet. Click "Download All Courses".');
+            } else if (count >= total) {
+                toast.success(`✅ All ${count} courses are saved offline!`);
+            } else {
+                toast.warning(`${count}/${total} courses saved. Click "Download All" to get the rest.`);
+            }
+        }
+        switchTab('saved');
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    async function init() {
+        const all = await dbGetAll();
+        savedIds  = new Set(all.map(v => v.id));
+        // Count from all stores for the badge
+        const [alphaAll, dlAll, secureAll] = await Promise.all([
+            alphaDbGetAll().catch(() => []),
+            alphaDbGetDownloadedFiles().catch(() => []),
+            (typeof _sdbGetAll === 'function' ? _sdbGetAll() : Promise.resolve([])).catch(() => [])
+        ]);
+        const alphaIds  = new Set(alphaAll.map(v => v.lessonId || v.id || String(v.savedAt)));
+        const secureIds = new Set(secureAll.map(v => v.id));
+        const totalUnique =
+            savedIds.size +
+            alphaAll.filter(v => !savedIds.has(v.lessonId || v.id || String(v.savedAt))).length +
+            dlAll.filter(v => !savedIds.has(v.id) && !alphaIds.has(v.id)).length +
+            secureAll.filter(v => !savedIds.has(v.id) && !alphaIds.has(v.id)).length;
+        document.getElementById('savedCount').textContent = totalUnique;
+        renderAvailable();
+    }
+
+    init();
+
+    // ── Logout ────────────────────────────────────────────────────────────────
+    document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try { await api.logout(); } catch {}
+        api.removeAuthToken();
+        localStorage.removeItem('currentUser');
+        window.location.href = 'home.html';
+    });
     </script>
+    <script src="/pwa.js"></script>
+
+    
+
+    <!-- Team Modal -->
+    <div id="teamModal" onclick="if(event.target===this)closeTeamModal()">
+        <div class="team-modal-box">
+            <button class="team-modal-close" onclick="closeTeamModal()">?</button>
+            <div class="team-modal-avatar">RA</div>
+            <span class="team-modal-role">Lead Full-Stack Developer</span>
+            <h3 class="team-modal-name">Rehima Ali</h3>
+            <p class="team-modal-team">ALPHA DEVELOPERS TEAM</p>
+            <div class="team-modal-divider"></div>
+            <p class="team-modal-desc">
+                Lead architect and developer behind the <strong>Alpha Freshman Tutorial</strong> platform,
+                dedicated to empowering Ethiopian university freshmen with world-class learning tools.
+            </p>
+            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!</button>
+        </div>
+    </div>
+    <script>
+    function openTeamModal()  { document.getElementById('teamModal').classList.add('open'); }
+    function closeTeamModal() { document.getElementById('teamModal').classList.remove('open'); }
+    </script>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <a href="home.html" class="nav-item" id="mbn-home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="courses.html" class="nav-item" id="mbn-courses">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5Z"/></svg>
+            <span>Courses</span>
+        </a>
+        <a href="study-hub.html" class="nav-item" id="mbn-study">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span>Study</span>
+        </a>
+        <a href="student-dashboard.html" class="nav-item" id="mbn-dashboard">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+    <script>
+    (function() {
+        var page = window.location.pathname.split('/').pop() || 'home.html';
+        var map = { 'home.html': 'mbn-home', 'courses.html': 'mbn-courses',
+                    'study-hub.html': 'mbn-study', 'dashboard.html': 'mbn-dashboard', 'student-dashboard.html': 'mbn-dashboard',
+                    'course-detail.html': 'mbn-courses', 'offline.html': 'mbn-study' };
+        Object.values(map).forEach(function(id){ var el = document.getElementById(id); if(el) el.classList.remove('active'); });
+        if (map[page]) { var el = document.getElementById(map[page]); if(el) el.classList.add('active'); }
+    })();
+    </script>
+
+<footer class="bg-[#2c3e50] text-slate-200 pt-12 pb-8"><div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left"><div><h3 class="text-lg font-bold text-white mb-2">Alpha Freshman Tutorial</h3><p class="text-sm text-slate-300">Way to Success &#8212; Empowering Freshman Students</p></div><div><h4 class="text-md font-semibold text-white mb-3">Quick Links</h4><ul class="space-y-2 text-sm"><li><a href="home.html" class="hover:text-amber-400">Home</a></li><li><a href="courses.html" class="hover:text-amber-400">Courses</a></li><li><a href="auth-register.html" class="hover:text-amber-400">Sign Up</a></li><li><a href="auth-login.html" class="hover:text-amber-400">Login</a></li></ul></div><div><h4 class="text-md font-semibold text-white mb-3">Connect With Us</h4><div class="flex justify-center md:justify-start gap-3"><a href="https://youtube.com/@alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-youtube"></i></a><a href="https://t.me/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-telegram"></i></a><a href="https://linkedin.com/company/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-linkedin"></i></a><a href="https://facebook.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-facebook"></i></a><a href="https://instagram.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-instagram"></i></a><a href="https://wa.me/1234567890" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-whatsapp"></i></a></div></div></div><div class="max-w-6xl mx-auto px-6 mt-8 pt-6 border-t border-slate-600/50 text-center text-xs text-slate-300">&copy; 2026 Alpha Freshman Tutorial. All rights reserved. | Developed by ALPHA DEVELOPERS TEAM</div></footer>
 </body>
 </html>
+
 
 
