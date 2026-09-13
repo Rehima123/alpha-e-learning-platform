@@ -110,55 +110,79 @@ const _WM_POSITIONS = [
 // ── Global screen-capture shield listeners (installed once) ───────────────────
 let _shieldInstalled = false;
 let _activeShield    = null;
+let _captureDetected = false; // tracks if getDisplayMedia was called
 
 function _installScreenShield() {
     if (_shieldInstalled) return;
     _shieldInstalled = true;
 
-    const activateShield = (msg) => {
+    const activateShield = (msg, autoDismissMs = 3500) => {
         if (_activeShield) {
             clearTimeout(_activeShield._timer);
         } else {
             _activeShield = document.createElement('div');
             _activeShield.style.cssText = [
-                'position:fixed','inset:0','z-index:99999',
-                'background:rgba(0,0,0,0.97)',
+                'position:fixed','inset:0','z-index:2147483647',
+                'background:#000',
                 'display:flex','flex-direction:column',
                 'align-items:center','justify-content:center',
                 'color:white','font-family:sans-serif',
-                'pointer-events:none','user-select:none',
+                'pointer-events:all','user-select:none',
             ].join(';');
             _activeShield.innerHTML = `
-                <div style="font-size:2.5rem;margin-bottom:12px">⛔</div>
-                <p style="font-weight:700;font-size:0.95rem;margin:0">Screen capture is not permitted.</p>
-                <p id="_wm_txt" style="font-size:0.75rem;opacity:0.5;margin:6px 0 0;font-family:monospace"></p>
+                <div style="font-size:3rem;margin-bottom:14px">⛔</div>
+                <p style="font-weight:800;font-size:1rem;margin:0;text-align:center;max-width:300px">
+                    Content Protected<br>
+                    <span style="font-size:0.82rem;font-weight:400;opacity:0.7">Playback Paused</span>
+                </p>
+                <p id="_wm_shield_txt" style="font-size:0.72rem;opacity:0.4;margin:10px 0 0;font-family:monospace;text-align:center;max-width:320px;word-break:break-all"></p>
             `;
             document.body.appendChild(_activeShield);
         }
 
-        // Show user identity in shield
-        const wm = _activeShield.querySelector('#_wm_txt');
+        // Show user identity + deviceId in shield
+        const wm = _activeShield.querySelector('#_wm_shield_txt');
         if (wm) wm.textContent = msg || '';
 
-        _activeShield._timer = setTimeout(() => {
-            _activeShield?.remove();
-            _activeShield = null;
-        }, 3000);
+        // Pause all iframes by reloading src to empty
+        document.querySelectorAll('#svp-iframe, #scvp-iframe').forEach(iframe => {
+            iframe.dataset.savedSrc = iframe.dataset.savedSrc || iframe.src;
+            iframe.src = '';
+        });
+
+        if (autoDismissMs > 0) {
+            _activeShield._timer = setTimeout(() => {
+                _activeShield?.remove();
+                _activeShield = null;
+                // Restore iframe
+                document.querySelectorAll('#svp-iframe, #scvp-iframe').forEach(iframe => {
+                    if (iframe.dataset.savedSrc) {
+                        iframe.src = iframe.dataset.savedSrc;
+                        delete iframe.dataset.savedSrc;
+                    }
+                });
+            }, autoDismissMs);
+        }
     };
 
-    // PrintScreen + Mac screenshot combos
+    // ── 1. PrintScreen + Mac/Win screenshot key combos ─────────────────────
     document.addEventListener('keydown', (e) => {
-        const isPrint = e.key === 'PrintScreen';
-        const isMac   = e.metaKey && e.shiftKey && ['3','4','5'].includes(e.key);
-        const isWin   = e.metaKey && e.shiftKey && e.key === 's';
-        if (isPrint || isMac || isWin) {
+        const isPrint    = e.key === 'PrintScreen';
+        const isMacShot  = e.metaKey && e.shiftKey && ['3','4','5','6'].includes(e.key);
+        const isWinShot  = e.metaKey && e.shiftKey && e.key.toLowerCase() === 's';
+        const isPrint2   = e.key === 'F13'; // some keyboards map PrtScn to F13
+        if (isPrint || isMacShot || isWinShot || isPrint2) {
             e.preventDefault();
-            const u = _getCurrentUser();
-            activateShield(u);
+            activateShield(_getCurrentUserLabel());
+        }
+        // Block Ctrl+P (print to PDF)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+            e.preventDefault();
         }
     }, true);
 
-    // Visibility-change heuristic
+    // ── 2. visibilitychange heuristic ──────────────────────────────────────
+    // Brief hide (< 800ms) is characteristic of a screenshot action on Windows
     let _lastHidden = 0;
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
@@ -166,21 +190,58 @@ function _installScreenShield() {
         } else {
             const elapsed = Date.now() - _lastHidden;
             if (elapsed > 0 && elapsed < 800) {
-                const u = _getCurrentUser();
-                activateShield(u);
+                activateShield(_getCurrentUserLabel());
             }
         }
     });
+
+    // ── 3. window blur/focus — app switcher or floating overlay detector ───
+    window.addEventListener('blur', () => {
+        // Pause iframe when window loses focus (e.g. OBS overlay, Snip & Sketch)
+        document.querySelectorAll('#svp-iframe, #scvp-iframe').forEach(iframe => {
+            if (!iframe.dataset.savedSrc) {
+                iframe.dataset.savedSrc = iframe.src;
+                iframe.src = '';
+            }
+        });
+    });
+    window.addEventListener('focus', () => {
+        // Restore iframe when window regains focus
+        document.querySelectorAll('#svp-iframe, #scvp-iframe').forEach(iframe => {
+            if (iframe.dataset.savedSrc) {
+                iframe.src = iframe.dataset.savedSrc;
+                delete iframe.dataset.savedSrc;
+            }
+        });
+    });
+
+    // ── 4. Screen Capture API intercept (Chrome/Edge) ─────────────────────
+    // Intercept navigator.mediaDevices.getDisplayMedia — called by screen recorders
+    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+        const _originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
+        navigator.mediaDevices.getDisplayMedia = async function(...args) {
+            // Mark capture attempt
+            _captureDetected = true;
+            activateShield(_getCurrentUserLabel() + ' | Screen capture blocked', 5000);
+            // Still allow the system call to proceed (can't fully block) but content is blacked out
+            try { return await _originalGetDisplayMedia(...args); } catch { return Promise.reject(new Error('Blocked')); }
+        };
+    }
 }
 
-function _getCurrentUser() {
+function _getCurrentUserLabel() {
     try {
-        const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        return [u.fullName, u.phoneNumber || u.email].filter(Boolean).join(' | ') || 'Alpha Freshman Tutorial';
+        const u  = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const dId = localStorage.getItem('_deviceId') || 'unknown-device';
+        const parts = [u.fullName, u.phoneNumber || u.email, 'dev:' + dId.slice(0,8)].filter(Boolean);
+        return parts.join(' | ') || 'Alpha Freshman Tutorial';
     } catch {
         return 'Alpha Freshman Tutorial';
     }
 }
+
+// Keep legacy alias
+function _getCurrentUser() { return _getCurrentUserLabel(); }
 
 // ── Main builder ──────────────────────────────────────────────────────────────
 /**
@@ -196,9 +257,10 @@ async function buildSecurePlayer(lesson, user, container, opts = {}) {
 
     if (!container) return;
 
-    // Compute watermark text
+    // Compute watermark text — includes deviceId for forensic tracing
+    const deviceId = localStorage.getItem('_deviceId') || 'unknown';
     const wmText = user
-        ? [user.fullName, user.phoneNumber || user.email].filter(Boolean).join(' | ') || 'Alpha Freshman Tutorial'
+        ? [user.fullName, user.phoneNumber || user.email, 'dev:' + deviceId.slice(0,8)].filter(Boolean).join(' | ')
         : 'Alpha Freshman Tutorial';
 
     const videoUrl = lesson?.videoUrl || '';
@@ -334,6 +396,24 @@ async function buildSecurePlayer(lesson, user, container, opts = {}) {
 
     // ── Disable right-click ───────────────────────────────────────────────────
     const root = document.getElementById('svp-root');
+
+    // ── Anti-capture CSS properties ───────────────────────────────────────────
+    root.style.cssText += [
+        '-webkit-user-select:none',
+        '-moz-user-select:none',
+        '-ms-user-select:none',
+        'user-select:none',
+        '-webkit-touch-callout:none',
+        '-webkit-user-drag:none',
+    ].join(';');
+
+    // Apply to iframe too
+    const iframe = document.getElementById('svp-iframe');
+    if (iframe) {
+        iframe.style.cssText += '-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;';
+        iframe.setAttribute('draggable', 'false');
+    }
+
     root.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
     document.getElementById('svp-ytblock')?.addEventListener('click', (e) => e.preventDefault());
 
