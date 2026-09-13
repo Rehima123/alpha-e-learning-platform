@@ -356,7 +356,7 @@ function renderChapterBuilder() {
                                 style="padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
                                     background:var(--bg-secondary);color:var(--text-primary);font-size:0.8rem">
                             <input type="text" id="l-vid-${ci}-${li}" value="${l.videoUrl}"
-                                placeholder="YouTube URL (optional)" oninput="courseChapters[${ci}].lessons[${li}].videoUrl=this.value"
+                                placeholder="YouTube URL or Google Drive link" oninput="courseChapters[${ci}].lessons[${li}].videoUrl=this.value"
                                 style="padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
                                     background:var(--bg-secondary);color:var(--text-primary);font-size:0.8rem">
                         </div>
@@ -732,7 +732,7 @@ async function loadCourseChapters() {
                         <div style="display:flex;gap:8px;align-items:center;flex:2;min-width:200px">
                             <input type="text" id="yt-${ci}-${li}"
                                 value="${lesson.videoUrl || ''}"
-                                placeholder="https://youtube.com/watch?v=..."
+                                placeholder="https://youtube.com/watch?v=... or Google Drive link"
                                 style="flex:1;padding:7px 10px;border:1px solid var(--border-color);
                                     border-radius:8px;background:var(--bg-primary);color:var(--text-primary);
                                     font-size:0.82rem">
@@ -1337,7 +1337,7 @@ function renderEditChapterBuilder() {
                                 style="padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
                                     background:var(--bg-secondary);color:var(--text-primary);font-size:0.8rem">
                             <input type="text" id="el-vid-${ci}-${li}" value="${(l.videoUrl||'').replace(/"/g,'&quot;')}"
-                                placeholder="YouTube URL" oninput="editCourseChapters[${ci}].lessons[${li}].videoUrl=this.value"
+                                placeholder="YouTube URL or Google Drive link" oninput="editCourseChapters[${ci}].lessons[${li}].videoUrl=this.value"
                                 style="padding:5px 8px;border:1px solid var(--border-color);border-radius:6px;
                                     background:var(--bg-secondary);color:var(--text-primary);font-size:0.8rem">
                         </div>
