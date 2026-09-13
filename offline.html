@@ -168,7 +168,7 @@
                 <h3 id="playerTitle">Lesson</h3>
                 <p id="playerCourse">Course</p>
             </div>
-            <button class="close-btn" onclick="closePlayer()" aria-label="Close player">✕><i class="fa-solid fa-moon"></i></button>
+            <button class="close-btn" onclick="closePlayer()" aria-label="Close player">✕</button>
         </div>
         <div id="playerBody">
             <iframe id="playerIframe"
@@ -236,12 +236,12 @@
                     padding:14px 32px;border-radius:14px;font-size:1rem;font-weight:800;cursor:pointer;
                     box-shadow:0 6px 20px rgba(102,126,234,0.4);transition:all 0.2s">
                     📥 Download All Courses
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
                 <button onclick="checkDownloadedCourses()"
                     style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border-color);
                     padding:14px 20px;border-radius:14px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s">
                     🔍 Check Status
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
             </div>
         </div>
 
@@ -249,10 +249,10 @@
         <div class="tab-bar">
             <button class="tab-btn active" id="tabAvailable" onclick="switchTab('available')">
                 🎬 Available (<span id="availCount">0</span>)
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
             <button class="tab-btn" id="tabSaved" onclick="switchTab('saved')">
                 💾 Saved Offline (<span id="savedCount">0</span>)
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
         </div>
 
         <!-- Available tab -->
@@ -389,13 +389,13 @@
                     ${dl !== undefined ? `<div class="progress-bar-mini"><div class="fill" id="prog-${v.id}" style="width:${dl}%"></div></div>` : ''}
                 </div>
                 <div class="actions">
-                    <button class="btn btn-play" onclick="playVideo('${v.id}','${v.youtubeId}','${v.title}','${v.course}')">▶ Play><i class="fa-solid fa-moon"></i></button>
+                    <button class="btn btn-play" onclick="playVideo('${v.id}','${v.youtubeId}','${v.title}','${v.course}')">▶ Play</button>
                     ${saved
-                        ? `<button class="btn btn-remove" onclick="removeVideo('${v.id}')">🗑️><i class="fa-solid fa-moon"></i></button>
+                        ? `<button class="btn btn-remove" onclick="removeVideo('${v.id}')">🗑️</button>
                            <span style="font-size:0.75rem;color:#27ae60;font-weight:700;align-self:center">✓ Saved</span>`
                         : dl !== undefined
                             ? `<span style="font-size:0.78rem;color:var(--text-secondary);align-self:center">${dl}%</span>`
-                            : `<button class="btn btn-save" onclick="saveVideo('${v.id}')">💾 Save><i class="fa-solid fa-moon"></i></button>`
+                            : `<button class="btn btn-save" onclick="saveVideo('${v.id}')">💾 Save</button>`
                     }
                 </div>
             </div>`;
@@ -581,7 +581,7 @@
                     <p style="color:#64748b;font-size:0.9rem;margin:0 0 16px">ምንም የወረደ ፋይል የለም።</p>
                     <button class="btn" style="margin-top:0" onclick="switchTab('available')">
                         🎬 Browse Available Videos →
-                    ><i class="fa-solid fa-moon"></i></button>
+                    </button>
                 </div>`;
             return;
         }
@@ -654,7 +654,7 @@
                         <span style="color:#64748b;font-size:0.75rem;
                             transform:${isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
                             transition:transform 0.2s;display:inline-block">▼</span>
-                    ><i class="fa-solid fa-moon"></i></button>`;
+                    </button>`;
 
                 if (isOpen) {
                     html += `
@@ -690,7 +690,7 @@
                                     onmouseover="this.style.background='#047857'"
                                     onmouseout="this.style.background='#059669'">
                                     ▶ Watch
-                                ><i class="fa-solid fa-moon"></i></button>` : item.isDriveVideo && item.driveFileId ? `
+                                </button>` : item.isDriveVideo && item.driveFileId ? `
                                 <button onclick="playDriveVideo('${item.driveFileId}','${escHtml(item.title)}','${escHtml(item.courseTitle)}')"
                                     style="padding:6px 14px;background:#059669;color:white;border:none;
                                     border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
@@ -698,7 +698,7 @@
                                     onmouseover="this.style.background='#047857'"
                                     onmouseout="this.style.background='#059669'">
                                     ☁️ Watch
-                                ><i class="fa-solid fa-moon"></i></button>` : item.youtubeId ? `
+                                </button>` : item.youtubeId ? `
                                 <button onclick="playVideo('${escHtml(item.id)}','${item.youtubeId}','${escHtml(item.title)}','${escHtml(item.courseTitle)}')"
                                     style="padding:6px 14px;background:#4f46e5;color:white;border:none;
                                     border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
@@ -706,14 +706,14 @@
                                     onmouseover="this.style.background='#4338ca'"
                                     onmouseout="this.style.background='#4f46e5'">
                                     ▶ Watch
-                                ><i class="fa-solid fa-moon"></i></button>` : `
+                                </button>` : `
                                 <span style="color:#64748b;font-size:11px">No video</span>`}
                                 <button onclick="removeSavedItem('${escHtml(item.id)}','${item._source}')"
                                     style="padding:6px 8px;background:transparent;color:#64748b;border:none;
                                     font-size:0.9rem;cursor:pointer;border-radius:8px;transition:color 0.2s"
                                     onmouseover="this.style.color='#f87171'"
                                     onmouseout="this.style.color='#64748b'"
-                                    title="Delete">🗑️><i class="fa-solid fa-moon"></i></button>
+                                    title="Delete">🗑️</button>
                             </div>
                         </div>`;
                     });
@@ -1065,7 +1065,7 @@
     <!-- Team Modal -->
     <div id="teamModal" onclick="if(event.target===this)closeTeamModal()">
         <div class="team-modal-box">
-            <button class="team-modal-close" onclick="closeTeamModal()">?><i class="fa-solid fa-moon"></i></button>
+            <button class="team-modal-close" onclick="closeTeamModal()">?</button>
             <div class="team-modal-avatar">RA</div>
             <span class="team-modal-role">Lead Full-Stack Developer</span>
             <h3 class="team-modal-name">Rehima Ali</h3>
@@ -1075,7 +1075,7 @@
                 Lead architect and developer behind the <strong>Alpha Freshman Tutorial</strong> platform,
                 dedicated to empowering Ethiopian university freshmen with world-class learning tools.
             </p>
-            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!><i class="fa-solid fa-moon"></i></button>
+            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!</button>
         </div>
     </div>
     <script>

@@ -248,7 +248,7 @@
                 <li><a href="home.html">Home</a></li>
                 <li><a href="courses.html">Courses</a></li>
                 <li><a href="instructor-dashboard.html" style="color:#667eea;font-weight:700">Instructor</a></li>
-                <li><button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙><i class="fa-solid fa-moon"></i></button></li>
+                <li><button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button></li>
                 <li><a href="#" id="logoutBtn" style="color:#f87171">Logout</a></li>
             </ul>
         </div>
@@ -262,15 +262,15 @@
                 <h1 style="font-size:1.6rem;font-weight:800;margin:0">Instructor Dashboard</h1>
                 <p style="color:var(--text-secondary);margin:4px 0 0;font-size:0.9rem" id="welcomeMsg">Welcome back!</p>
             </div>
-            <button class="btn btn-success" style="margin-left:auto" onclick="openModal('courseModal')">+ New Course><i class="fa-solid fa-moon"></i></button>
+            <button class="btn btn-success" style="margin-left:auto" onclick="openModal('courseModal')">+ New Course</button>
         </div>
 
         <!-- Tabs -->
         <div class="idash-tabs">
-            <button class="idash-tab active" onclick="switchTab('overview')"   id="tab-overview">📊 Overview><i class="fa-solid fa-moon"></i></button>
-            <button class="idash-tab"        onclick="switchTab('courses')"    id="tab-courses">📚 Course Manager><i class="fa-solid fa-moon"></i></button>
-            <button class="idash-tab"        onclick="switchTab('payments')"   id="tab-payments">💰 Payments <span id="paymentBadge" style="display:none;background:#e74c3c;color:white;border-radius:10px;padding:1px 7px;font-size:0.7rem;margin-left:4px">0</span><i class="fa-solid fa-moon"></i></button>
-            <button class="idash-tab"        onclick="switchTab('students')"   id="tab-students">👥 Students><i class="fa-solid fa-moon"></i></button>
+            <button class="idash-tab active" onclick="switchTab('overview')"   id="tab-overview">📊 Overview</button>
+            <button class="idash-tab"        onclick="switchTab('courses')"    id="tab-courses">📚 Course Manager</button>
+            <button class="idash-tab"        onclick="switchTab('payments')"   id="tab-payments">💰 Payments <span id="paymentBadge" style="display:none;background:#e74c3c;color:white;border-radius:10px;padding:1px 7px;font-size:0.7rem;margin-left:4px">0</span</button>
+            <button class="idash-tab"        onclick="switchTab('students')"   id="tab-students">👥 Students</button>
         </div>
 
         <!-- ── PANEL 1: Overview ── -->
@@ -309,7 +309,7 @@
         <div class="idash-panel" id="panel-courses">
             <div class="section-header">
                 <div class="section-title">My Courses</div>
-                <button class="btn btn-success btn-small" onclick="openModal('courseModal')">+ Add Course><i class="fa-solid fa-moon"></i></button>
+                <button class="btn btn-success btn-small" onclick="openModal('courseModal')">+ Add Course</button>
             </div>
             <div id="courseManagerGrid" class="course-manager-grid">
                 <div class="loading-spinner">Loading courses...</div>
@@ -322,10 +322,10 @@
                 <div class="section-title">Manual Payment Receipts</div>
             </div>
             <div class="payments-filter">
-                <button class="filter-btn active" onclick="filterPayments('all',    this)">All><i class="fa-solid fa-moon"></i></button>
-                <button class="filter-btn"        onclick="filterPayments('pending_verification', this)">⏳ Pending><i class="fa-solid fa-moon"></i></button>
-                <button class="filter-btn"        onclick="filterPayments('approved', this)">✅ Approved><i class="fa-solid fa-moon"></i></button>
-                <button class="filter-btn"        onclick="filterPayments('rejected', this)">❌ Rejected><i class="fa-solid fa-moon"></i></button>
+                <button class="filter-btn active" onclick="filterPayments('all',    this)">All</button>
+                <button class="filter-btn"        onclick="filterPayments('pending_verification', this)">⏳ Pending</button>
+                <button class="filter-btn"        onclick="filterPayments('approved', this)">✅ Approved</button>
+                <button class="filter-btn"        onclick="filterPayments('rejected', this)">❌ Rejected</button>
             </div>
             <div style="overflow-x:auto;background:var(--card-bg);border:1px solid var(--border-color);border-radius:16px">
                 <table class="payments-table">
@@ -380,7 +380,7 @@
     <!-- ══ MODAL: Course Create/Edit ══ -->
     <div class="idash-modal" id="courseModal">
         <div class="idash-modal-box">
-            <button class="idash-modal-close" onclick="closeModal('courseModal')">✕><i class="fa-solid fa-moon"></i></button>
+            <button class="idash-modal-close" onclick="closeModal('courseModal')">✕</button>
             <div class="idash-modal-title" id="courseModalTitle">Create New Course</div>
             <input type="hidden" id="editCourseId">
             <div class="idash-form-group">
@@ -441,8 +441,8 @@
                 </div>
             </div>
             <div class="idash-form-actions">
-                <button class="btn" onclick="closeModal('courseModal')">Cancel><i class="fa-solid fa-moon"></i></button>
-                <button class="btn btn-success" onclick="saveCourse()">Save Course><i class="fa-solid fa-moon"></i></button>
+                <button class="btn" onclick="closeModal('courseModal')">Cancel</button>
+                <button class="btn btn-success" onclick="saveCourse()">Save Course</button>
             </div>
         </div>
     </div>
@@ -450,10 +450,10 @@
     <!-- ══ MODAL: Lessons Manager ══ -->
     <div class="idash-modal" id="lessonsModal">
         <div class="idash-modal-box wide">
-            <button class="idash-modal-close" onclick="closeModal('lessonsModal')">✕><i class="fa-solid fa-moon"></i></button>
+            <button class="idash-modal-close" onclick="closeModal('lessonsModal')">✕</button>
             <div class="idash-modal-title">📖 Lessons: <span id="lessonsCourseTitle"></span></div>
             <div id="lessonsList"></div>
-            <button class="btn btn-success" style="width:100%;margin-top:14px" onclick="openAddLessonForm()">+ Add New Lesson><i class="fa-solid fa-moon"></i></button>
+            <button class="btn btn-success" style="width:100%;margin-top:14px" onclick="openAddLessonForm()">+ Add New Lesson</button>
             <div id="lessonForm" style="display:none;margin-top:16px;background:var(--bg-secondary,#0f172a);border-radius:12px;padding:16px">
                 <div style="font-weight:700;margin-bottom:12px" id="lessonFormTitle">Add Lesson</div>
                 <input type="hidden" id="editLessonId">
@@ -485,8 +485,8 @@
                     </div>
                 </div>
                 <div class="idash-form-actions">
-                    <button class="btn" onclick="cancelLessonForm()">Cancel><i class="fa-solid fa-moon"></i></button>
-                    <button class="btn btn-success" onclick="saveLesson()">Save Lesson><i class="fa-solid fa-moon"></i></button>
+                    <button class="btn" onclick="cancelLessonForm()">Cancel</button>
+                    <button class="btn btn-success" onclick="saveLesson()">Save Lesson</button>
                 </div>
             </div>
         </div>
@@ -495,7 +495,7 @@
     <!-- ══ MODAL: Reject Payment Reason ══ -->
     <div class="idash-modal" id="rejectModal">
         <div class="idash-modal-box">
-            <button class="idash-modal-close" onclick="closeModal('rejectModal')">✕><i class="fa-solid fa-moon"></i></button>
+            <button class="idash-modal-close" onclick="closeModal('rejectModal')">✕</button>
             <div class="idash-modal-title">❌ Reject Payment</div>
             <input type="hidden" id="rejectPaymentId">
             <div class="idash-form-group">
@@ -503,15 +503,15 @@
                 <textarea id="rejectReason" rows="3" placeholder="e.g., Receipt is unclear, wrong amount sent..."></textarea>
             </div>
             <div class="idash-form-actions">
-                <button class="btn" onclick="closeModal('rejectModal')">Cancel><i class="fa-solid fa-moon"></i></button>
-                <button class="btn btn-delete" onclick="confirmRejectPayment()">Reject & Notify Student><i class="fa-solid fa-moon"></i></button>
+                <button class="btn" onclick="closeModal('rejectModal')">Cancel</button>
+                <button class="btn btn-delete" onclick="confirmRejectPayment()">Reject & Notify Student</button>
             </div>
         </div>
     </div>
 
     <!-- ══ Lightbox ══ -->
     <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-        <button class="lightbox-close" onclick="closeLightbox()">✕><i class="fa-solid fa-moon"></i></button>
+        <button class="lightbox-close" onclick="closeLightbox()">✕</button>
         <img id="lightboxImg" src="" alt="Receipt">
     </div>
 

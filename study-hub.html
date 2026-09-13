@@ -168,7 +168,7 @@
                 </div>
                 <button class="sh-btn" onclick="event.stopPropagation();window.location.href='ai-study.html'">
                     Open AI Tools &rarr;
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
             </div>
 
             <!-- Study Planner -->
@@ -183,7 +183,7 @@
                 </div>
                 <button class="sh-btn" onclick="event.stopPropagation();showSection('planner')">
                     Create Schedule &rarr;
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
             </div>
 
             <!-- Quick Notes -->
@@ -198,7 +198,7 @@
                 </div>
                 <button class="sh-btn" onclick="event.stopPropagation();showSection('notes')">
                     Open Notes &rarr;
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
             </div>
 
             <!-- Pomodoro Timer -->
@@ -213,7 +213,7 @@
                 </div>
                 <button class="sh-btn" onclick="event.stopPropagation();showSection('pomodoro')">
                     Start Timer &rarr;
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
             </div>
 
         </div>
@@ -256,7 +256,7 @@
                 border-radius:12px;font-weight:700;font-size:0.85rem;cursor:pointer;transition:opacity 0.2s"
                 onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
                 🔄 Generate My Schedule
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
         </div>
 
         <!-- ── Notes Section ── -->
@@ -286,13 +286,13 @@
                     font-weight:700;font-size:0.85rem;cursor:pointer;transition:opacity 0.2s"
                     onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
                     💾 Save Note
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
                 <button onclick="loadNotes()"
                     style="padding:10px 22px;background:#1e293b;color:#94a3b8;border:1px solid #334155;
                     border-radius:12px;font-weight:700;font-size:0.85rem;cursor:pointer;transition:opacity 0.2s"
                     onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
                     📂 Load Notes
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
             </div>
             <div id="savedNotesList" style="margin-top:20px"></div>
         </div>
@@ -307,24 +307,24 @@
                     <button id="startBtn" onclick="startTimer()"
                         style="padding:10px 24px;background:#16a34a;color:white;border:none;border-radius:12px;
                         font-weight:700;font-size:0.85rem;cursor:pointer;transition:opacity 0.2s"
-                        onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">▶ Start><i class="fa-solid fa-moon"></i></button>
+                        onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">▶ Start</button>
                     <button onclick="pauseTimer()"
                         style="padding:10px 24px;background:#1e293b;color:#94a3b8;border:1px solid #334155;
-                        border-radius:12px;font-weight:700;font-size:0.85rem;cursor:pointer">⏸ Pause><i class="fa-solid fa-moon"></i></button>
+                        border-radius:12px;font-weight:700;font-size:0.85rem;cursor:pointer">⏸ Pause</button>
                     <button onclick="resetTimer()"
                         style="padding:10px 24px;background:#1e293b;color:#94a3b8;border:1px solid #334155;
-                        border-radius:12px;font-weight:700;font-size:0.85rem;cursor:pointer">🔄 Reset><i class="fa-solid fa-moon"></i></button>
+                        border-radius:12px;font-weight:700;font-size:0.85rem;cursor:pointer">🔄 Reset</button>
                 </div>
                 <div class="pomo-preset">
                     <button onclick="setTimer(25,'🎯 Focus Time')"
                         style="padding:7px 16px;background:#1e293b;color:#94a3b8;border:1px solid #334155;
-                        border-radius:10px;font-size:0.8rem;font-weight:600;cursor:pointer">25 min><i class="fa-solid fa-moon"></i></button>
+                        border-radius:10px;font-size:0.8rem;font-weight:600;cursor:pointer">25 min</button>
                     <button onclick="setTimer(5,'☕ Short Break')"
                         style="padding:7px 16px;background:#1e293b;color:#94a3b8;border:1px solid #334155;
-                        border-radius:10px;font-size:0.8rem;font-weight:600;cursor:pointer">5 min><i class="fa-solid fa-moon"></i></button>
+                        border-radius:10px;font-size:0.8rem;font-weight:600;cursor:pointer">5 min</button>
                     <button onclick="setTimer(15,'🌿 Long Break')"
                         style="padding:7px 16px;background:#1e293b;color:#94a3b8;border:1px solid #334155;
-                        border-radius:10px;font-size:0.8rem;font-weight:600;cursor:pointer">15 min><i class="fa-solid fa-moon"></i></button>
+                        border-radius:10px;font-size:0.8rem;font-weight:600;cursor:pointer">15 min</button>
                 </div>
                 <div id="pomodoroCount" style="margin-top:14px;color:#64748b;font-size:0.85rem"></div>
             </div>
@@ -413,7 +413,7 @@
                     n.content.substring(0,200)+(n.content.length>200?'...':'')+'</p>' +
                     '<button onclick="deleteNote('+i+')" '+
                     'style="padding:5px 12px;background:#1e293b;color:#f87171;border:1px solid #334155;'+
-                    'border-radius:8px;font-size:0.75rem;cursor:pointer;font-weight:600">🗑 Delete><i class="fa-solid fa-moon"></i></button>' +
+                    'border-radius:8px;font-size:0.75rem;cursor:pointer;font-weight:600">🗑 Delete</button>' +
                     '</div>';
             }).join('');
     }
@@ -512,7 +512,7 @@
     <!-- Team Modal -->
     <div id="teamModal" onclick="if(event.target===this)closeTeamModal()">
         <div class="team-modal-box">
-            <button class="team-modal-close" onclick="closeTeamModal()">?><i class="fa-solid fa-moon"></i></button>
+            <button class="team-modal-close" onclick="closeTeamModal()">?</button>
             <div class="team-modal-avatar">RA</div>
             <span class="team-modal-role">Lead Full-Stack Developer</span>
             <h3 class="team-modal-name">Rehima Ali</h3>
@@ -522,7 +522,7 @@
                 Lead architect and developer behind the <strong>Alpha Freshman Tutorial</strong> platform,
                 dedicated to empowering Ethiopian university freshmen with world-class learning tools.
             </p>
-            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!><i class="fa-solid fa-moon"></i></button>
+            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!</button>
         </div>
     </div>
     <script>

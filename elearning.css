@@ -2440,7 +2440,10 @@ body { animation: fadeIn 0.3s ease; }
 
     /* Show compact top bar with logo only on mobile */
     .navbar .container {
-        justify-content: center;
+        justify-content: space-between !important;
+        align-items: center !important;
+        display: flex !important;
+        padding: 0 1rem;
     }
 }
 

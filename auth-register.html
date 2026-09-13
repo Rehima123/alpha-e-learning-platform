@@ -207,10 +207,10 @@
                 <div class="register-tabs">
                     <button class="register-tab active" id="tabPhone" onclick="switchTab('phone')">
                         📱 Phone Number
-                    ><i class="fa-solid fa-moon"></i></button>
+                    </button>
                     <button class="register-tab" id="tabEmail" onclick="switchTab('email')">
                         ✉️ Email
-                    ><i class="fa-solid fa-moon"></i></button>
+                    </button>
                 </div>
 
                 <form id="registerForm" class="auth-form" autocomplete="off">
@@ -329,7 +329,7 @@
                     <!-- Submit (changes based on tab) -->
                     <button type="submit" class="btn btn-large btn-block" id="step1Btn">
                         📱 Send OTP Code
-                    ><i class="fa-solid fa-moon"></i></button>
+                    </button>
 
                 </form>
 
@@ -337,7 +337,7 @@
 
                 <button type="button" class="btn btn-social btn-google" id="googleSignupBtn">
                     🔍 Sign up with Google
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
 
                 <p class="auth-footer">
                     Already have an account? <a href="auth-login.html" class="link">Login</a>
@@ -367,20 +367,20 @@
 
                 <button id="verifyOtpBtn" class="btn btn-large btn-block" onclick="verifyOTP()" disabled>
                     ✅ Verify & Create Account
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
 
                 <div class="resend-row" style="margin-top:16px">
                     <span id="resendText">OTP ያልደረሰዎ? </span>
                     <button id="resendBtn" onclick="resendOTP()" disabled>
                         ⏳ Resend in <span id="resendCountdown">60</span>s
-                    ><i class="fa-solid fa-moon"></i></button>
+                    </button>
                 </div>
 
                 <button onclick="goBackToStep1()"
                     style="display:block;margin:16px auto 0;background:none;border:none;
                     color:var(--text-secondary);font-size:0.85rem;cursor:pointer;text-decoration:underline">
                     ← ተመለስ
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
 
                 <!-- Invisible reCAPTCHA container for Firebase -->
                 <div id="recaptcha-container"></div>
@@ -468,7 +468,7 @@
     <!-- Team Modal -->
     <div id="teamModal" onclick="if(event.target===this)closeTeamModal()">
         <div class="team-modal-box">
-            <button class="team-modal-close" onclick="closeTeamModal()">?><i class="fa-solid fa-moon"></i></button>
+            <button class="team-modal-close" onclick="closeTeamModal()">?</button>
             <div class="team-modal-avatar">RA</div>
             <span class="team-modal-role">Lead Full-Stack Developer</span>
             <h3 class="team-modal-name">Rehima Ali</h3>
@@ -478,7 +478,7 @@
                 Lead architect and developer behind the <strong>Alpha Freshman Tutorial</strong> platform,
                 dedicated to empowering Ethiopian university freshmen with world-class learning tools.
             </p>
-            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!><i class="fa-solid fa-moon"></i></button>
+            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!</button>
         </div>
     </div>
     <script>

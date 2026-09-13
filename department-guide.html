@@ -87,9 +87,9 @@
 
         <!-- Stream selector -->
         <div style="display:flex;gap:10px;justify-content:center;margin-bottom:2rem;flex-wrap:wrap">
-            <button class="filter-btn active" onclick="filterStream('all', this)">All Departments><i class="fa-solid fa-moon"></i></button>
-            <button class="filter-btn" onclick="filterStream('natural', this)">🔬 Natural Science><i class="fa-solid fa-moon"></i></button>
-            <button class="filter-btn" onclick="filterStream('social', this)">🌍 Social Science><i class="fa-solid fa-moon"></i></button>
+            <button class="filter-btn active" onclick="filterStream('all', this)">All Departments</button>
+            <button class="filter-btn" onclick="filterStream('natural', this)">🔬 Natural Science</button>
+            <button class="filter-btn" onclick="filterStream('social', this)">🌍 Social Science</button>
         </div>
 
         <!-- Department finder quiz -->
@@ -99,7 +99,7 @@
             <p style="color:var(--text-secondary);font-size:0.88rem;margin:0 0 1rem">
                 Answer 3 quick questions to find your best match.
             </p>
-            <button onclick="startDeptQuiz()" class="btn btn-success">Find My Department →><i class="fa-solid fa-moon"></i></button>
+            <button onclick="startDeptQuiz()" class="btn btn-success">Find My Department →</button>
         </div>
 
         <!-- Department quiz modal -->
@@ -265,7 +265,7 @@
                         <a href="courses.html?search=${encodeURIComponent(d.subjects[0])}" class="btn btn-success" style="flex:1;text-align:center">
                             📚 Study Related Courses
                         </a>
-                        <button onclick="this.closest('div[style*=fixed]').remove()" class="btn" style="flex:1">Close><i class="fa-solid fa-moon"></i></button>
+                        <button onclick="this.closest('div[style*=fixed]').remove()" class="btn" style="flex:1">Close</button>
                     </div>
                 </div>
             </div>`;
@@ -298,7 +298,7 @@
                 <span style="font-size:0.8rem;color:var(--text-secondary)">${deptQuizStep+1}/${deptQuizQuestions.length}</span>
             </div>
             ${q.options.map((opt, i) => `
-                <button class="quiz-option-dept" onclick="selectDeptAnswer(${i})">${opt}><i class="fa-solid fa-moon"></i></button>
+                <button class="quiz-option-dept" onclick="selectDeptAnswer(${i})">${opt}</button>
             `).join('')}
         `;
     }
@@ -332,7 +332,7 @@
                 </div>
             `).join('')}
             <button onclick="document.getElementById('deptQuizModal').style.display='none'"
-                class="btn" style="width:100%;margin-top:10px">Close><i class="fa-solid fa-moon"></i></button>
+                class="btn" style="width:100%;margin-top:10px">Close</button>
         `;
     }
 

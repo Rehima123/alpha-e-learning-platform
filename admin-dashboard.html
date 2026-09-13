@@ -57,11 +57,11 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;flex-wrap:wrap;gap:10px">
             <h2 style="color:var(--text-primary)">⚙️ Admin Dashboard</h2>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <button class="btn btn-success" onclick="showCreateCourseModal()">+ Create Course><i class="fa-solid fa-moon"></i></button>
+                <button class="btn btn-success" onclick="showCreateCourseModal()">+ Create Course</button>
                 <button class="btn" onclick="openBulkSMSModal()"
                     style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;font-weight:700">
                     📱 Bulk SMS ላክ
-                ><i class="fa-solid fa-moon"></i></button>
+                </button>
             </div>
         </div>
 
@@ -89,28 +89,28 @@
         <div class="tab-bar" id="adminTabBar">
             <button class="tab-btn active" data-tab="enrollments" onclick="showTab('enrollments')">
                 📋 Enrollment Requests <span class="badge-count" id="enrollBadge"></span>
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
             <button class="tab-btn" data-tab="courses" onclick="showTab('courses')">
                 📚 Course Approvals
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
             <button class="tab-btn" data-tab="revenue" onclick="showTab('revenue');loadRevenue()">
                 💰 Revenue
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
             <button class="tab-btn" data-tab="coupons" onclick="showTab('coupons');loadCoupons()">
                 🎟️ Coupons
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
             <button class="tab-btn" data-tab="videos" onclick="showTab('videos');loadVideoManager()">
                 🎬 Videos
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
             <button class="tab-btn" data-tab="users" onclick="showTab('users')">
                 👥 Users
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
             <button class="tab-btn" data-tab="tickets" onclick="showTab('tickets');loadTickets()">
                 🎧 Support Tickets
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
             <button class="tab-btn" data-tab="manual-payments" onclick="showTab('manual-payments');loadManualPayments()">
                 💰 Manual Payments <span class="badge-count" id="manualPayBadge"></span>
-            ><i class="fa-solid fa-moon"></i></button>
+            </button>
         </div>
 
         <!-- Tab: Enrollments -->
@@ -126,8 +126,8 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px">
                 <h3 style="color:var(--text-primary)">📚 Course Management</h3>
                 <div style="display:flex;gap:8px">
-                    <button class="btn btn-sm" onclick="showCourseSubTab('pending')">⏳ Pending Approvals><i class="fa-solid fa-moon"></i></button>
-                    <button class="btn btn-sm btn-success" onclick="showCourseSubTab('all')">📋 All Courses><i class="fa-solid fa-moon"></i></button>
+                    <button class="btn btn-sm" onclick="showCourseSubTab('pending')">⏳ Pending Approvals</button>
+                    <button class="btn btn-sm btn-success" onclick="showCourseSubTab('all')">📋 All Courses</button>
                 </div>
             </div>
             <!-- Sub-tab: pending -->
@@ -170,7 +170,7 @@
         <div id="tab-coupons" class="admin-tab-content">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
                 <h3 style="color:var(--text-primary)">🎟️ Discount Coupons</h3>
-                <button class="btn btn-success btn-sm" onclick="showCouponForm()">+ New Coupon><i class="fa-solid fa-moon"></i></button>
+                <button class="btn btn-success btn-sm" onclick="showCouponForm()">+ New Coupon</button>
             </div>
             <div id="couponFormBox" style="display:none;background:var(--bg-primary);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
                 <h4 style="margin-bottom:1rem;color:var(--text-primary)">Create Coupon</h4>
@@ -185,8 +185,8 @@
                     <div class="form-group"><label>Description</label><input type="text" id="cpDesc" placeholder="Optional"></div>
                 </div>
                 <div style="display:flex;gap:10px;margin-top:1rem">
-                    <button class="btn btn-success btn-sm" onclick="createCoupon()">Create><i class="fa-solid fa-moon"></i></button>
-                    <button class="btn btn-sm" onclick="document.getElementById('couponFormBox').style.display='none'">Cancel><i class="fa-solid fa-moon"></i></button>
+                    <button class="btn btn-success btn-sm" onclick="createCoupon()">Create</button>
+                    <button class="btn btn-sm" onclick="document.getElementById('couponFormBox').style.display='none'">Cancel</button>
                 </div>
             </div>
             <div id="couponsList"><p style="color:var(--text-secondary)">Loading...</p></div>
@@ -230,7 +230,7 @@
                         color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;
                         font-size:0.9rem;white-space:nowrap">
                         💾 አስቀምጥ
-                    ><i class="fa-solid fa-moon"></i></button>
+                    </button>
                 </div>
 
                 <!-- Preview -->
@@ -287,7 +287,7 @@
                         <option value="approved">✅ Approved</option>
                         <option value="rejected">❌ Rejected</option>
                     </select>
-                    <button class="btn btn-sm" onclick="loadManualPayments()">🔄 Refresh><i class="fa-solid fa-moon"></i></button>
+                    <button class="btn btn-sm" onclick="loadManualPayments()">🔄 Refresh</button>
                 </div>
             </div>
             <div id="manualPaymentsList"><p style="color:var(--text-secondary)">Loading...</p></div>
@@ -385,14 +385,14 @@
                 <div style="margin-top:1.2rem;border-top:1px solid var(--border-color);padding-top:1.2rem">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
                         <h4 style="color:var(--text-primary);margin:0">📖 Chapters & Lessons</h4>
-                        <button type="button" class="btn btn-success btn-sm" onclick="addChapter()">+ Add Chapter><i class="fa-solid fa-moon"></i></button>
+                        <button type="button" class="btn btn-success btn-sm" onclick="addChapter()">+ Add Chapter</button>
                     </div>
                     <div id="chaptersBuilder" style="display:flex;flex-direction:column;gap:12px"></div>
                 </div>
 
                 <div style="display:flex;gap:10px;margin-top:1.2rem">
-                    <button type="submit" class="btn btn-success" style="flex:1">Create Course><i class="fa-solid fa-moon"></i></button>
-                    <button type="button" class="btn" onclick="closeCreateCourseModal()" style="flex:1">Cancel><i class="fa-solid fa-moon"></i></button>
+                    <button type="submit" class="btn btn-success" style="flex:1">Create Course</button>
+                    <button type="button" class="btn" onclick="closeCreateCourseModal()" style="flex:1">Cancel</button>
                 </div>
             </form>
         </div>
@@ -476,14 +476,14 @@
                 <div style="margin-top:1.2rem;border-top:1px solid var(--border-color);padding-top:1.2rem">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
                         <h4 style="color:var(--text-primary);margin:0">📖 Chapters & Lessons</h4>
-                        <button type="button" class="btn btn-success btn-sm" onclick="addEditChapter()">+ Add Chapter><i class="fa-solid fa-moon"></i></button>
+                        <button type="button" class="btn btn-success btn-sm" onclick="addEditChapter()">+ Add Chapter</button>
                     </div>
                     <div id="editChaptersBuilder" style="display:flex;flex-direction:column;gap:12px"></div>
                 </div>
 
                 <div style="display:flex;gap:10px;margin-top:1.2rem">
-                    <button type="submit" class="btn btn-success" style="flex:1">Save Changes><i class="fa-solid fa-moon"></i></button>
-                    <button type="button" class="btn" onclick="closeEditCourseModal()" style="flex:1">Cancel><i class="fa-solid fa-moon"></i></button>
+                    <button type="submit" class="btn btn-success" style="flex:1">Save Changes</button>
+                    <button type="button" class="btn" onclick="closeEditCourseModal()" style="flex:1">Cancel</button>
                 </div>
             </form>
         </div>
@@ -494,7 +494,7 @@
         <div class="modal-box" style="max-width:640px">
             <h3>👥 Enrolled Students</h3>
             <div id="enrolledStudentsList"><p style="color:var(--text-secondary)">Loading...</p></div>
-            <button class="btn" style="margin-top:1rem;width:100%" onclick="document.getElementById('enrolledStudentsModal').style.display='none'">Close><i class="fa-solid fa-moon"></i></button>
+            <button class="btn" style="margin-top:1rem;width:100%" onclick="document.getElementById('enrolledStudentsModal').style.display='none'">Close</button>
         </div>
     </div>
 
@@ -512,7 +512,7 @@
     <!-- Team Modal -->
     <div id="teamModal" onclick="if(event.target===this)closeTeamModal()">
         <div class="team-modal-box">
-            <button class="team-modal-close" onclick="closeTeamModal()">?><i class="fa-solid fa-moon"></i></button>
+            <button class="team-modal-close" onclick="closeTeamModal()">?</button>
             <div class="team-modal-avatar">RA</div>
             <span class="team-modal-role">Lead Full-Stack Developer</span>
             <h3 class="team-modal-name">Rehima Ali</h3>
@@ -522,7 +522,7 @@
                 Lead architect and developer behind the <strong>Alpha Freshman Tutorial</strong> platform,
                 dedicated to empowering Ethiopian university freshmen with world-class learning tools.
             </p>
-            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!><i class="fa-solid fa-moon"></i></button>
+            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!</button>
         </div>
     </div>
     <script>

@@ -111,3 +111,19 @@ function logoutUser() {
     localStorage.removeItem('authToken');
     window.location.href = 'auth-login.html';
 }
+
+// ─── Mobile Bottom Nav: Profile guard ────────────────────────────────────────
+// Intercept "Profile" tab click — send non-logged-in users to auth-login.html
+document.addEventListener('DOMContentLoaded', () => {
+    const profileTab = document.getElementById('mbn-dashboard');
+    if (!profileTab) return;
+
+    profileTab.addEventListener('click', (e) => {
+        const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        if (!user) {
+            e.preventDefault();
+            window.location.href = 'auth-login.html?redirect=student-dashboard.html';
+        }
+        // Logged in — let the href="student-dashboard.html" navigate normally
+    });
+});
