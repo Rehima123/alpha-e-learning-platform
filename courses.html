@@ -506,7 +506,7 @@
         if (paid) {
             document.querySelectorAll('[id^="cs-lbl-"]').forEach(function(el) {
                 var isCoC = el.id.includes('coc_model');
-                el.textContent = isCoC ? '? Take Exam' : '? Continue Learning';
+                el.innerHTML = isCoC ? '<i class="fa-solid fa-pen" style="margin-right:4px"></i> Take Exam' : '<i class="fa-solid fa-play" style="margin-right:4px"></i> Continue Learning';
                 var btn = el.closest('button');
                 if (btn) {
                     btn.className = 'cs-btn cs-btn-green';
@@ -514,7 +514,7 @@
             });
         } else if (user && user.paymentStatus === 'PENDING') {
             document.querySelectorAll('[id^="cs-lbl-"]').forEach(function(el) {
-                el.textContent = '? Pending Approval';
+                el.innerHTML = '<i class="fa-solid fa-clock" style="margin-right:4px"></i> Pending Approval';
                 var btn = el.closest('button');
                 if (btn) btn.style.opacity = '0.6';
             });
