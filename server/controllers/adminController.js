@@ -470,46 +470,165 @@ exports.sendBulkSMS = async (req, res, next) => {
             return res.status(400).json({ success: false, error: 'እባክዎን የመልእክት ይዘት ያስገቡ።' });
         }
 
-        // Get all registered students with phone numbers
+        // ── API Key check ─────────────────────────────────────────────────────
+        const AFROMESSAGE_API_KEY   = process.env.AFROMESSAGE_API_KEY   || '';
+        const AFROMESSAGE_SENDER_ID = process.env.AFROMESSAGE_SENDER_ID || 'AlphaFT';
+        const AFROMESSAGE_IDENTIFIER = process.env.AFROMESSAGE_IDENTIFIER || ''; // identifier code if required
+
+        if (!AFROMESSAGE_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                error: '⚙️ AFROMESSAGE_API_KEY Vercel environment variable ላይ አልተቀናጀም። Vercel Dashboard → Settings → Environment Variables ውስጥ ያስቀምጡ።',
+                hint: 'Add AFROMESSAGE_API_KEY to your Vercel project environment variables.'
+            });
+        }
+
+        // ── Get students with valid phone numbers ─────────────────────────────
         const students = await User.find(
-            { phoneNumber: { $exists: true, $ne: null, $ne: '' } },
+            {
+                role: { $in: ['student', 'instructor'] },
+                phoneNumber: { $exists: true, $ne: null }
+            },
             'phoneNumber fullName'
         );
 
-        if (students.length === 0) {
-            return res.status(404).json({ success: false, error: 'ምንም የተመዘገበ የስልክ ቁጥር አልተገኘም።' });
+        // ── Normalize phone numbers to +251XXXXXXXXX format ──────────────────
+        const normalizePhone = (phone) => {
+            if (!phone) return null;
+            phone = phone.toString().trim().replace(/\s+/g, '').replace(/-/g, '');
+
+            // Already in international format
+            if (phone.startsWith('+251') && phone.length === 13) return phone;
+            if (phone.startsWith('251')  && phone.length === 12)  return '+' + phone;
+
+            // Local format: 09XXXXXXXX or 07XXXXXXXX (10 digits)
+            if (/^0[79]\d{8}$/.test(phone)) return '+251' + phone.slice(1);
+
+            // 9-digit without leading 0
+            if (/^[79]\d{8}$/.test(phone)) return '+251' + phone;
+
+            // Unrecognized — skip
+            return null;
+        };
+
+        const validNumbers = students
+            .map(s => normalizePhone(s.phoneNumber))
+            .filter(Boolean);
+
+        if (validNumbers.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: `ምንም ትክክለኛ ስልክ ቁጥር አልተገኘም። ከ ${students.length} ተጠቃሚዎች ውስጥ ምንም valid +251 number የለም።`
+            });
         }
 
-        const recipientNumbers = students.map(s => s.phoneNumber).filter(Boolean);
-
-        const AFROMESSAGE_API_KEY  = process.env.AFROMESSAGE_API_KEY  || '';
-        const AFROMESSAGE_SENDER_ID = process.env.AFROMESSAGE_SENDER_ID || '';
-
-        if (!AFROMESSAGE_API_KEY) {
-            return res.status(500).json({ success: false, error: 'AFROMESSAGE_API_KEY is not configured.' });
-        }
+        console.log(`[BulkSMS] Sending to ${validNumbers.length} recipients...`);
 
         const axios = require('axios');
-        const afroResponse = await axios.post(
-            'https://api.afromessage.com/api/send-bulk',
-            { to: recipientNumbers, message, from: AFROMESSAGE_SENDER_ID },
-            { headers: { 'Authorization': `Bearer ${AFROMESSAGE_API_KEY}`, 'Content-Type': 'application/json' } }
-        );
 
-        if (afroResponse.data && afroResponse.data.acknowledge === 'success') {
-            return res.status(200).json({
-                success: true,
-                totalSent: recipientNumbers.length,
-                message: `${recipientNumbers.length} ለሚሆኑ ተማሪዎች ኤስኤምኤሱ በስኬት ተላኳል!`
-            });
-        } else {
-            return res.status(500).json({ success: false, error: 'ከ AfroMessage በኩል ስህተት አጋጥሟል።', raw: afroResponse.data });
+        // ── AfroMessage API call (v1 format) ──────────────────────────────────
+        // AfroMessage supports sending to multiple numbers via the /send endpoint
+        // by iterating or using their bulk endpoint
+        const sendResults = { sent: 0, failed: 0, errors: [] };
+
+        // Send in batches of 50 to avoid timeouts
+        const BATCH_SIZE = 50;
+        for (let i = 0; i < validNumbers.length; i += BATCH_SIZE) {
+            const batch = validNumbers.slice(i, i + BATCH_SIZE);
+
+            for (const to of batch) {
+                try {
+                    const payload = {
+                        from:    AFROMESSAGE_SENDER_ID,
+                        to:      to,
+                        message: message.trim()
+                    };
+                    if (AFROMESSAGE_IDENTIFIER) payload.identifier = AFROMESSAGE_IDENTIFIER;
+
+                    const afroRes = await axios.post(
+                        'https://api.afromessage.com/api/send',
+                        payload,
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${AFROMESSAGE_API_KEY}`,
+                                'Content-Type': 'application/json'
+                            },
+                            timeout: 10000
+                        }
+                    );
+
+                    if (afroRes.data?.acknowledge === 'success') {
+                        sendResults.sent++;
+                    } else {
+                        sendResults.failed++;
+                        const errMsg = afroRes.data?.response?.errors?.[0] || afroRes.data?.message || 'Unknown error';
+                        sendResults.errors.push(`${to}: ${errMsg}`);
+                    }
+                } catch (batchErr) {
+                    sendResults.failed++;
+                    const errCode = batchErr.response?.data?.response?.errors?.[0] || batchErr.message;
+                    sendResults.errors.push(`${to}: ${errCode}`);
+                }
+            }
         }
+
+        if (sendResults.sent === 0 && sendResults.failed > 0) {
+            // Detect specific AfroMessage error types
+            const firstError = sendResults.errors[0] || '';
+            let friendlyError = `ሁሉም ${sendResults.failed} SMS ሊላኩ አልቻሉም።`;
+
+            if (firstError.toLowerCase().includes('invalid') && firstError.toLowerCase().includes('token')) {
+                friendlyError = '🔑 Invalid API Key — AfroMessage API key ትክክል አይደለም። Vercel env var ን ያረጋግጡ።';
+            } else if (firstError.toLowerCase().includes('balance') || firstError.toLowerCase().includes('credit')) {
+                friendlyError = '💳 Insufficient SMS balance — AfroMessage account ላይ ቀሪ ሂሳብ የለም። ሂሳብ ይሞሉ።';
+            } else if (firstError.toLowerCase().includes('sender')) {
+                friendlyError = '📛 Invalid Sender ID — AFROMESSAGE_SENDER_ID ን ያረጋግጡ።';
+            } else if (firstError.toLowerCase().includes('identifier')) {
+                friendlyError = '🆔 Invalid Identifier — AFROMESSAGE_IDENTIFIER env var ን ያረጋግጡ።';
+            } else {
+                friendlyError += ` ስህተት: ${firstError}`;
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: friendlyError,
+                details: sendResults.errors.slice(0, 5)
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            totalRecipients: validNumbers.length,
+            sent:   sendResults.sent,
+            failed: sendResults.failed,
+            message: sendResults.failed > 0
+                ? `${sendResults.sent} SMS ተላኩ, ${sendResults.failed} ሳይደርሱ ቀሩ።`
+                : `✅ ${sendResults.sent} ለሚሆኑ ተማሪዎች SMS በስኬት ተላኩ!`,
+            errors: sendResults.errors.slice(0, 10)
+        });
+
     } catch (error) {
-        console.error('[sendBulkSMS]', error.response?.data || error.message);
+        console.error('[sendBulkSMS] Unexpected error:', error.response?.data || error.message);
+
+        // Surface specific AfroMessage API errors
+        const afroError = error.response?.data;
+        if (afroError) {
+            const errMsg = afroError.response?.errors?.[0]
+                || afroError.message
+                || JSON.stringify(afroError);
+
+            if (errMsg.toLowerCase().includes('invalid') && errMsg.toLowerCase().includes('token')) {
+                return res.status(401).json({ success: false, error: '🔑 Invalid AfroMessage API Key — Vercel env var AFROMESSAGE_API_KEY ን ያረጋግጡ።' });
+            }
+            if (errMsg.toLowerCase().includes('balance') || errMsg.toLowerCase().includes('credit')) {
+                return res.status(402).json({ success: false, error: '💳 Insufficient SMS balance — AfroMessage account ሂሳብ ይሞሉ።' });
+            }
+            return res.status(500).json({ success: false, error: `AfroMessage ስህተት: ${errMsg}` });
+        }
+
         return res.status(500).json({
             success: false,
-            error: error.response?.data?.message || 'ኤስኤምኤስ ሲላክ የሲስተም ስህተት አጋጥሟል።'
+            error: error.message || 'SMS ሲላክ ያልተጠበቀ ስህተት ተፈጥሯል።'
         });
     }
 };
