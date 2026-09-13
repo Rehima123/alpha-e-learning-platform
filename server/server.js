@@ -106,6 +106,41 @@ app.get('/health', (req, res) => {
     });
 });
 
+// ── Test email endpoint (remove after confirming SMTP works) ──────────────────
+app.get('/api/test-email', async (req, res) => {
+    const secret = req.query.secret;
+    if (secret !== (process.env.SEED_SECRET || 'alpha-seed-2024')) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    const { sendEmail } = require('./utils/sendEmail');
+    const to = req.query.to || process.env.OWNER_EMAIL || process.env.SMTP_USER;
+    if (!to) return res.status(400).json({ success: false, message: 'No recipient — set OWNER_EMAIL env var' });
+
+    const smtpConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASS) || !!process.env.RESEND_API_KEY;
+
+    try {
+        await sendEmail({
+            to,
+            subject: '✅ Alpha Freshman Tutorial — Email Test',
+            html: `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+                <h2 style="color:#667eea">✅ SMTP is working!</h2>
+                <p>This is a test email from Alpha Freshman Tutorial backend.</p>
+                <p><strong>SMTP_USER:</strong> ${process.env.SMTP_USER || 'NOT SET'}</p>
+                <p><strong>SMTP configured:</strong> ${smtpConfigured ? 'YES ✅' : 'NO ❌'}</p>
+                <p><strong>Sent at:</strong> ${new Date().toLocaleString()}</p>
+            </div>`
+        });
+        res.json({ success: true, message: `Test email sent to ${to}`, smtpConfigured });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: `Email failed: ${err.message}`,
+            smtpConfigured,
+            hint: 'Check SMTP_USER and SMTP_PASS in Vercel environment variables'
+        });
+    }
+});
+
 // API Routes
 app.use('/api/auth',          authRoutes);
 app.use('/api/courses',       courseRoutes);
@@ -145,9 +180,29 @@ mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => {
+.then(async () => {
     console.log('✅ MongoDB Connected Successfully');
-    
+
+    // ── Fix: drop the old non-sparse phoneNumber index if it exists ──────────
+    // The old index included empty strings "" which caused E11000 duplicate key
+    // errors when multiple users registered without a phone number.
+    // The User model now defines phoneNumber as sparse:true (no default:'')
+    // so we just need to make sure the old bad index is gone.
+    try {
+        const db = mongoose.connection.db;
+        const indexes = await db.collection('users').indexes();
+        const badIdx = indexes.find(i =>
+            i.name === 'phoneNumber_1' && !i.sparse
+        );
+        if (badIdx) {
+            await db.collection('users').dropIndex('phoneNumber_1');
+            console.log('✅ Dropped old non-sparse phoneNumber_1 index');
+        }
+    } catch (idxErr) {
+        // Index may not exist yet — that's fine
+        console.log('[startup] phoneNumber index check:', idxErr.message);
+    }
+
     // Start Server
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {

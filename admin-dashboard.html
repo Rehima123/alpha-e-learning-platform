@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -34,6 +34,8 @@
         .badge-count { background:#e74c3c; color:white; border-radius:50%;
             padding:1px 7px; font-size:0.72rem; font-weight:700; margin-left:6px; }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -52,9 +54,15 @@
     </nav>
 
     <main class="container" style="padding-bottom:3rem">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;flex-wrap:wrap;gap:10px">
             <h2 style="color:var(--text-primary)">⚙️ Admin Dashboard</h2>
-            <button class="btn btn-success" onclick="showCreateCourseModal()">+ Create Course</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-success" onclick="showCreateCourseModal()">+ Create Course</button>
+                <button class="btn" onclick="openBulkSMSModal()"
+                    style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;font-weight:700">
+                    📱 Bulk SMS ላክ
+                </button>
+            </div>
         </div>
 
         <!-- Stats -->
@@ -186,17 +194,77 @@
 
         <!-- Tab: Videos -->
         <div id="tab-videos" class="admin-tab-content">
-            <h3 style="margin-bottom:0.5rem;color:var(--text-primary)">🎬 Manage YouTube Video Links</h3>
+            <h3 style="margin-bottom:0.5rem;color:var(--text-primary)">🎬 Manage Google Drive Video Links</h3>
             <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1.2rem">
-                Upload videos to YouTube (unlisted), then paste the link here. Only paid students can watch.
+                Google Drive ላይ ቪዲዮ upload አድርገው "Anyone with the link can view" ያድርጉ → ሊንኩን ከዚህ ያስገቡ።
             </p>
-            <div class="form-group" style="margin-bottom:1rem">
-                <label>Select Course</label>
-                <select id="videoCourseSelect" class="form-select" onchange="loadCourseChapters()">
-                    <option value="">Choose a course...</option>
-                </select>
+
+            <!-- Quick Add form (top-level, for simple video list) -->
+            <div style="background:var(--bg-primary);border:1px solid var(--border-color);
+                border-radius:16px;padding:20px;margin-bottom:1.5rem">
+                <h4 style="color:var(--text-primary);margin:0 0 14px;font-size:0.95rem">
+                    ➕ ቪዲዮ ሊንክ ማከያ (Quick Add)
+                </h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                    <div class="form-group" style="margin:0">
+                        <label>Course ምረጥ</label>
+                        <select id="driveCourseSelect" class="form-select" onchange="loadDriveCourseChapters()">
+                            <option value="">Course ምረጥ...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0">
+                        <label>የቪዲዮ ርዕስ (Lesson Title)</label>
+                        <input type="text" id="driveLessonTitle" class="form-input"
+                            placeholder="ምሳሌ: Unit 1 - Introduction">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+                    <div class="form-group" style="margin:0">
+                        <label>Google Drive Share Link ወይም File ID</label>
+                        <input type="text" id="driveFileInput" class="form-input"
+                            placeholder="https://drive.google.com/file/d/XXXX/view?usp=sharing"
+                            oninput="updateDrivePreview()">
+                    </div>
+                    <button onclick="saveDriveVideoLink()"
+                        style="padding:10px 22px;background:linear-gradient(135deg,#27ae60,#1a7030);
+                        color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;
+                        font-size:0.9rem;white-space:nowrap">
+                        💾 አስቀምጥ
+                    </button>
+                </div>
+
+                <!-- Preview -->
+                <div id="drivePreviewBox" style="display:none;margin-top:14px">
+                    <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 8px">
+                        📽️ ቅድመ-ዕይታ (Preview):
+                    </p>
+                    <iframe id="drivePreviewIframe"
+                        width="100%" height="240"
+                        style="border:none;border-radius:10px;background:#000"
+                        allow="autoplay"
+                        src="">
+                    </iframe>
+                </div>
             </div>
-            <div id="videoChaptersList"></div>
+
+            <!-- Chapter-level assignment (for structured courses) -->
+            <div style="background:var(--bg-primary);border:1px solid var(--border-color);
+                border-radius:16px;padding:20px;margin-bottom:1.5rem" id="driveChapterBox">
+                <h4 style="color:var(--text-primary);margin:0 0 10px;font-size:0.9rem">
+                    📖 Chapter › Lesson ደረጃ ማያያዣ
+                </h4>
+                <div id="driveCourseChapters" style="color:var(--text-secondary);font-size:0.85rem">
+                    ከላይ course ምረጡ...
+                </div>
+            </div>
+
+            <!-- Saved videos list -->
+            <div>
+                <h4 style="color:var(--text-primary);margin:0 0 12px">📋 የተቀመጡ ቪዲዮዎች</h4>
+                <div id="driveVideosList" style="color:var(--text-secondary);font-size:0.85rem">
+                    Course ምረጡ...
+                </div>
+            </div>
         </div>
 
         <!-- Tab: Support Tickets -->
@@ -437,8 +505,36 @@
     <script src="ai-assistant.js"></script>
     <script src="admin-dashboard.js"></script>
     <script src="pwa.js"></script>
+
+
+    
+
+    <!-- Team Modal -->
+    <div id="teamModal" onclick="if(event.target===this)closeTeamModal()">
+        <div class="team-modal-box">
+            <button class="team-modal-close" onclick="closeTeamModal()">?</button>
+            <div class="team-modal-avatar">RA</div>
+            <span class="team-modal-role">Lead Full-Stack Developer</span>
+            <h3 class="team-modal-name">Rehima Ali</h3>
+            <p class="team-modal-team">ALPHA DEVELOPERS TEAM</p>
+            <div class="team-modal-divider"></div>
+            <p class="team-modal-desc">
+                Lead architect and developer behind the <strong>Alpha Freshman Tutorial</strong> platform,
+                dedicated to empowering Ethiopian university freshmen with world-class learning tools.
+            </p>
+            <button class="team-modal-ok" onclick="closeTeamModal()">Got it!</button>
+        </div>
+    </div>
+    <script>
+    function openTeamModal()  { document.getElementById('teamModal').classList.add('open'); }
+    function closeTeamModal() { document.getElementById('teamModal').classList.remove('open'); }
+    </script>
+
+<footer class="bg-[#2c3e50] text-slate-200 pt-12 pb-8"><div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left"><div><h3 class="text-lg font-bold text-white mb-2">Alpha Freshman Tutorial</h3><p class="text-sm text-slate-300">Way to Success &#8212; Empowering Freshman Students</p></div><div><h4 class="text-md font-semibold text-white mb-3">Quick Links</h4><ul class="space-y-2 text-sm"><li><a href="home.html" class="hover:text-amber-400">Home</a></li><li><a href="courses.html" class="hover:text-amber-400">Courses</a></li><li><a href="auth-register.html" class="hover:text-amber-400">Sign Up</a></li><li><a href="auth-login.html" class="hover:text-amber-400">Login</a></li></ul></div><div><h4 class="text-md font-semibold text-white mb-3">Connect With Us</h4><div class="flex justify-center md:justify-start gap-3"><a href="https://youtube.com/@alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-youtube"></i></a><a href="https://t.me/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-telegram"></i></a><a href="https://linkedin.com/company/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-linkedin"></i></a><a href="https://facebook.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-facebook"></i></a><a href="https://instagram.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-instagram"></i></a><a href="https://wa.me/1234567890" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-whatsapp"></i></a></div></div></div><div class="max-w-6xl mx-auto px-6 mt-8 pt-6 border-t border-slate-600/50 text-center text-xs text-slate-300">&copy; 2026 Alpha Freshman Tutorial. All rights reserved. | Developed by ALPHA DEVELOPERS TEAM</div></footer>
 </body>
 </html>
+
+
 
 
 

@@ -381,18 +381,136 @@ exports.replyTicket = async (req, res, next) => {
     }
 };
 
-// @desc    Create course (content_admin)
-exports.createCourse = async (req, res, next) => {
+// @desc    Save Google Drive video link to a course lesson
+exports.saveDriveVideoLink = async (req, res, next) => {
     try {
-        const course = await Course.create({
-            ...req.body,
-            instructor: req.user._id,
-            instructorName: req.user.fullName,
-            status: 'approved',
-            isPublished: true
+        const { courseId, chapterIdx, lessonIdx, driveFileId, lessonTitle } = req.body;
+
+        if (!courseId || !driveFileId) {
+            return res.status(400).json({
+                success: false,
+                error: 'courseId እና driveFileId ያስፈልጋሉ።'
+            });
+        }
+
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ success: false, error: 'Course አልተገኘም።' });
+        }
+
+        // ── Case 1: chapters[chapterIdx].lessons[lessonIdx] ─────────────────
+        if (chapterIdx !== undefined && lessonIdx !== undefined) {
+            const ci = parseInt(chapterIdx);
+            const li = parseInt(lessonIdx);
+
+            if (!course.chapters[ci]) {
+                return res.status(400).json({ success: false, error: 'Chapter index invalid.' });
+            }
+            if (!course.chapters[ci].lessons[li]) {
+                // Create lesson placeholder
+                course.chapters[ci].lessons.push({
+                    title:    lessonTitle || `Lesson ${li + 1}`,
+                    videoUrl: `https://drive.google.com/file/d/${driveFileId}/preview`,
+                    order:    li
+                });
+            } else {
+                course.chapters[ci].lessons[li].videoUrl =
+                    `https://drive.google.com/file/d/${driveFileId}/preview`;
+            }
+        }
+        // ── Case 2: push to videos[] array (simple flat list) ────────────────
+        else {
+            // Check if entry already exists for this driveFileId
+            const existing = course.videos.find(v => v.youtubeId === driveFileId);
+            if (existing) {
+                existing.youtubeUrl = `https://drive.google.com/file/d/${driveFileId}/preview`;
+            } else {
+                course.videos.push({
+                    title:      lessonTitle || 'Video',
+                    youtubeUrl: `https://drive.google.com/file/d/${driveFileId}/preview`,
+                    youtubeId:  driveFileId,   // re-using youtubeId field for driveFileId
+                    chapter:    ''
+                });
+            }
+        }
+
+        await course.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'ቪዲዮው በተሳካ ሁኔታ ተያይዟል!',
+            driveFileId,
+            courseId
         });
-        res.status(201).json({ success: true, message: 'Course created', course });
+    } catch (error) {
+        console.error('[saveDriveVideoLink]', error);
+        next(error);
+    }
+};
+
+// @desc    Get all video links for a course (for admin manager)
+exports.getCourseVideoLinks = async (req, res, next) => {
+    try {
+        const course = await Course.findById(req.params.courseId)
+            .select('title chapters videos icon');
+        if (!course) {
+            return res.status(404).json({ success: false, error: 'Course not found' });
+        }
+        res.status(200).json({ success: true, course });
     } catch (error) {
         next(error);
     }
 };
+
+
+exports.sendBulkSMS = async (req, res, next) => {
+    try {
+        const { message } = req.body;
+        if (!message || message.trim() === '') {
+            return res.status(400).json({ success: false, error: 'እባክዎን የመልእክት ይዘት ያስገቡ።' });
+        }
+
+        // Get all registered students with phone numbers
+        const students = await User.find(
+            { phoneNumber: { $exists: true, $ne: null, $ne: '' } },
+            'phoneNumber fullName'
+        );
+
+        if (students.length === 0) {
+            return res.status(404).json({ success: false, error: 'ምንም የተመዘገበ የስልክ ቁጥር አልተገኘም።' });
+        }
+
+        const recipientNumbers = students.map(s => s.phoneNumber).filter(Boolean);
+
+        const AFROMESSAGE_API_KEY  = process.env.AFROMESSAGE_API_KEY  || '';
+        const AFROMESSAGE_SENDER_ID = process.env.AFROMESSAGE_SENDER_ID || '';
+
+        if (!AFROMESSAGE_API_KEY) {
+            return res.status(500).json({ success: false, error: 'AFROMESSAGE_API_KEY is not configured.' });
+        }
+
+        const axios = require('axios');
+        const afroResponse = await axios.post(
+            'https://api.afromessage.com/api/send-bulk',
+            { to: recipientNumbers, message, from: AFROMESSAGE_SENDER_ID },
+            { headers: { 'Authorization': `Bearer ${AFROMESSAGE_API_KEY}`, 'Content-Type': 'application/json' } }
+        );
+
+        if (afroResponse.data && afroResponse.data.acknowledge === 'success') {
+            return res.status(200).json({
+                success: true,
+                totalSent: recipientNumbers.length,
+                message: `${recipientNumbers.length} ለሚሆኑ ተማሪዎች ኤስኤምኤሱ በስኬት ተላኳል!`
+            });
+        } else {
+            return res.status(500).json({ success: false, error: 'ከ AfroMessage በኩል ስህተት አጋጥሟል።', raw: afroResponse.data });
+        }
+    } catch (error) {
+        console.error('[sendBulkSMS]', error.response?.data || error.message);
+        return res.status(500).json({
+            success: false,
+            error: error.response?.data?.message || 'ኤስኤምኤስ ሲላክ የሲስተም ስህተት አጋጥሟል።'
+        });
+    }
+};
+

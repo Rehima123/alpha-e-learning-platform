@@ -208,8 +208,21 @@ async function loadEnrollmentRequests() {
                             </td>
                             <td>
                                 ${e.status === 'pending' ? `
-                                    <button class="btn btn-success btn-sm" onclick="approveEnrollment('${e._id}')">✓ Approve</button>
-                                    <button class="btn btn-danger btn-sm" onclick="rejectEnrollment('${e._id}')">✗ Reject</button>
+                                    <div style="display:flex;flex-direction:column;gap:6px">
+                                        <select id="pkg-${e._id}"
+                                            style="padding:5px 8px;border-radius:6px;border:1px solid var(--border-color);
+                                            background:var(--bg-secondary);color:var(--text-primary);font-size:0.78rem;cursor:pointer;min-width:180px">
+                                            <option value="">— Assign Package —</option>
+                                            <option value="1st Semester Natural">📐 1st Sem · Natural Science</option>
+                                            <option value="1st Semester Social">📊 1st Sem · Social Science</option>
+                                            <option value="2nd Semester Natural">🔬 2nd Sem · Natural Science</option>
+                                            <option value="2nd Semester Social">📈 2nd Sem · Social Science</option>
+                                        </select>
+                                        <div style="display:flex;gap:6px">
+                                            <button class="btn btn-success btn-sm" onclick="approveEnrollment('${e._id}')">✓ Approve</button>
+                                            <button class="btn btn-danger btn-sm" onclick="rejectEnrollment('${e._id}')">✗ Reject</button>
+                                        </div>
+                                    </div>
                                 ` : `<span style="font-size:0.8rem;color:var(--text-secondary)">Reviewed</span>`}
                             </td>
                         </tr>
@@ -229,9 +242,12 @@ async function loadEnrollmentRequests() {
 
 async function approveEnrollment(id) {
     try {
-        const res = await api.approveEnrollment(id);
+        const pkgSelect = document.getElementById(`pkg-${id}`);
+        const enrolledPackage = pkgSelect ? pkgSelect.value : null;
+        const res = await api.approveEnrollment(id, enrolledPackage || null);
         if (res.success) {
-            toast?.success(`Enrollment approved for ${res.enrollment.student?.fullName}`);
+            const pkg = enrolledPackage ? ` (Package: ${enrolledPackage})` : '';
+            toast?.success(`Enrollment approved for ${res.enrollment.student?.fullName}${pkg}`);
             await loadEnrollmentRequests();
             await loadAdminData();
         }
@@ -474,6 +490,14 @@ async function loadUsers() {
                                     ? `<button class="btn btn-sm btn-danger" onclick="deactivateUser('${u._id}')">Deactivate</button>`
                                     : `<button class="btn btn-sm btn-success" onclick="activateUser('${u._id}')">Activate</button>`
                                 }
+                                ${isSuperAdmin ? `
+                                <button class="btn btn-sm" title="Reset device binding — allows user to login from a new device"
+                                    onclick="resetUserDevice('${u._id}','${u.fullName}')"
+                                    style="background:rgba(245,158,11,0.1);color:#d97706;
+                                    border:1px solid rgba(245,158,11,0.3);font-size:0.72rem;
+                                    padding:3px 8px;white-space:nowrap">
+                                    📱 Reset Device
+                                </button>` : ''}
                             </td>
                         </tr>
                     `).join('')}
@@ -632,6 +656,22 @@ async function activateUser(id) {
         const res = await api.activateUser(id);
         if (res.success) { toast?.success('User activated'); await loadUsers(); }
     } catch (e) { toast?.error('Failed'); }
+}
+
+// ── Reset device binding (1-device enforcement) ───────────────────────────────
+async function resetUserDevice(userId, userName) {
+    if (!confirm(`"${userName}" የ device binding ይሰረዝ?\n\nከዚህ በኋላ ተጠቃሚው ከማንኛውም ስልክ ጊዜያዊ ሊገቡ ይችላሉ — አዲሱ ስልካቸው ሲገቡ ይመዘገባል።`)) return;
+    try {
+        const res = await api.resetDeviceBinding(userId);
+        if (res.success) {
+            toast?.success(`✅ Device binding reset for "${userName}"`);
+            await loadUsers();
+        } else {
+            toast?.error(res.message || 'Failed to reset device');
+        }
+    } catch (e) {
+        toast?.error('Server error. Try again.');
+    }
 }
 
 // ── Video manager ─────────────────────────────────────────────────────────────
@@ -1154,6 +1194,7 @@ async function loadAllCourses() {
                                     ${c.isLocked ? '🔓 Unlock' : '🔒 Lock'}
                                 </button>
                                 <button class="btn btn-sm btn-success" onclick="viewEnrolledStudents('${c._id}')">👥 Students</button>
+                                <button class="btn btn-sm btn-danger" onclick="adminDeleteCourse('${c._id}','${c.title.replace(/'/g,"\\'").replace(/"/g,'\\"')}')">🗑️ Delete</button>
                             </td>
                         </tr>
                     `).join('')}
@@ -1173,6 +1214,19 @@ async function toggleCourseLock(courseId, btn) {
             await loadAllCourses();
         }
     } catch (e) { toast?.error('Failed to toggle lock'); }
+}
+
+async function adminDeleteCourse(courseId, title) {
+    if (!window.confirm(`⚠️ Delete course:\n"${title}"\n\nThis cannot be undone. Proceed?`)) return;
+    try {
+        const res = await api.deleteCourse(courseId);
+        if (res.success) {
+            toast?.success(`"${title}" deleted`);
+            await loadAllCourses();
+        } else {
+            toast?.error(res.message || 'Failed to delete course');
+        }
+    } catch (e) { toast?.error(e.message || 'Failed to delete course'); }
 }
 
 async function viewEnrolledStudents(courseId) {
@@ -1441,3 +1495,350 @@ document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
         }
     }
 })();
+
+// ── Bulk SMS (AfroMessage) ────────────────────────────────────────────────────
+function openBulkSMSModal() {
+    const existing = document.getElementById('bulkSMSModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'bulkSMSModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.innerHTML = `
+        <div style="background:var(--bg-primary,#fff);border-radius:16px;padding:32px;width:100%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative">
+            <button onclick="document.getElementById('bulkSMSModal').remove()"
+                style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-secondary)">✕</button>
+            <h2 style="margin:0 0 8px;color:var(--text-primary)">📱 Bulk SMS ላክ</h2>
+            <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 20px">
+                ሁሉም registered students ስልክ ቁጥር ላይ SMS ይላካል (AfroMessage API)
+            </p>
+            <div style="margin-bottom:16px">
+                <label style="display:block;font-weight:600;font-size:0.9rem;margin-bottom:6px">
+                    የመልእክት ይዘት <span style="color:#e74c3c">*</span>
+                </label>
+                <textarea id="smsMessage" rows="5"
+                    placeholder="ለምሳሌ: Alpha Freshman Tutorial — አዲስ ኮርሶች ተጨምረዋል! ዛሬ ይግቡ..."
+                    style="width:100%;padding:12px;border:1px solid var(--border-color);border-radius:8px;
+                    background:var(--bg-secondary);color:var(--text-primary);font-size:0.9rem;resize:vertical;box-sizing:border-box"></textarea>
+                <div id="smsCharCount" style="text-align:right;font-size:0.75rem;color:var(--text-secondary);margin-top:4px">0 / 160 chars</div>
+            </div>
+            <div id="smsResult" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:0.85rem"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+                <button onclick="document.getElementById('bulkSMSModal').remove()"
+                    style="padding:10px 20px;border-radius:8px;border:1px solid var(--border-color);background:none;cursor:pointer;color:var(--text-primary)">
+                    ሰርዝ
+                </button>
+                <button id="smsSendBtn" onclick="submitBulkSMS()"
+                    style="padding:10px 24px;border-radius:8px;border:none;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:700;cursor:pointer;font-size:0.95rem">
+                    📤 SMS ላክ
+                </button>
+            </div>
+        </div>`;
+
+    document.body.appendChild(modal);
+
+    // Char counter
+    document.getElementById('smsMessage')?.addEventListener('input', (e) => {
+        const len = e.target.value.length;
+        const el = document.getElementById('smsCharCount');
+        if (el) el.textContent = `${len} / 160 chars`;
+    });
+}
+
+async function submitBulkSMS() {
+    const message = document.getElementById('smsMessage')?.value?.trim();
+    const btn     = document.getElementById('smsSendBtn');
+    const result  = document.getElementById('smsResult');
+
+    if (!message) { toast?.error('እባክዎን የመልእክት ይዘት ያስገቡ'); return; }
+    if (!confirm(`"${message.substring(0, 60)}..." — ይህን SMS ለሁሉም ተማሪዎች ልኩ?`)) return;
+
+    btn.disabled = true; btn.textContent = '⏳ Sending...';
+    if (result) { result.style.display = 'none'; }
+
+    try {
+        const res = await api.sendBulkSMS(message);
+        if (res.success) {
+            if (result) {
+                result.style.display = 'block';
+                result.style.background = 'rgba(39,174,96,0.1)';
+                result.style.border = '1px solid #27ae60';
+                result.style.color = '#27ae60';
+                result.textContent = `✅ ${res.message}`;
+            }
+            toast?.success(res.message);
+            btn.textContent = '✅ Sent!';
+        } else {
+            throw new Error(res.error || 'Failed to send SMS');
+        }
+    } catch (e) {
+        if (result) {
+            result.style.display = 'block';
+            result.style.background = 'rgba(231,76,60,0.1)';
+            result.style.border = '1px solid #e74c3c';
+            result.style.color = '#e74c3c';
+            result.textContent = `❌ ${e.message}`;
+        }
+        toast?.error(e.message || 'Failed to send SMS');
+        btn.disabled = false; btn.textContent = '📤 SMS ላክ';
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GOOGLE DRIVE VIDEO LINK MANAGER
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Extract Drive file ID from URL ────────────────────────────────────────────
+function extractDriveFileId(url) {
+    if (!url) return '';
+    url = url.trim();
+    // https://drive.google.com/file/d/FILE_ID/view?...
+    const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (m1) return m1[1];
+    // https://drive.google.com/open?id=FILE_ID
+    const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m2) return m2[1];
+    // Raw file ID (no slashes or dots)
+    if (/^[a-zA-Z0-9_-]{20,}$/.test(url)) return url;
+    return '';
+}
+
+// ── Update preview iframe when admin pastes a link ───────────────────────────
+function updateDrivePreview() {
+    const input   = document.getElementById('driveFileInput');
+    const box     = document.getElementById('drivePreviewBox');
+    const iframe  = document.getElementById('drivePreviewIframe');
+    if (!input || !box || !iframe) return;
+
+    const fileId = extractDriveFileId(input.value);
+    if (fileId) {
+        iframe.src = `https://drive.google.com/file/d/${fileId}/preview`;
+        box.style.display = 'block';
+    } else {
+        box.style.display = 'none';
+        iframe.src = '';
+    }
+}
+
+// ── Populate course dropdown in Drive video tab ───────────────────────────────
+async function loadDriveCoursesDropdown() {
+    const sel = document.getElementById('driveCourseSelect');
+    if (!sel) return;
+
+    try {
+        const res = await api.getCourses({ status: 'approved', limit: 100 });
+        const courses = res.courses || res.data || [];
+        sel.innerHTML = '<option value="">Course ምረጥ...</option>' +
+            courses.map(c => `<option value="${c._id}">${c.icon || '📚'} ${c.title}</option>`).join('');
+    } catch (e) {
+        sel.innerHTML = '<option value="">ኮርሶችን ማምጣት አልተቻለም</option>';
+    }
+}
+
+// ── Load chapters for selected course (structured assignment) ─────────────────
+async function loadDriveCourseChapters() {
+    const courseId = document.getElementById('driveCourseSelect')?.value;
+    const box      = document.getElementById('driveCourseChapters');
+    const listBox  = document.getElementById('driveVideosList');
+    if (!box) return;
+
+    if (!courseId) {
+        box.innerHTML = '<p style="color:var(--text-secondary);font-size:0.85rem">Course ምረጡ...</p>';
+        if (listBox) listBox.innerHTML = '<p style="color:var(--text-secondary);font-size:0.85rem">Course ምረጡ...</p>';
+        return;
+    }
+
+    box.innerHTML = '<p style="color:var(--text-secondary);font-size:0.85rem">⏳ Loading...</p>';
+    if (listBox) listBox.innerHTML = '<p style="color:var(--text-secondary);font-size:0.85rem">⏳ Loading...</p>';
+
+    try {
+        const res = await api.getCourseVideoLinks(courseId);
+        const course = res.course;
+        if (!course) throw new Error('Course not found');
+
+        // ── Chapter-level assignment UI ──────────────────────────────────────
+        if (course.chapters && course.chapters.length > 0) {
+            let html = `<div style="display:flex;flex-direction:column;gap:10px">`;
+            course.chapters.forEach((ch, ci) => {
+                html += `
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);
+                    border-radius:12px;overflow:hidden">
+                    <div style="padding:12px 16px;background:rgba(102,126,234,0.06);
+                        border-bottom:1px solid var(--border-color);font-weight:700;
+                        font-size:0.88rem;color:var(--text-primary)">
+                        📖 ${escAdminHtml(ch.title)}
+                    </div>
+                    <div style="padding:10px 16px;display:flex;flex-direction:column;gap:8px">
+                        ${(ch.lessons || []).map((lesson, li) => {
+                            const hasVideo = lesson.videoUrl && lesson.videoUrl.includes('drive.google.com');
+                            const existingId = hasVideo ? extractDriveFileId(lesson.videoUrl) : '';
+                            return `
+                            <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center">
+                                <div>
+                                    <p style="margin:0;font-size:0.82rem;font-weight:600;color:var(--text-primary)">
+                                        ${li + 1}. ${escAdminHtml(lesson.title)}
+                                    </p>
+                                    ${hasVideo ? `<p style="margin:2px 0 0;font-size:0.72rem;color:#27ae60">
+                                        ✅ Drive ቪዲዮ ተያይዟል</p>` : ''}
+                                </div>
+                                <input type="text"
+                                    id="drive-${ci}-${li}"
+                                    placeholder="Drive link ወይም File ID"
+                                    value="${existingId}"
+                                    style="padding:6px 10px;border:1px solid var(--border-color);
+                                    border-radius:8px;font-size:0.78rem;background:var(--bg-primary);
+                                    color:var(--text-primary);min-width:220px">
+                                <button onclick="saveChapterDriveLink('${courseId}',${ci},${li},'drive-${ci}-${li}','${escAdminHtml(lesson.title)}')"
+                                    style="padding:6px 14px;background:#27ae60;color:white;border:none;
+                                    border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;
+                                    white-space:nowrap">
+                                    💾 Save
+                                </button>
+                            </div>`;
+                        }).join('')}
+                        ${(ch.lessons || []).length === 0 ?
+                            '<p style="color:var(--text-secondary);font-size:0.8rem;margin:0">ምንም lesson የለም</p>' : ''}
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+            box.innerHTML = html;
+        } else {
+            box.innerHTML = `<p style="color:var(--text-secondary);font-size:0.85rem">
+                ይህ ኮርስ chapters አልተፈጠረም። ከ "Quick Add" ይጠቀሙ።</p>`;
+        }
+
+        // ── Show saved videos list ────────────────────────────────────────────
+        renderDriveVideosList(course);
+
+    } catch (e) {
+        box.innerHTML = `<p style="color:#e74c3c;font-size:0.85rem">❌ ${e.message}</p>`;
+    }
+}
+
+// ── Render saved videos list for a course ─────────────────────────────────────
+function renderDriveVideosList(course) {
+    const listBox = document.getElementById('driveVideosList');
+    if (!listBox) return;
+
+    const videos = course.videos || [];
+    // Also gather from chapters
+    const chapterVideos = [];
+    (course.chapters || []).forEach((ch, ci) => {
+        (ch.lessons || []).forEach((l, li) => {
+            if (l.videoUrl && l.videoUrl.includes('drive.google.com')) {
+                chapterVideos.push({
+                    title: `${ch.title} › ${l.title}`,
+                    fileId: extractDriveFileId(l.videoUrl)
+                });
+            }
+        });
+    });
+
+    const allVideos = [
+        ...chapterVideos,
+        ...videos.filter(v => v.youtubeId && v.youtubeId.length > 15).map(v => ({
+            title: v.title,
+            fileId: v.youtubeId
+        }))
+    ];
+
+    if (allVideos.length === 0) {
+        listBox.innerHTML = `<p style="color:var(--text-secondary);font-size:0.85rem">
+            ምንም Drive ቪዲዮ አልተያያዘም።</p>`;
+        return;
+    }
+
+    listBox.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:8px">
+        ${allVideos.map(v => `
+            <div style="background:var(--bg-secondary);border:1px solid var(--border-color);
+                border-radius:10px;padding:12px 16px;
+                display:flex;align-items:center;justify-content:space-between;gap:12px">
+                <div>
+                    <p style="margin:0;font-size:0.85rem;font-weight:600;color:var(--text-primary)">
+                        🎬 ${escAdminHtml(v.title)}
+                    </p>
+                    <p style="margin:2px 0 0;font-size:0.72rem;color:var(--text-secondary);
+                        font-family:monospace">${v.fileId}</p>
+                </div>
+                <a href="https://drive.google.com/file/d/${v.fileId}/preview"
+                    target="_blank" rel="noopener"
+                    style="padding:5px 12px;background:#4f46e5;color:white;border-radius:8px;
+                    font-size:0.75rem;font-weight:700;text-decoration:none;white-space:nowrap">
+                    ▶ Preview
+                </a>
+            </div>
+        `).join('')}
+        </div>`;
+}
+
+// ── Save Drive link from Quick Add form ───────────────────────────────────────
+async function saveDriveVideoLink() {
+    const courseId    = document.getElementById('driveCourseSelect')?.value;
+    const lessonTitle = document.getElementById('driveLessonTitle')?.value?.trim() || 'Video';
+    const inputVal    = document.getElementById('driveFileInput')?.value?.trim() || '';
+    const driveFileId = extractDriveFileId(inputVal);
+
+    if (!courseId) { toast?.error('Course ምረጡ'); return; }
+    if (!driveFileId) { toast?.error('ትክክለኛ Drive link ወይም File ID ያስገቡ'); return; }
+
+    try {
+        const res = await api.saveDriveVideoLink({ courseId, driveFileId, lessonTitle });
+        if (res.success) {
+            toast?.success('✅ ቪዲዮው በተሳካ ሁኔታ ተያይዟል!');
+            document.getElementById('driveFileInput').value = '';
+            document.getElementById('driveLessonTitle').value = '';
+            document.getElementById('drivePreviewBox').style.display = 'none';
+            document.getElementById('drivePreviewIframe').src = '';
+            // Reload list
+            loadDriveCourseChapters();
+        } else {
+            toast?.error(res.error || 'Save failed');
+        }
+    } catch (e) {
+        toast?.error(e.message || 'Save failed');
+    }
+}
+
+// ── Save Drive link for a specific chapter lesson ─────────────────────────────
+async function saveChapterDriveLink(courseId, ci, li, inputId, lessonTitle) {
+    const inputEl  = document.getElementById(inputId);
+    const inputVal = inputEl?.value?.trim() || '';
+    const driveFileId = extractDriveFileId(inputVal);
+
+    if (!driveFileId) { toast?.error('ትክክለኛ Drive link ወይም File ID ያስገቡ'); return; }
+
+    try {
+        const res = await api.saveDriveVideoLink({
+            courseId,
+            chapterIdx: ci,
+            lessonIdx:  li,
+            driveFileId,
+            lessonTitle
+        });
+        if (res.success) {
+            toast?.success(`✅ "${lessonTitle}" ቪዲዮ ተያይዟል!`);
+            // Reload chapters view
+            loadDriveCourseChapters();
+        } else {
+            toast?.error(res.error || 'Save failed');
+        }
+    } catch (e) {
+        toast?.error(e.message || 'Save failed');
+    }
+}
+
+// ── Escape helper for admin HTML ──────────────────────────────────────────────
+function escAdminHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── Init Drive tab when Videos tab is clicked ─────────────────────────────────
+// Patch showTab to call loadDriveCoursesDropdown when videos tab opens
+const _origShowTab = typeof showTab === 'function' ? showTab : null;
+// Override is done at call site — the onclick in the HTML now calls loadVideoManager() which calls this:
+async function loadVideoManager() {
+    await loadDriveCoursesDropdown();
+}

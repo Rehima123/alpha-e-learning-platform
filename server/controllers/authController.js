@@ -14,7 +14,7 @@ exports.register = async (req, res, next) => {
             });
         }
 
-        const { fullName, email, phoneNumber, password, role, educationLevel } = req.body;
+        const { fullName, email, phoneNumber, password, role, educationLevel, university, stream } = req.body;
 
         // Require at least one identifier
         if (!email && !phoneNumber) {
@@ -46,12 +46,14 @@ exports.register = async (req, res, next) => {
             }
         }
 
-        // Create user
+        // Create user — strip empty strings so sparse index works correctly
         const user = await User.create({
             fullName,
-            email: email || undefined,
-            phoneNumber: phoneNumber || undefined,
+            email:          email      || undefined,
+            phoneNumber:    (phoneNumber && phoneNumber.trim()) ? phoneNumber.trim() : undefined,
             educationLevel: educationLevel || undefined,
+            university:     university  || undefined,
+            stream:         stream      || undefined,
             password,
             role: role || 'student'
         });
@@ -111,7 +113,7 @@ exports.login = async (req, res, next) => {
         const query = email ? { email } : { phoneNumber };
 
         // Check if user exists
-        const user = await User.findOne(query).select('+password');
+        const user = await User.findOne(query).select('+password +currentSessionToken +registeredDeviceId');
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -134,6 +136,27 @@ exports.login = async (req, res, next) => {
                 success: false,
                 message: 'Invalid credentials'
             });
+        }
+
+        // ── Device Binding Check (1 Account = 1 Device) ───────────────────────
+        // deviceId is optional — sent by mobile/PWA clients for enforcement
+        const deviceId = req.body.deviceId || req.headers['x-device-id'] || null;
+
+        if (deviceId) {
+            if (user.registeredDeviceId && user.registeredDeviceId !== deviceId) {
+                // Admin accounts are exempt from device binding
+                if (!['admin','super_admin'].includes(user.role)) {
+                    return res.status(403).json({
+                        success: false,
+                        code: 'DEVICE_MISMATCH',
+                        message: 'ይህ አካውንት በሌላ ስልክ ላይ ተመዝግቧል። በ1 አካውንት በ1 ስልክ ብቻ መጠቀም ይቻላል።'
+                    });
+                }
+            }
+            // Register device on first login
+            if (!user.registeredDeviceId) {
+                await User.findByIdAndUpdate(user._id, { registeredDeviceId: deviceId });
+            }
         }
 
         // Generate token with unique session ID (single-device enforcement)
@@ -194,7 +217,9 @@ exports.login = async (req, res, next) => {
                 email: user.email,
                 phoneNumber: user.phoneNumber,
                 role: user.role,
-                avatar: user.avatar
+                avatar: user.avatar,
+                paymentStatus:   user.paymentStatus   || 'UNPAID',
+                enrolledPackage: user.enrolledPackage  || 'None'
             }
         });
     } catch (error) {
@@ -210,7 +235,36 @@ exports.getMe = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            user
+            user: {
+                id:              user._id,
+                fullName:        user.fullName,
+                email:           user.email,
+                phoneNumber:     user.phoneNumber,
+                role:            user.role,
+                avatar:          user.avatar,
+                paymentStatus:   user.paymentStatus   || 'UNPAID',
+                enrolledPackage: user.enrolledPackage  || 'None',
+                university:      user.university       || null,
+                stream:          user.stream           || null,
+                subscription:    user.subscription,
+                enrolledCourses: user.enrolledCourses
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Get payment status for current user
+exports.getPaymentStatus = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id)
+            .select('paymentStatus enrolledPackage');
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        res.json({
+            success: true,
+            paymentStatus:  user.paymentStatus  || 'UNPAID',
+            enrolledPackage: user.enrolledPackage || 'None'
         });
     } catch (error) {
         next(error);
@@ -293,16 +347,42 @@ exports.forgotPassword = async (req, res, next) => {
         await user.save();
 
         // Create reset URL
-        const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+        const clientUrl = process.env.CLIENT_URL || 'https://alpha-freshman-tutorial.vercel.app';
+        const resetUrl  = `${clientUrl}/reset-password/${resetToken}`;
 
-        // Send email
+        // Send branded email
         const message = `
-            <h1>Password Reset Request</h1>
-            <p>You requested a password reset. Click the link below to reset your password:</p>
-            <a href="${resetUrl}" target="_blank">Reset Password</a>
-            <p>This link will expire in 1 hour.</p>
-            <p>If you didn't request this, please ignore this email.</p>
-        `;
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+          <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:32px;text-align:center">
+            <h1 style="color:white;margin:0;font-size:1.6rem">Alpha Freshman Tutorial</h1>
+            <p style="color:rgba(255,255,255,0.85);margin:8px 0 0">Way to Success</p>
+          </div>
+          <div style="background:white;padding:32px">
+            <h2 style="color:#1a1a2e;margin-top:0">🔑 Password Reset Request</h2>
+            <p>ሰላም <strong>${user.fullName || user.email}</strong>,</p>
+            <p>Password reset ጠይቀዋል። ከዚህ በታች ያለውን button ይጫኑ:</p>
+            <div style="text-align:center;margin:28px 0">
+              <a href="${resetUrl}"
+                 style="display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);
+                 color:white;padding:14px 36px;border-radius:10px;text-decoration:none;
+                 font-weight:700;font-size:1rem">
+                🔑 Reset My Password
+              </a>
+            </div>
+            <p style="background:#f8f9fa;padding:12px;border-radius:8px;font-size:0.82rem;color:#555;word-break:break-all">
+              Button ካልሰራ ይህን link copy አድርጉ:<br>
+              <a href="${resetUrl}" style="color:#667eea">${resetUrl}</a>
+            </p>
+            <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
+            <p style="color:#888;font-size:0.82rem;margin:0">
+              ⚠️ ይህ link <strong>1 ሰዓት</strong> ብቻ ይሰራል።<br>
+              Password reset ካልጠየቁ ይህን ኢሜይል ይተዉ።
+            </p>
+          </div>
+          <div style="background:#f9f9f9;padding:14px;text-align:center;font-size:0.78rem;color:#888">
+            © ${new Date().getFullYear()} Alpha Freshman Tutorial · Way to Success
+          </div>
+        </div>`;
 
         try {
             await sendEmail({

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -64,6 +64,8 @@
         .guarantee { background: rgba(39,174,96,0.08); border: 1px solid rgba(39,174,96,0.3);
             border-radius: 12px; padding: 1rem 1.5rem; text-align: center; margin: 1.5rem 0; }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -80,70 +82,60 @@
 
     <!-- Hero -->
     <div class="sub-hero">
-        <h1>📚 One Payment. All 22 Courses.</h1>
-        <p>Get unlimited access to every Ethiopian freshman course — videos, notes, quizzes, AI tutor</p>
+        <h1>📚 አንድ ክፍያ። ሁሉም 12 ኮርሶች።</h1>
+        <p>One payment of <strong>399 ETB</strong> — full access to all Ethiopian Freshman courses + offline download</p>
     </div>
 
-    <div class="container" style="max-width:900px;padding:2rem 20px 4rem">
+    <div class="container" style="max-width:700px;padding:2rem 20px 4rem">
 
         <!-- What you get -->
-        <h2 style="text-align:center;color:var(--text-primary);margin-bottom:1.2rem">What's Included</h2>
+        <h2 style="text-align:center;color:var(--text-primary);margin-bottom:1.2rem">What's Included — ምን ያካትታል</h2>
         <div class="what-you-get">
-            <div class="get-item"><div class="icon">🎬</div><h4>22 Video Courses</h4><p>All semester 1 & 2 + streams</p></div>
-            <div class="get-item"><div class="icon">📝</div><h4>Study Notes</h4><p>AI-generated notes per lesson</p></div>
+            <div class="get-item"><div class="icon">🎬</div><h4>12 HD Video Courses</h4><p>ሁሉም Freshman ኮርሶች ቪዲዮ</p></div>
+            <div class="get-item"><div class="icon">📄</div><h4>PDF Notes</h4><p>Mid & Final exam questions + notes</p></div>
+            <div class="get-item"><div class="icon">📴</div><h4>Offline Download</h4><p>አንዴ download → internet ሳያስፈልግ</p></div>
             <div class="get-item"><div class="icon">🧠</div><h4>AI Quiz Generator</h4><p>Unlimited practice quizzes</p></div>
-            <div class="get-item"><div class="icon">🏆</div><h4>Certificates</h4><p>On course completion</p></div>
-            <div class="get-item"><div class="icon">📴</div><h4>Offline Access</h4><p>Study without internet</p></div>
-            <div class="get-item"><div class="icon">🎓</div><h4>Department Guide</h4><p>Career path planning</p></div>
+            <div class="get-item"><div class="icon">📊</div><h4>Progress Tracking</h4><p>Dashboard & certificates</p></div>
+            <div class="get-item"><div class="icon">📱</div><h4>PWA — Mobile App</h4><p>Install on any phone/PC</p></div>
         </div>
 
-        <!-- Pricing -->
-        <h2 style="text-align:center;color:var(--text-primary);margin:2rem 0 1.5rem">Choose Your Plan</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;align-items:start">
+        <!-- Single Plan -->
+        <h2 style="text-align:center;color:var(--text-primary);margin:2rem 0 1.5rem">💳 ዋጋ (Pricing)</h2>
 
-            <!-- Monthly -->
-            <div class="plan-card">
-                <h3 style="color:var(--text-primary);margin:0 0 0.8rem">Monthly</h3>
-                <div class="plan-price">1,650 <span>ETB</span></div>
-                <div class="plan-etb">≈ $29 USD / month</div>
-                <ul class="plan-features">
-                    <li>All 22 courses + videos</li>
-                    <li>AI tutor & quiz generator</li>
-                    <li>Study notes & planner</li>
-                    <li>Offline access</li>
-                    <li>Completion certificates</li>
-                    <li class="no">Priority support</li>
-                </ul>
-                <button class="btn btn-large btn-block" onclick="subscribe('monthly')">
-                    Pay 1,650 ETB
-                </button>
-                <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:8px">Via Telebirr, CBE, Awash</p>
+        <div class="plan-card featured" style="max-width:420px;margin:0 auto">
+            <div class="plan-badge">🔥 አንዴ ብቻ — ለ1 ዓመት ሙሉ Access</div>
+            <h3 style="color:var(--text-primary);margin:0.5rem 0 1rem;font-size:1.1rem">Full Access — ሁሉም 12 ኮርሶች</h3>
+
+            <!-- Price -->
+            <div style="margin:1rem 0 0.5rem">
+                <div class="plan-price" style="font-size:3.5rem;color:#27ae60">399</div>
+                <div class="plan-etb" style="font-size:1.2rem;font-weight:700">ETB ብቻ</div>
+                <div style="font-size:0.82rem;color:var(--text-secondary);margin-top:4px">≈ $18 USD · አንዴ ክፍያ · 1 ዓመት</div>
             </div>
 
-            <!-- Annual (featured) -->
-            <div class="plan-card featured">
-                <div class="plan-badge">🔥 Best Value — Save 40%</div>
-                <h3 style="color:var(--text-primary);margin:0 0 0.8rem">Annual</h3>
-                <div class="plan-price">11,300 <span>ETB</span></div>
-                <div class="plan-etb">≈ $199 USD / year</div>
-                <ul class="plan-features">
-                    <li>Everything in Monthly</li>
-                    <li>Priority support</li>
-                    <li>New courses free</li>
-                    <li>1-on-1 guidance sessions</li>
-                    <li>Exclusive workshops</li>
-                    <li>Career counseling</li>
-                </ul>
-                <button class="btn btn-large btn-block btn-success" onclick="subscribe('annual')">
-                    Pay 11,300 ETB
-                </button>
-                <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:8px">Best for full freshman year</p>
-            </div>
+            <ul class="plan-features" style="margin:1.2rem 0 1.5rem">
+                <li>ሁሉም 12 HD ቪዲዮ ትምህርቶች</li>
+                <li>Mid & Final exam questions + PDF notes</li>
+                <li>📴 Offline Download — internet ሳያስፈልግ</li>
+                <li>AI quiz generator — unlimited</li>
+                <li>Progress tracking & certificates</li>
+                <li>PWA mobile app install</li>
+                <li>1 ዓመት full access</li>
+            </ul>
 
+            <button class="btn btn-large btn-block btn-success"
+                style="font-size:1.1rem;padding:16px;font-weight:800"
+                onclick="subscribe('annual')">
+                🚀 አሁን ይክፈሉ — 399 ETB
+            </button>
+
+            <p style="font-size:0.78rem;color:var(--text-secondary);margin-top:10px">
+                Telebirr · CBE · Awash Bank · Manual Transfer ይቀበላል
+            </p>
         </div>
 
         <!-- Guarantee -->
-        <div class="guarantee">
+        <div class="guarantee" style="margin-top:2rem">
             <p style="margin:0;font-size:0.9rem;color:#27ae60;font-weight:600">
                 ✅ 7-day money-back guarantee — not satisfied? Full refund, no questions asked.
             </p>
@@ -151,23 +143,25 @@
 
         <!-- Free preview note -->
         <div style="text-align:center;padding:1rem;background:var(--bg-secondary);border-radius:12px;
-            border:1px solid var(--border-color)">
+            border:1px solid var(--border-color);margin-top:1rem">
             <p style="margin:0;font-size:0.88rem;color:var(--text-secondary)">
-                Want to try first?
-                <a href="courses.html" style="color:#667eea;font-weight:600">Browse free preview lessons →</a>
-                (First 2 lessons of each course are free)
+                ቀድሞ ማየት ይፈልጋሉ?
+                <a href="courses.html" style="color:#667eea;font-weight:600">Free preview lessons →</a>
+                (First 2 lessons free)
             </p>
         </div>
 
     </div>
-
-    <div class="dev-credit">© 2026 Alpha Freshman Tutorial · Developed by <strong>Rehima Ali</strong></div>
 
     <script src="theme.js"></script>
     <script src="api.js"></script>
     <script src="notifications.js"></script>
     <script src="subscription.js"></script>
     <script src="/pwa.js"></script>
+
+    
+
+<footer class="bg-[#2c3e50] text-slate-200 pt-12 pb-8"><div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left"><div><h3 class="text-lg font-bold text-white mb-2">Alpha Freshman Tutorial</h3><p class="text-sm text-slate-300">Way to Success &#8212; Empowering Freshman Students</p></div><div><h4 class="text-md font-semibold text-white mb-3">Quick Links</h4><ul class="space-y-2 text-sm"><li><a href="home.html" class="hover:text-amber-400">Home</a></li><li><a href="courses.html" class="hover:text-amber-400">Courses</a></li><li><a href="auth-register.html" class="hover:text-amber-400">Sign Up</a></li><li><a href="auth-login.html" class="hover:text-amber-400">Login</a></li></ul></div><div><h4 class="text-md font-semibold text-white mb-3">Connect With Us</h4><div class="flex justify-center md:justify-start gap-3"><a href="https://youtube.com/@alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-youtube"></i></a><a href="https://t.me/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-telegram"></i></a><a href="https://linkedin.com/company/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-linkedin"></i></a><a href="https://facebook.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-facebook"></i></a><a href="https://instagram.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-instagram"></i></a><a href="https://wa.me/1234567890" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-whatsapp"></i></a></div></div></div><div class="max-w-6xl mx-auto px-6 mt-8 pt-6 border-t border-slate-600/50 text-center text-xs text-slate-300">&copy; 2026 Alpha Freshman Tutorial. All rights reserved. | Developed by ALPHA DEVELOPERS TEAM</div></footer>
 </body>
 </html>
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import EnrollmentModal from '../components/EnrollmentModal'
+import PaymentBanner   from '../components/PaymentBanner'
 
 // ── Course Data ───────────────────────────────────────────────────────────────
 const NATURAL_COURSES = [
@@ -121,6 +122,9 @@ export default function Home() {
 
       {/* ── Enrollment Modal ── */}
       <EnrollmentModal isOpen={enrollModalOpen} onClose={() => setEnrollModalOpen(false)} />
+
+      {/* ── Payment Banner Carousel ── */}
+      <PaymentBanner />
 
       {/* ── Sticky Top Header ── */}
       <header className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-xl border-b border-white/8">

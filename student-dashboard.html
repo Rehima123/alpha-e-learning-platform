@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard — Alpha Freshman Tutorial</title>
+    <link rel="stylesheet" href="elearning.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="theme-color" content="#3B82F6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AlphaFT">
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0b0f19; color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+        .avatar-ring { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .stat-card { background: rgba(30,41,59,0.7); border: 1px solid rgba(71,85,105,0.5); }
+        .nav-item-row { transition: background 0.15s; }
+        .nav-item-row:hover { background: rgba(99,102,241,0.08); }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="home.html" class="logo-container">
+                <span class="platform-name">Alpha Freshman Tutorial</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="offline.html"><i class="fa-solid fa-video" style="margin-right:4px"></i> Offline</a></li>
+                <li><a href="student-dashboard.html" style="color:#a78bfa;font-weight:700"><i class="fa-solid fa-user" style="margin-right:4px"></i> My Profile</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-2xl mx-auto px-4 py-6 pb-28">
+
+        <!-- Profile Header Card -->
+        <div id="profileHeader" class="rounded-2xl p-6 mb-6 bg-gradient-to-br from-indigo-900/60 to-slate-800/80 border border-indigo-500/20 shadow-xl">
+            <div class="flex items-center gap-4">
+                <!-- Avatar -->
+                <div id="avatarEl" class="avatar-ring w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black text-white flex-shrink-0 shadow-lg">
+                    U
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h1 id="userName" class="text-xl font-black text-white truncate">Loading...</h1>
+                    <p id="userContact" class="text-sm text-slate-400 truncate mt-0.5">—</p>
+                    <div class="flex items-center gap-2 mt-2 flex-wrap">
+                        <span id="memberBadge" class="hidden inline-flex items-center gap-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold px-3 py-1 rounded-full">
+                            <i class="fa-solid fa-crown text-xs"></i> Pro Member · Paid
+                        </span>
+                        <span id="freeBadge" class="hidden inline-flex items-center gap-1 bg-slate-700/60 text-slate-400 border border-slate-600/50 text-xs font-bold px-3 py-1 rounded-full">
+                            <i class="fa-solid fa-user text-xs"></i> Free Member
+                        </span>
+                        <span id="roleBadge" class="inline-flex items-center gap-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold px-3 py-1 rounded-full">
+                            student
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="stat-card rounded-xl p-4 text-center">
+                <div id="enrolledCount" class="text-2xl font-black text-amber-400">0</div>
+                <div class="text-xs text-slate-400 mt-1">Enrolled</div>
+            </div>
+            <div class="stat-card rounded-xl p-4 text-center">
+                <div id="progressPct" class="text-2xl font-black text-emerald-400">0%</div>
+                <div class="text-xs text-slate-400 mt-1">Progress</div>
+            </div>
+            <div class="stat-card rounded-xl p-4 text-center">
+                <div id="completedCount" class="text-2xl font-black text-indigo-400">0</div>
+                <div class="text-xs text-slate-400 mt-1">Completed</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Nav List -->
+        <div class="rounded-2xl overflow-hidden border border-slate-700/50 mb-6 bg-slate-800/40">
+
+            <!-- My Enrolled Courses -->
+            <a href="courses.html" class="nav-item-row flex items-center gap-4 px-5 py-4 border-b border-slate-700/40 text-white no-underline">
+                <span class="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-400 flex-shrink-0">
+                    <i class="fa-solid fa-book-open text-sm"></i>
+                </span>
+                <div class="flex-1">
+                    <div class="font-semibold text-sm">My Enrolled Courses</div>
+                    <div class="text-xs text-slate-400 mt-0.5">Browse &amp; continue your courses</div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+            </a>
+
+            <!-- Payment History -->
+            <a href="payment.html" class="nav-item-row flex items-center gap-4 px-5 py-4 border-b border-slate-700/40 text-white no-underline">
+                <span class="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 flex-shrink-0">
+                    <i class="fa-solid fa-receipt text-sm"></i>
+                </span>
+                <div class="flex-1">
+                    <div class="font-semibold text-sm">Payment History &amp; Receipt</div>
+                    <div class="text-xs text-slate-400 mt-0.5">View your payment records</div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+            </a>
+
+            <!-- Offline Saved Materials -->
+            <a href="offline.html" class="nav-item-row flex items-center gap-4 px-5 py-4 border-b border-slate-700/40 text-white no-underline">
+                <span class="w-9 h-9 rounded-xl bg-indigo-500/15 flex items-center justify-center text-indigo-400 flex-shrink-0">
+                    <i class="fa-solid fa-download text-sm"></i>
+                </span>
+                <div class="flex-1">
+                    <div class="font-semibold text-sm">Offline Saved Materials</div>
+                    <div class="text-xs text-slate-400 mt-0.5">Videos &amp; notes saved on device</div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+            </a>
+
+            <!-- Account Settings -->
+            <a href="#" onclick="openSettings()" class="nav-item-row flex items-center gap-4 px-5 py-4 border-b border-slate-700/40 text-white no-underline cursor-pointer">
+                <span class="w-9 h-9 rounded-xl bg-slate-600/40 flex items-center justify-center text-slate-300 flex-shrink-0">
+                    <i class="fa-solid fa-gear text-sm"></i>
+                </span>
+                <div class="flex-1">
+                    <div class="font-semibold text-sm">Account Settings</div>
+                    <div class="text-xs text-slate-400 mt-0.5">Edit profile &amp; change password</div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+            </a>
+
+            <!-- Support -->
+            <a href="#" onclick="openSupport()" class="nav-item-row flex items-center gap-4 px-5 py-4 border-b border-slate-700/40 text-white no-underline cursor-pointer">
+                <span class="w-9 h-9 rounded-xl bg-blue-500/15 flex items-center justify-center text-blue-400 flex-shrink-0">
+                    <i class="fa-solid fa-headset text-sm"></i>
+                </span>
+                <div class="flex-1">
+                    <div class="font-semibold text-sm">Support &amp; Help Center</div>
+                    <div class="text-xs text-slate-400 mt-0.5">Get help &amp; contact us</div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+            </a>
+
+            <!-- Logout -->
+            <button onclick="logoutUser()" class="nav-item-row w-full flex items-center gap-4 px-5 py-4 text-left bg-transparent border-none cursor-pointer">
+                <span class="w-9 h-9 rounded-xl bg-red-500/15 flex items-center justify-center text-red-400 flex-shrink-0">
+                    <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                </span>
+                <div class="flex-1">
+                    <div class="font-semibold text-sm text-red-400">Log Out</div>
+                    <div class="text-xs text-slate-400 mt-0.5">Sign out of your account</div>
+                </div>
+            </button>
+
+        </div>
+
+        <!-- App version -->
+        <p class="text-center text-xs text-slate-600">Alpha Freshman Tutorial · v2026</p>
+    </main>
+
+    <!-- Account Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-gear text-indigo-400 mr-2"></i>Account Settings</h2>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-white text-xl font-bold">&#10005;</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Full Name</label>
+                    <input id="editName" type="text" placeholder="Your full name"
+                        class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Email / Phone</label>
+                    <input id="editContact" type="text" placeholder="Email or phone"
+                        class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">New Password (leave blank to keep)</label>
+                    <input id="editPassword" type="password" placeholder="New password"
+                        class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-indigo-500">
+                </div>
+            </div>
+            <button onclick="saveSettings()"
+                class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-colors text-sm">
+                <i class="fa-solid fa-floppy-disk mr-2"></i>Save Changes
+            </button>
+        </div>
+    </div>
+
+    <!-- Support Modal -->
+    <div id="supportModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-headset text-blue-400 mr-2"></i>Support &amp; Help</h2>
+                <button onclick="closeSupport()" class="text-slate-400 hover:text-white text-xl font-bold">&#10005;</button>
+            </div>
+            <div class="space-y-3">
+                <a href="https://t.me/alphatutorial" target="_blank"
+                    class="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 rounded-xl px-4 py-3 no-underline text-white transition-colors">
+                    <i class="fa-brands fa-telegram text-blue-400 text-xl"></i>
+                    <div>
+                        <div class="font-semibold text-sm">Telegram Support</div>
+                        <div class="text-xs text-slate-400">@alphatutorial</div>
+                    </div>
+                </a>
+                <a href="https://wa.me/1234567890" target="_blank"
+                    class="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 rounded-xl px-4 py-3 no-underline text-white transition-colors">
+                    <i class="fa-brands fa-whatsapp text-emerald-400 text-xl"></i>
+                    <div>
+                        <div class="font-semibold text-sm">WhatsApp Support</div>
+                        <div class="text-xs text-slate-400">Chat with us</div>
+                    </div>
+                </a>
+                <a href="mailto:support@alphafreshman.com"
+                    class="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 rounded-xl px-4 py-3 no-underline text-white transition-colors">
+                    <i class="fa-solid fa-envelope text-amber-400 text-xl"></i>
+                    <div>
+                        <div class="font-semibold text-sm">Email Support</div>
+                        <div class="text-xs text-slate-400">support@alphafreshman.com</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <a href="home.html" class="nav-item" id="mbn-home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="courses.html" class="nav-item" id="mbn-courses">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5Z"/></svg>
+            <span>Courses</span>
+        </a>
+        <a href="study-hub.html" class="nav-item" id="mbn-study">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span>Study</span>
+        </a>
+        <a href="student-dashboard.html" class="nav-item active" id="mbn-dashboard">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script src="theme.js"></script>
+    <script src="api.js"></script>
+    <script>
+    (function() {
+        // Auth guard — redirect to login if not logged in
+        const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        if (!user) {
+            window.location.href = 'auth-login.html?redirect=student-dashboard.html';
+            return;
+        }
+
+        // ── Populate Profile Header ─────────────────────────────────────────
+        const initials = (user.fullName || user.email || 'U')
+            .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+        document.getElementById('avatarEl').textContent = initials;
+        document.getElementById('userName').textContent = user.fullName || user.email || 'Student';
+        document.getElementById('userContact').textContent = user.email || user.phoneNumber || '—';
+
+        const roleBadge = document.getElementById('roleBadge');
+        roleBadge.textContent = user.role || 'student';
+
+        // Payment status badge
+        const isPaid = user.paymentStatus === 'APPROVED' || user.role === 'admin' || user.role === 'super_admin';
+        if (isPaid) {
+            document.getElementById('memberBadge').classList.remove('hidden');
+        } else {
+            document.getElementById('freeBadge').classList.remove('hidden');
+        }
+
+        // ── Populate Stats ──────────────────────────────────────────────────
+        // Enrolled courses from localStorage or user object
+        const enrolled = user.enrolledCourses?.length || user.enrolledPackage ? 1 : 0;
+        document.getElementById('enrolledCount').textContent = enrolled;
+
+        // Progress from localStorage
+        const progress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
+        const progressValues = Object.values(progress);
+        const avgProgress = progressValues.length
+            ? Math.round(progressValues.reduce((a, b) => a + b, 0) / progressValues.length)
+            : 0;
+        document.getElementById('progressPct').textContent = avgProgress + '%';
+
+        // Completed lessons
+        const completed = JSON.parse(localStorage.getItem('completedLessons') || '[]');
+        document.getElementById('completedCount').textContent = completed.length;
+
+        // ── Settings handlers ───────────────────────────────────────────────
+        // Pre-fill settings form
+        document.getElementById('editName').value    = user.fullName || '';
+        document.getElementById('editContact').value = user.email || user.phoneNumber || '';
+    })();
+
+    function openSettings() {
+        document.getElementById('settingsModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSettings() {
+        document.getElementById('settingsModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+    function saveSettings() {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const newName = document.getElementById('editName').value.trim();
+        if (newName) user.fullName = newName;
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        closeSettings();
+        document.getElementById('userName').textContent = user.fullName || user.email;
+        alert('&#x2705; Settings saved!');
+    }
+
+    function openSupport()  { document.getElementById('supportModal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+    function closeSupport() { document.getElementById('supportModal').classList.add('hidden');    document.body.style.overflow = ''; }
+
+    // Close modals on backdrop click
+    ['settingsModal','supportModal'].forEach(id => {
+        document.getElementById(id).addEventListener('click', function(e) {
+            if (e.target === this) { this.classList.add('hidden'); document.body.style.overflow = ''; }
+        });
+    });
+
+    function logoutUser() {
+        if (confirm('ከ Alpha Freshman Tutorial ለመውጣት ይፈልጋሉ?')) {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('authToken');
+            window.location.href = 'auth-login.html';
+        }
+    }
+    </script>
+
+    <footer class="bg-[#2c3e50] text-slate-200 pt-12 pb-8"><div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left"><div><h3 class="text-lg font-bold text-white mb-2">Alpha Freshman Tutorial</h3><p class="text-sm text-slate-300">Way to Success &#8212; Empowering Freshman Students</p></div><div><h4 class="text-md font-semibold text-white mb-3">Quick Links</h4><ul class="space-y-2 text-sm"><li><a href="home.html" class="hover:text-amber-400">Home</a></li><li><a href="courses.html" class="hover:text-amber-400">Courses</a></li><li><a href="auth-register.html" class="hover:text-amber-400">Sign Up</a></li><li><a href="auth-login.html" class="hover:text-amber-400">Login</a></li></ul></div><div><h4 class="text-md font-semibold text-white mb-3">Connect With Us</h4><div class="flex justify-center md:justify-start gap-3"><a href="https://youtube.com/@alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-youtube"></i></a><a href="https://t.me/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-telegram"></i></a><a href="https://linkedin.com/company/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-linkedin"></i></a><a href="https://facebook.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-facebook"></i></a><a href="https://instagram.com/alphatutorial" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-instagram"></i></a><a href="https://wa.me/1234567890" target="_blank" class="text-white hover:text-amber-400 text-xl"><i class="fa-brands fa-whatsapp"></i></a></div></div></div><div class="max-w-6xl mx-auto px-6 mt-8 pt-6 border-t border-slate-600/50 text-center text-xs text-slate-300">&copy; 2026 Alpha Freshman Tutorial. All rights reserved. | Developed by ALPHA DEVELOPERS TEAM</div></footer>
+</body>
+</html>

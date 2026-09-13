@@ -1,38 +1,33 @@
 const ETB_RATE = 56;
-const TAX_RATE = 0.15;
+// ── FLAT PRICE: 399 ETB per semester package ─────────────────────────────────
+// One payment = access to ALL courses in the selected semester/stream
+const FLAT_PRICE_ETB = 399;
 
 const params = new URLSearchParams(window.location.search);
 const courseId = params.get('courseId');
 const plan     = params.get('plan');
-const method   = params.get('method'); // 'manual' auto-selects bank transfer tab
+const method   = params.get('method');
 
-let subtotal = 0, discount = 0, couponData = null;
+let subtotal = FLAT_PRICE_ETB, discount = 0, couponData = null;
 let selectedMethod = method === 'manual' ? 'manual' : 'chapa';
 
-const planInfo = { monthly: { name: 'Monthly Subscription', etb: 1650 }, annual: { name: 'Annual Subscription', etb: 11300 } };
+// Package descriptions
+const PACKAGE_INFO = {
+    '1st Semester Natural': { label: '📐 1st Semester — Natural Science', desc: 'Math, Physics, Chemistry, Psychology + Common courses' },
+    '1st Semester Social':  { label: '📊 1st Semester — Social Science',  desc: 'Math (Social), Economics, Inclusiveness + Common courses' },
+    '2nd Semester Natural': { label: '🔬 2nd Semester — Natural Science', desc: 'Calculus, Biology, Emerging Technologies + Common courses' },
+    '2nd Semester Social':  { label: '📈 2nd Semester — Social Science',  desc: 'Basic Statistics + All Common courses' }
+};
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) { window.location.href = 'auth-login.html'; return; }
 
-    if (courseId) {
-        try {
-            const res = await api.getCourse(courseId);
-            if (res.success) {
-                const c = res.course;
-                document.getElementById('orderIcon').textContent  = c.icon || '📚';
-                document.getElementById('orderTitle').textContent = c.title;
-                document.getElementById('orderType').textContent  = `Course · ${c.category}`;
-                subtotal = Math.round(c.price * ETB_RATE);
-            }
-        } catch { toast?.error('Failed to load course info'); }
-    } else if (plan && planInfo[plan]) {
-        document.getElementById('orderIcon').textContent  = plan === 'annual' ? '⭐' : '📅';
-        document.getElementById('orderTitle').textContent = planInfo[plan].name;
-        document.getElementById('orderType').textContent  = 'Subscription';
-        subtotal = planInfo[plan].etb;
-    }
+    document.getElementById('orderIcon').textContent  = '🎓';
+    document.getElementById('orderTitle').textContent = '399 ETB — Semester Package';
+    document.getElementById('orderType').textContent  = 'ምረጡት semester ሁሉም ኮርሶች ይካተታሉ · 1 Year Access';
+    subtotal = FLAT_PRICE_ETB;
 
     updateTotals();
 
@@ -44,12 +39,14 @@ async function init() {
 
 function updateTotals() {
     const afterDiscount = subtotal - discount;
-    const tax   = Math.round(afterDiscount * TAX_RATE);
-    const total = afterDiscount + tax;
+    const total = afterDiscount; // No tax — flat 399 ETB
 
     document.getElementById('subtotalDisplay').textContent = `${subtotal.toLocaleString()} ETB`;
-    document.getElementById('taxDisplay').textContent      = `${tax.toLocaleString()} ETB`;
     document.getElementById('totalDisplay').textContent    = `${total.toLocaleString()} ETB`;
+
+    // Hide tax row completely
+    const taxRow = document.getElementById('taxRow');
+    if (taxRow) taxRow.style.display = 'none';
 
     if (discount > 0) {
         document.getElementById('discountRow').style.display = 'flex';
@@ -149,6 +146,43 @@ let receiptBase64 = null;
 let receiptFileName = '';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+// ── Package selection ────────────────────────────────────────────────────────
+function selectPackage(value) {
+    // Check the radio
+    const radio = document.querySelector(`input[name="enrolledPackage"][value="${value}"]`);
+    if (radio) radio.checked = true;
+
+    // Highlight selected label, de-highlight others
+    document.querySelectorAll('[id^="pkg-label-"]').forEach(lbl => {
+        lbl.style.borderColor = '';
+        lbl.style.background  = '';
+    });
+    const keyMap = {
+        '1st Semester Natural': 'pkg-label-1st-nat',
+        '1st Semester Social':  'pkg-label-1st-soc',
+        '2nd Semester Natural': 'pkg-label-2nd-nat',
+        '2nd Semester Social':  'pkg-label-2nd-soc'
+    };
+    const lbl = document.getElementById(keyMap[value]);
+    if (lbl) {
+        lbl.style.borderColor = '#667eea';
+        lbl.style.background  = 'rgba(102,126,234,0.07)';
+    }
+    document.getElementById('pkgError').style.display = 'none';
+
+    // Update order summary to show selected package
+    const info = PACKAGE_INFO[value];
+    if (info) {
+        document.getElementById('orderTitle').textContent = info.label;
+        document.getElementById('orderType').textContent  = info.desc + ' · 399 ETB · 1 Year Access';
+    }
+}
+
+function getSelectedPackage() {
+    const radio = document.querySelector('input[name="enrolledPackage"]:checked');
+    return radio ? radio.value : null;
+}
+
 function copyText(text, btn) {
     navigator.clipboard.writeText(text).then(() => {
         const orig = btn.textContent;
@@ -219,6 +253,15 @@ function clearReceipt() {
 
 async function submitManualPayment() {
     const submitBtn = document.getElementById('manualSubmitBtn');
+
+    // Validate package selection
+    const selectedPackage = getSelectedPackage();
+    if (!selectedPackage) {
+        document.getElementById('pkgError').style.display = 'block';
+        toast?.error('Please select your semester package first');
+        return;
+    }
+
     if (!receiptBase64) {
         toast?.error('Please upload your payment receipt first');
         return;
@@ -238,7 +281,8 @@ async function submitManualPayment() {
             receiptFileName: receiptFileName,
             amount:          total,
             studentName:     currentUser?.fullName,
-            studentEmail:    currentUser?.email
+            studentEmail:    currentUser?.email,
+            enrolledPackage: selectedPackage        // ← new field
         };
         if (courseId) body.courseId = courseId;
         else body.plan = plan;
