@@ -2,6 +2,7 @@ const ETB_RATE = 56;
 // ── FLAT PRICE: 399 ETB per semester package ─────────────────────────────────
 // One payment = access to ALL courses in the selected semester/stream
 const FLAT_PRICE_ETB = 399;
+const TAX_RATE = 0; // No tax — flat 399 ETB
 
 const params = new URLSearchParams(window.location.search);
 const courseId = params.get('courseId');
