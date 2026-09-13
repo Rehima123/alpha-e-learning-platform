@@ -52,11 +52,11 @@
                     ${user.role || 'student'}
                 </div>
             </div>
-            <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;
+            <a href="student-dashboard.html" style="display:flex;align-items:center;gap:10px;
                 padding:11px 16px;text-decoration:none;color:inherit;font-size:0.88rem;
                 transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'"
                 onmouseout="this.style.background='transparent'">
-                📊 My Dashboard
+                👤 My Profile
             </a>
             <a href="courses.html" style="display:flex;align-items:center;gap:10px;
                 padding:11px 16px;text-decoration:none;color:inherit;font-size:0.88rem;

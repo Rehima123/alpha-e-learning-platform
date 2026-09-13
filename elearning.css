@@ -2018,11 +2018,28 @@ body { animation: fadeIn 0.3s ease; }
     /* Show hamburger button on mobile */
     .nav-hamburger {
         display: flex !important;
+        margin-left: auto;   /* push to far right */
+        order: 99;           /* always last in flex row */
     }
 
-    /* Navbar container: allow dropdown to position relative to it */
+    /* Navbar container: flex row — logo left, hamburger right */
     .navbar .container {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
         position: relative;
+        padding: 0 1rem;
+        width: 100%;
+    }
+
+    /* Logo stays on the left */
+    .navbar .container > a:first-child,
+    .navbar .container > .logo-container,
+    .navbar .container .platform-name,
+    .navbar .container > div:first-child {
+        flex-shrink: 0;
+        margin-right: auto;
     }
 
     /* Hide nav-links by default on mobile — !important overrides the base flex */
