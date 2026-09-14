@@ -34,6 +34,10 @@
       "use": "@vercel/static"
     },
     {
+      "src": ".well-known/assetlinks.json",
+      "use": "@vercel/static"
+    },
+    {
       "src": "sw.js",
       "use": "@vercel/static"
     }
@@ -59,6 +63,15 @@
         "Cache-Control": "public, max-age=3600"
       },
       "dest": "/manifest.json"
+    },
+    {
+      "src": "/.well-known/assetlinks.json",
+      "headers": {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Access-Control-Allow-Origin": "*"
+      },
+      "dest": "/.well-known/assetlinks.json"
     },
     {
       "src": "/(.*\\.html)",

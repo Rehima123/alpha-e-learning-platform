@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.alphafreshman.tutorial",
+      "sha256_cert_fingerprints": [
+        "E0:B5:E3:CD:81:5C:26:6F:DF:77:28:AF:6D:1A:4C:28:F0:8B:5C:D3:D1:DA:B4:0E:16:54:87:8B:98:20:A2:B7"
+      ]
+    }
+  }
+]
