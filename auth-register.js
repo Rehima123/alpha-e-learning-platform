@@ -515,22 +515,36 @@ document.getElementById('googleSignupBtn')?.addEventListener('click', async () =
         provider.addScope('profile');
 
         const result         = await signInWithPopup(auth, provider);
-        const user           = result.user;
-        const googleFullName = user.displayName || user.email.split('@')[0];
-        const googleEmail    = user.email;
-        const googlePassword = 'google-oauth-' + user.uid;
+        const gUser          = result.user;
+        const googleFullName = gUser.displayName || gUser.email.split('@')[0];
+        const googleEmail    = gUser.email;
+        const googlePassword = 'google-oauth-' + gUser.uid;
+
+        // ── Prompt for Ethiopian phone number (required for Bulk SMS) ─────────
+        const phone = await _promptPhoneNumber(googleFullName);
+        if (phone === null) {
+            // User cancelled phone entry — proceed without phone (optional)
+        }
 
         // Try register first, fallback to login if already exists
         let backendRes = await api.register({
-            fullName: googleFullName,
-            email:    googleEmail,
-            password: googlePassword,
-            role:     'student'
+            fullName:    googleFullName,
+            email:       googleEmail,
+            password:    googlePassword,
+            role:        'student',
+            phoneNumber: phone || undefined
         });
         let isNewUser = backendRes?.success;
 
         if (!isNewUser) {
             backendRes = await api.login({ email: googleEmail, password: googlePassword });
+            // If login succeeds and we have a phone, update the profile
+            if (backendRes?.success && phone) {
+                api.request('/auth/update-profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({ phoneNumber: phone })
+                }).catch(() => {});
+            }
         }
 
         if (backendRes?.success) {
@@ -552,8 +566,8 @@ document.getElementById('googleSignupBtn')?.addEventListener('click', async () =
         }
 
         // Pure Firebase fallback
-        const fbUser = { id: user.uid, fullName: googleFullName, email: googleEmail, role: 'student', avatar: user.photoURL };
-        api.setAuthToken('firebase-' + user.uid);
+        const fbUser = { id: gUser.uid, fullName: googleFullName, email: googleEmail, role: 'student', avatar: gUser.photoURL };
+        api.setAuthToken('firebase-' + gUser.uid);
         localStorage.setItem('currentUser', JSON.stringify(fbUser));
         window.location.href = 'courses.html';
 
@@ -569,6 +583,83 @@ document.getElementById('googleSignupBtn')?.addEventListener('click', async () =
         btn.innerHTML = '🔍 Sign up with Google';
     }
 });
+
+// ── Phone number prompt modal (for Google Sign-Up) ────────────────────────────
+function _promptPhoneNumber(fullName) {
+    return new Promise((resolve) => {
+        // Remove existing prompt if any
+        const existing = document.getElementById('_phonePromptModal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.id = '_phonePromptModal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
+        modal.innerHTML = `
+            <div style="background:var(--bg-secondary,#fff);border-radius:16px;padding:28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.35)">
+                <h3 style="margin:0 0 8px;color:var(--text-primary,#1a1a2e);font-size:1.1rem">
+                    📱 ስልክ ቁጥርዎን ያስገቡ
+                </h3>
+                <p style="color:var(--text-secondary,#666);font-size:0.85rem;margin:0 0 20px">
+                    ሰላም <strong>${_esc(fullName)}</strong>!<br>
+                    ስልክ ቁጥርዎን ለ SMS ማሳወቂያዎች ያስፈልጋሉ። (ትምህርት ዝማኔዎችን ለመቀበል)
+                </p>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                    <div style="background:var(--bg-primary,#f8f9fa);border:1px solid var(--border-color,#ddd);border-radius:8px;padding:10px 12px;font-weight:700;color:var(--text-primary,#1a1a2e);white-space:nowrap">
+                        🇪🇹 +251
+                    </div>
+                    <input id="_googlePhoneInput" type="tel" placeholder="9xxxxxxxx" maxlength="9"
+                        pattern="[0-9]{9}"
+                        style="flex:1;padding:10px 14px;border:1.5px solid var(--border-color,#ddd);border-radius:8px;font-size:1rem;background:var(--bg-primary,#f8f9fa);color:var(--text-primary,#1a1a2e);outline:none"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,9)">
+                </div>
+                <p id="_phoneInputError" style="color:#e74c3c;font-size:0.82rem;margin:0 0 14px;display:none">
+                    ✗ ትክክለኛ 9-digit ስልክ ቁጥር ያስፈልጋል (ምሳሌ: 912345678)
+                </p>
+                <div style="display:flex;gap:10px">
+                    <button id="_phoneSkipBtn"
+                        style="flex:1;padding:10px;border:1px solid var(--border-color,#ddd);background:none;border-radius:8px;cursor:pointer;color:var(--text-secondary,#666);font-size:0.88rem">
+                        ለቆይ (Skip)
+                    </button>
+                    <button id="_phoneConfirmBtn"
+                        style="flex:2;padding:10px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.9rem">
+                        ✓ አረጋግጥ
+                    </button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(modal);
+
+        function _esc(s) { return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        const input      = modal.querySelector('#_googlePhoneInput');
+        const confirmBtn = modal.querySelector('#_phoneConfirmBtn');
+        const skipBtn    = modal.querySelector('#_phoneSkipBtn');
+        const errEl      = modal.querySelector('#_phoneInputError');
+
+        // Focus input
+        setTimeout(() => input?.focus(), 100);
+
+        // Enter key = confirm
+        input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmBtn.click(); });
+
+        confirmBtn.addEventListener('click', () => {
+            const raw = input.value.trim();
+            if (!raw || raw.length < 9) {
+                errEl.style.display = 'block';
+                input.style.borderColor = '#e74c3c';
+                return;
+            }
+            const normalized = '+251' + raw.replace(/^0/, '');
+            modal.remove();
+            resolve(normalized);
+        });
+
+        skipBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(null); // null = user skipped
+        });
+    });
+}
 
 // ── Init: check Firebase Phone Auth availability, default to best tab ─────────
 (async function initDefaultTab() {
