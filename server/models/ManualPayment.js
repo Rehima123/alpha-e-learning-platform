@@ -52,7 +52,7 @@ const manualPaymentSchema = new mongoose.Schema({
     enrolledPackage: {
         type: String,
         enum: ['None', '1st Semester Natural', '1st Semester Social',
-               '2nd Semester Natural', '2nd Semester Social', null],
+               '2nd Semester Natural', '2nd Semester Social', 'COC Preparation', null],
         default: null
     },
     reviewedBy: {

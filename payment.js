@@ -2,14 +2,20 @@ const ETB_RATE = 56;
 // ── FLAT PRICE: 399 ETB per semester package ─────────────────────────────────
 // One payment = access to ALL courses in the selected semester/stream
 const FLAT_PRICE_ETB = 399;
-const TAX_RATE = 0; // No tax — flat 399 ETB
+// ── COC Preparation promotional price ────────────────────────────────────────
+const COC_PRICE_ETB  = 299;
+const TAX_RATE = 0; // No tax — flat prices
 
 const params = new URLSearchParams(window.location.search);
 const courseId = params.get('courseId');
-const plan     = params.get('plan');
+const plan     = params.get('plan');   // 'coc' triggers the COC flow
 const method   = params.get('method');
 
-let subtotal = FLAT_PRICE_ETB, discount = 0, couponData = null;
+// Is this a COC checkout?
+const isCOC = (plan === 'coc');
+
+let subtotal = isCOC ? COC_PRICE_ETB : FLAT_PRICE_ETB;
+let discount = 0, couponData = null;
 let selectedMethod = method === 'manual' ? 'manual' : 'chapa';
 
 // Package descriptions
@@ -17,7 +23,8 @@ const PACKAGE_INFO = {
     '1st Semester Natural': { label: '📐 1st Semester — Natural Science', desc: 'Math, Physics, Chemistry, Psychology + Common courses' },
     '1st Semester Social':  { label: '📊 1st Semester — Social Science',  desc: 'Math (Social), Economics, Inclusiveness + Common courses' },
     '2nd Semester Natural': { label: '🔬 2nd Semester — Natural Science', desc: 'Calculus, Biology, Emerging Technologies + Common courses' },
-    '2nd Semester Social':  { label: '📈 2nd Semester — Social Science',  desc: 'Basic Statistics + All Common courses' }
+    '2nd Semester Social':  { label: '📈 2nd Semester — Social Science',  desc: 'Basic Statistics + All Common courses' },
+    'COC Preparation':      { label: '🏥 COC Preparation — Health Science', desc: 'Anatomy, Biology, Pharmacology, Model Exams + all CoC materials' }
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -25,10 +32,32 @@ async function init() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) { window.location.href = 'auth-login.html'; return; }
 
-    document.getElementById('orderIcon').textContent  = '🎓';
-    document.getElementById('orderTitle').textContent = '399 ETB — Semester Package';
-    document.getElementById('orderType').textContent  = 'ምረጡት semester ሁሉም ኮርሶች ይካተታሉ · 1 Year Access';
-    subtotal = FLAT_PRICE_ETB;
+    if (isCOC) {
+        // COC Preparation checkout — 299 ETB promo
+        document.getElementById('orderIcon').textContent  = '🏥';
+        document.getElementById('orderTitle').textContent = '299 ETB — COC Preparation';
+        document.getElementById('orderType').textContent  = 'Health Science CoC Prep · ሙሉ ዝግጅት · Promotional Price';
+        subtotal = COC_PRICE_ETB;
+
+        // Pre-select COC package in manual form
+        const cocPkgEl = document.getElementById('pkg-coc');
+        if (cocPkgEl) cocPkgEl.checked = true;
+
+        // Show a COC promo badge in the order summary
+        const orderItem = document.getElementById('orderItem');
+        if (orderItem) {
+            orderItem.insertAdjacentHTML('afterend', `
+                <div style="background:linear-gradient(135deg,#f43f5e22,#dc262622);border:1.5px solid #f43f5e;
+                    border-radius:10px;padding:10px 14px;margin:8px 0;font-size:0.82rem;color:#fda4af">
+                    🔒 COC materials only — ሌሎች ኮርሶች አይደሉም
+                </div>`);
+        }
+    } else {
+        document.getElementById('orderIcon').textContent  = '🎓';
+        document.getElementById('orderTitle').textContent = '399 ETB — Semester Package';
+        document.getElementById('orderType').textContent  = 'ምረጡት semester ሁሉም ኮርሶች ይካተታሉ · 1 Year Access';
+        subtotal = FLAT_PRICE_ETB;
+    }
 
     updateTotals();
 
@@ -103,8 +132,9 @@ async function processPayment() {
             couponCode: couponData?.code,
             currency: 'ETB'
         };
-        if (courseId) body.courseId = courseId;
-        else body.plan = plan;
+        if (courseId)    body.courseId = courseId;
+        else if (isCOC)  body.plan = 'coc';   // ── COC 299 ETB plan
+        else             body.plan = plan;
 
         const res = await api.request('/payments/initiate', {
             method: 'POST',
@@ -162,7 +192,8 @@ function selectPackage(value) {
         '1st Semester Natural': 'pkg-label-1st-nat',
         '1st Semester Social':  'pkg-label-1st-soc',
         '2nd Semester Natural': 'pkg-label-2nd-nat',
-        '2nd Semester Social':  'pkg-label-2nd-soc'
+        '2nd Semester Social':  'pkg-label-2nd-soc',
+        'COC Preparation':      'pkg-label-coc'
     };
     const lbl = document.getElementById(keyMap[value]);
     if (lbl) {
@@ -283,10 +314,11 @@ async function submitManualPayment() {
             amount:          total,
             studentName:     currentUser?.fullName,
             studentEmail:    currentUser?.email,
-            enrolledPackage: selectedPackage        // ← new field
+            enrolledPackage: isCOC ? 'COC Preparation' : selectedPackage
         };
-        if (courseId) body.courseId = courseId;
-        else body.plan = plan;
+        if (courseId)   body.courseId = courseId;
+        else if (isCOC) body.plan = 'coc';
+        else            body.plan = plan;
 
         const res = await api.request('/payments/manual-receipt', {
             method: 'POST',

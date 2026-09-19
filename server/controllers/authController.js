@@ -259,12 +259,14 @@ exports.getMe = async (req, res, next) => {
 exports.getPaymentStatus = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id)
-            .select('paymentStatus enrolledPackage');
+            .select('paymentStatus enrolledPackage cocAccess cocAccessGrantedAt');
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
         res.json({
             success: true,
-            paymentStatus:  user.paymentStatus  || 'UNPAID',
-            enrolledPackage: user.enrolledPackage || 'None'
+            paymentStatus:      user.paymentStatus      || 'UNPAID',
+            enrolledPackage:    user.enrolledPackage     || 'None',
+            cocAccess:          user.cocAccess           || false,
+            cocAccessGrantedAt: user.cocAccessGrantedAt  || null
         });
     } catch (error) {
         next(error);

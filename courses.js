@@ -396,6 +396,41 @@ updateNavbar();
         if (input) input.value = urlSearch;
     }
     loadEnrollments().catch(() => {});
+
+    // ── COC-only access check ──────────────────────────────────────────────────
+    // If user has cocAccess = true, they can ONLY access CoC courses.
+    // Show a banner and hide non-CoC filters.
+    const _cu = (() => { try { return JSON.parse(localStorage.getItem('currentUser')); } catch { return null; } })();
+    if (_cu && _cu.cocAccess && _cu.enrolledPackage === 'COC Preparation') {
+        // Add a restriction banner at the top
+        const mainContainer = document.querySelector('main.container') || document.querySelector('.container');
+        if (mainContainer) {
+            mainContainer.insertAdjacentHTML('afterbegin', `
+                <div style="background:linear-gradient(135deg,#7f1d1d,#be123c);color:white;
+                    border-radius:12px;padding:14px 18px;margin:1rem 0 1.5rem;
+                    display:flex;align-items:center;gap:12px">
+                    <span style="font-size:1.6rem;flex-shrink:0">🏥</span>
+                    <div>
+                        <div style="font-weight:800;font-size:0.95rem">COC Preparation Access</div>
+                        <div style="font-size:0.8rem;opacity:0.9">
+                            You have access to CoC preparation materials only.
+                            ሌሎች ኮርሶች ለዚህ plan አይደሉም።
+                        </div>
+                    </div>
+                </div>`);
+        }
+        // Pre-filter to CoC category only
+        currentCategory = 'coc';
+        setTimeout(() => {
+            const cocBtn = document.querySelector('[data-category="coc"]');
+            if (cocBtn) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                cocBtn.classList.add('active');
+                applySearch();
+            }
+        }, 600);
+    }
+
     loadCourses();
 })();
 

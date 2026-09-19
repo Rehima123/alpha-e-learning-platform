@@ -189,12 +189,14 @@
                     box-shadow:0 2px 8px rgba(0,0,0,0.2)">399 ETB <i class="fa-solid fa-fire" style="color:#f43f5e"></i></span>
                 <marquee behavior="scroll" direction="left" scrollamount="5"
                     style="font-size:0.82rem;font-weight:700;letter-spacing:0.03em;line-height:1.4;display:block">
-                    &#x1F393; ሁሉም Freshman ኮርሶች &#8212; አሁን ተመዝገቡ!
-                    &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
-                    &#x1F4E5; ቪዲዮ ወርዶ ያለ ኢንተርኔት ይማሩ
-                    &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
-                    &#x2728; Alpha Freshman Tutorial
-                    &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
+                    🎓 ሁሉም Freshman ኮርሶች 399 ETB ብቻ — አሁን ተመዝገቡ!
+                    &nbsp;&nbsp;•&nbsp;&nbsp;
+                    🏥 COC Yileyal! Health Science CoC Prep — 299 ብር ብቻ! ልዩ ቅናሽ
+                    &nbsp;&nbsp;•&nbsp;&nbsp;
+                    📥 ቪዲዮ ወርዶ ያለ ኢንተርኔት ይማሩ
+                    &nbsp;&nbsp;•&nbsp;&nbsp;
+                    ✨ Alpha Freshman Tutorial
+                    &nbsp;&nbsp;•&nbsp;&nbsp;
                 </marquee>
             </div>
             <button onclick="tickerHandleClick()"
@@ -219,6 +221,43 @@
         var el = document.getElementById('tickerBtnLabel');
         if (el && user && user.id) el.textContent = '399 ETB | &#x2192; ይቀጥሉ';    })();
     </script>
+
+    <!-- -- COC Promotional Banner -------------------------------------------- -->
+    <div style="
+        background:linear-gradient(135deg,#7f1d1d,#991b1b,#be123c);
+        color:white;padding:16px 20px;
+        border-bottom:1px solid rgba(255,255,255,0.1);
+        position:relative;z-index:19">
+        <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;
+            justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+                <span style="font-size:1.6rem;flex-shrink:0">🏥</span>
+                <div>
+                    <div style="font-weight:900;font-size:1rem;line-height:1.2">
+                        COC Yileyal!
+                        <span style="background:white;color:#be123c;font-size:0.72rem;font-weight:900;
+                            padding:2px 10px;border-radius:50px;margin-left:6px;vertical-align:middle">
+                            ልዩ ቅናሽ
+                        </span>
+                    </div>
+                    <div style="font-size:0.82rem;opacity:0.92;margin-top:2px">
+                        Health Science CoC Preparation ·
+                        <span style="text-decoration:line-through;opacity:0.7">399 ETB</span>
+                        <span style="font-weight:900;font-size:1rem;margin-left:4px">299 ብር ብቻ!</span>
+                    </div>
+                </div>
+            </div>
+            <a href="payment.html?plan=coc&method=manual"
+                style="flex-shrink:0;background:white;color:#be123c;font-weight:900;
+                font-size:0.82rem;padding:10px 20px;border-radius:50px;text-decoration:none;
+                white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.3);
+                transition:transform 0.15s,box-shadow 0.15s"
+                onmouseover="this.style.transform='scale(1.05)'"
+                onmouseout="this.style.transform='scale(1)'">
+                🏥 አሁን ይመዝገቡ →
+            </a>
+        </div>
+    </div>
 
     <!-- -- Categories Section (4 Cards) ----------------------------------------------- -->
     <style>

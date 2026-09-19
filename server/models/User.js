@@ -109,9 +109,18 @@ const userSchema = new mongoose.Schema({
     enrolledPackage: {
         type:    String,
         enum:    ['None', '1st Semester Natural', '1st Semester Social',
-                  '2nd Semester Natural', '2nd Semester Social'],
+                  '2nd Semester Natural', '2nd Semester Social', 'COC Preparation'],
         default: 'None'
     },
+
+    // ── COC-only access (299 ETB promotional offer) ───────────────────────────
+    // When true, user can ONLY access CoC preparation materials
+    cocAccess: {
+        type:      Boolean,
+        default:   false
+    },
+    cocAccessGrantedAt: { type: Date, default: null },
+    cocAccessExpiresAt: { type: Date, default: null }, // null = lifetime
 
     // ── Payment status (3-state) ──────────────────────────────────────────────
     paymentStatus: {

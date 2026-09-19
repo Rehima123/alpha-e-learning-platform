@@ -497,6 +497,14 @@ async function loadUsers() {
                                     border:1px solid rgba(245,158,11,0.3);font-size:0.72rem;
                                     padding:3px 8px;white-space:nowrap">
                                     📱 Reset Device
+                                </button>
+                                <button class="btn btn-sm" title="${u.cocAccess ? 'Revoke COC access' : 'Grant COC-only access (299 ETB)'}"
+                                    onclick="toggleCocAccess('${u._id}','${u.fullName}',${!!u.cocAccess})"
+                                    style="background:${u.cocAccess ? 'rgba(244,63,94,0.12)' : 'rgba(5,150,105,0.1)'};
+                                    color:${u.cocAccess ? '#f43f5e' : '#059669'};
+                                    border:1px solid ${u.cocAccess ? 'rgba(244,63,94,0.35)' : 'rgba(5,150,105,0.3)'};
+                                    font-size:0.72rem;padding:3px 8px;white-space:nowrap">
+                                    🏥 ${u.cocAccess ? 'Revoke COC' : 'Grant COC'}
                                 </button>` : ''}
                             </td>
                         </tr>
@@ -656,6 +664,22 @@ async function activateUser(id) {
         const res = await api.activateUser(id);
         if (res.success) { toast?.success('User activated'); await loadUsers(); }
     } catch (e) { toast?.error('Failed'); }
+}
+
+// ── Grant / Revoke COC-only access ───────────────────────────────────────────
+async function toggleCocAccess(userId, userName, currentlyHasAccess) {
+    const action = currentlyHasAccess ? 'revoke' : 'grant';
+    if (!confirm(`${currentlyHasAccess ? '❌ Revoke' : '✅ Grant'} COC access for "${userName}"?`)) return;
+    try {
+        const res = await api.request(`/admin/users/${userId}/coc-access`, {
+            method: 'PUT',
+            body: JSON.stringify({ cocAccess: !currentlyHasAccess })
+        });
+        if (res.success) {
+            toast?.success(`🏥 COC access ${action}ed for "${userName}"`);
+            await loadUsers();
+        }
+    } catch (e) { toast?.error('Failed: ' + e.message); }
 }
 
 // ── Reset device binding (1-device enforcement) ───────────────────────────────
@@ -1029,9 +1053,14 @@ async function loadManualPayments() {
         container.innerHTML = payments.map(p => {
             const studentName  = p.student?.fullName || 'Unknown';
             const studentEmail = p.student?.email    || '';
-            const courseName   = p.course
-                ? `${p.course.icon || '📚'} ${p.course.title}`
-                : `${p.plan || '—'} Subscription`;
+            const courseName   = p.enrolledPackage === 'COC Preparation'
+                ? '🏥 COC Preparation (299 ETB)'
+                : p.course
+                    ? `${p.course.icon || '📚'} ${p.course.title}`
+                    : `${p.plan || '—'} Subscription`;
+            const cocBadge = p.enrolledPackage === 'COC Preparation'
+                ? `<span style="background:#f43f5e;color:white;font-size:9px;font-weight:900;
+                    padding:2px 8px;border-radius:50px;margin-left:6px">🏥 COC-ONLY</span>` : '';
             const date = new Date(p.submittedAt).toLocaleString();
             const isImage = p.receiptImage && !p.receiptImage.includes('application/pdf') &&
                             (p.receiptImage.startsWith('data:image') || p.receiptFileName?.match(/\.(jpg|jpeg|png|gif)$/i));
@@ -1044,7 +1073,7 @@ async function loadManualPayments() {
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;
                     flex-wrap:wrap;gap:10px;margin-bottom:10px">
                     <div>
-                        <strong style="color:var(--text-primary);font-size:1rem">${studentName}</strong>
+                        <strong style="color:var(--text-primary);font-size:1rem">${studentName}</strong>${cocBadge}
                         <span style="font-size:0.8rem;color:var(--text-secondary);margin-left:8px">${studentEmail}</span>
                         <div style="margin-top:4px;font-size:0.88rem;color:var(--text-secondary)">
                             📚 ${courseName} &nbsp;·&nbsp;

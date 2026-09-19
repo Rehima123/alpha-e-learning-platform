@@ -328,7 +328,12 @@ exports.approveReceipt = async (req, res) => {
 
         // Assign package to student if present + set paymentStatus APPROVED
         const updateFields = { paymentStatus: 'APPROVED' };
-        if (payment.enrolledPackage && payment.enrolledPackage !== 'None') {
+        if (payment.plan === 'coc' || payment.enrolledPackage === 'COC Preparation') {
+            // COC-only access — grant cocAccess flag
+            updateFields.cocAccess          = true;
+            updateFields.cocAccessGrantedAt = new Date();
+            updateFields.enrolledPackage    = 'COC Preparation';
+        } else if (payment.enrolledPackage && payment.enrolledPackage !== 'None') {
             const validPackages = ['1st Semester Natural', '1st Semester Social',
                                    '2nd Semester Natural', '2nd Semester Social'];
             if (validPackages.includes(payment.enrolledPackage)) {

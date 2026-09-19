@@ -39,6 +39,10 @@ exports.initiateChapaPayment = async (req, res, next) => {
             if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
             subtotal = Math.round(course.price * ETB_RATE);
             type = 'course';
+        } else if (plan === 'coc') {
+            // ── COC Preparation promotional plan — 299 ETB ────────────────────
+            subtotal = 299;
+            type = 'coc';
         } else {
             const plans = { monthly: 1650, annual: 11300 }; // ETB
             subtotal = plans[plan];
@@ -179,6 +183,14 @@ async function processSuccessfulPayment(txRef) {
                 $inc: { 'revenueBalance': payment.instructorShare }
             });
         }
+    } else if (payment.type === 'coc') {
+        // ── COC-only access: grant cocAccess flag, restrict to COC materials ──
+        await User.findByIdAndUpdate(student._id, {
+            cocAccess:           true,
+            cocAccessGrantedAt:  new Date(),
+            enrolledPackage:     'COC Preparation',
+            paymentStatus:       'APPROVED'
+        });
     } else if (payment.type === 'subscription') {
         const endDate = new Date();
         if (payment.plan === 'annual') endDate.setFullYear(endDate.getFullYear() + 1);

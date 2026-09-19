@@ -223,9 +223,38 @@ async function loadCourseDetail() {
                     if (ps.success) {
                         currentUser.paymentStatus   = ps.paymentStatus;
                         currentUser.enrolledPackage = ps.enrolledPackage;
+                        currentUser.cocAccess       = ps.cocAccess;
                         localStorage.setItem('currentUser', JSON.stringify(currentUser));
                     }
                 } catch {}
+
+                // ── COC-only access enforcement ────────────────────────────────
+                // If user has COC-only access, block them from non-COC courses
+                const freshUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (freshUser?.cocAccess && freshUser?.enrolledPackage === 'COC Preparation') {
+                    const isCocCourse = currentCourse.category === 'coc' ||
+                                        (currentCourse.title && /coc|health science/i.test(currentCourse.title));
+                    if (!isCocCourse) {
+                        document.getElementById('courseDetail').innerHTML = `
+                            <div style="text-align:center;padding:4rem 2rem;max-width:520px;margin:0 auto">
+                                <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
+                                <h2 style="color:white;margin-bottom:0.8rem">COC Access Only</h2>
+                                <p style="color:#94a3b8;margin-bottom:1.5rem">
+                                    ይህ ኮርስ ለ COC Preparation plan አይደለም።<br>
+                                    Your 299 ETB plan includes CoC materials only.
+                                </p>
+                                <a href="courses.html?category=coc" class="btn btn-success"
+                                    style="display:inline-block;padding:12px 28px">
+                                    🏥 View COC Courses →
+                                </a>
+                                <br><br>
+                                <a href="payment.html?plan=freshman" style="color:#818cf8;font-size:0.85rem">
+                                    Upgrade to Full Access (399 ETB) →
+                                </a>
+                            </div>`;
+                        return;
+                    }
+                }
             }
 
             // Check per-user course access via API

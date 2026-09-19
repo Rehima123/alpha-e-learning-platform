@@ -27,6 +27,33 @@ router.get('/users',                 isAnyAdmin,     adminController.getAllUsers
 router.put('/users/:id/deactivate',  isSuperAdmin,   adminController.deactivateUser);
 router.put('/users/:id/activate',    isSuperAdmin,   adminController.activateUser);
 router.put('/users/:id/role',        isSuperAdmin,   adminController.updateUserRole);
+router.put('/users/:id/reset-device',isSuperAdmin,   adminController.resetDeviceBinding);
+
+// ── COC Access management (grant/revoke COC-only subscription) ────────────────
+router.put('/users/:id/coc-access',  isSuperAdmin,   async (req, res, next) => {
+    try {
+        const User = require('../models/User');
+        const { cocAccess } = req.body;
+        const updateFields = {
+            cocAccess,
+            enrolledPackage: cocAccess ? 'COC Preparation' : undefined
+        };
+        if (cocAccess) {
+            updateFields.cocAccessGrantedAt = new Date();
+            updateFields.paymentStatus      = 'APPROVED';
+        } else {
+            updateFields.cocAccessGrantedAt = null;
+        }
+        const user = await User.findByIdAndUpdate(req.params.id, updateFields, { new: true })
+            .select('-password');
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        res.json({
+            success: true,
+            message: `COC access ${cocAccess ? 'granted' : 'revoked'}`,
+            user
+        });
+    } catch (err) { next(err); }
+});
 
 // ── Finance (super_admin + finance_admin) ─────────────────────────────────────
 router.get('/payments/report',       isFinanceAdmin, adminController.getPaymentsReport);
