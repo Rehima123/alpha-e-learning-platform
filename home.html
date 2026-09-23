@@ -1,13 +1,11 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Alpha Freshman Tutorial</title>
     <link rel="stylesheet" href="elearning.css">
-    <meta name="theme-color" content="#0f172a">
-    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f172a" id="themeColorMeta">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,1126 +14,945 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" sizes="180x180" href="logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-    /* ── Reset & Base ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Dark / Light theme variables ── */
-    :root {
-        --bg-app:     #0a0f1e;
-        --bg-card:    rgba(15,23,42,0.9);
-        --bg-feature: rgba(30,41,59,0.7);
-        --bg-nav:     #0a0f1e;
-        --bg-search:  rgba(15,23,42,0.9);
-        --text-main:  #e2e8f0;
-        --text-muted: #94a3b8;
-        --text-dim:   #64748b;
-        --border:     rgba(51,65,85,0.6);
-        --border-nav: #1e293b;
-        --stat-border:rgba(30,41,59,0.9);
-        --search-input:#e2e8f0;
-    }
-    [data-theme="light"] {
-        --bg-app:     #f0f4ff;
-        --bg-card:    #ffffff;
-        --bg-feature: #e8ecf8;
-        --bg-nav:     #ffffff;
-        --bg-search:  #ffffff;
-        --text-main:  #0f172a;
-        --text-muted: #334155;
-        --text-dim:   #64748b;
-        --border:     rgba(99,102,241,0.2);
-        --border-nav: rgba(99,102,241,0.15);
-        --stat-border:rgba(99,102,241,0.1);
-        --search-input:#0f172a;
-    }
+<style>
+/* =====================================================================
+   CSS CUSTOM PROPERTIES — Dark & Light theme
+   ===================================================================== */
+:root,
+[data-theme="dark"] {
+    --bg:         #0a0f1e;
+    --bg2:        #0f172a;
+    --bg3:        rgba(15,23,42,0.9);
+    --card:       rgba(30,41,59,0.7);
+    --nav-bg:     #0a0f1e;
+    --text:       #e2e8f0;
+    --text2:      #94a3b8;
+    --text3:      #64748b;
+    --border:     rgba(51,65,85,0.7);
+    --border2:    #1e293b;
+    --input-text: #e2e8f0;
+    --stat-line:  rgba(30,41,59,0.9);
+}
+[data-theme="light"] {
+    --bg:         #f0f4ff;
+    --bg2:        #e8ecfa;
+    --bg3:        rgba(255,255,255,0.95);
+    --card:       #eef2ff;
+    --nav-bg:     #ffffff;
+    --text:       #0f172a;
+    --text2:      #334155;
+    --text3:      #64748b;
+    --border:     rgba(99,102,241,0.2);
+    --border2:    rgba(99,102,241,0.15);
+    --input-text: #0f172a;
+    --stat-line:  rgba(99,102,241,0.1);
+}
 
-    html, body {
-        background: var(--bg-app);
-        color: var(--text-main);
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        min-height: 100vh;
-        overflow-x: hidden;
-        transition: background 0.3s, color 0.3s;
-    }
-    body {
-        padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
-    }
+/* =====================================================================
+   RESET & BASE
+   ===================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+    /* room for fixed bottom nav on mobile */
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+}
 
-    /* ── Top Nav ── */
-    .app-nav {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 14px 16px 10px;
-        background: var(--bg-nav);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        border-bottom: 1px solid rgba(99,102,241,0.12);
-        transition: background 0.3s;
-    }
-    .app-nav-logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        text-decoration: none;
-    }
-    .app-nav-logo img {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        object-fit: cover;
-    }
-    .app-nav-title {
-        font-size: 1rem;
-        font-weight: 800;
-        color: var(--text-main);
-        line-height: 1.2;
-    }
-    .app-nav-subtitle {
-        font-size: 0.62rem;
-        color: var(--text-dim);
-        font-weight: 500;
-    }
-    .app-nav-actions {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .app-nav-menu {
-        background: none;
-        border: none;
-        color: #94a3b8;
-        font-size: 1.3rem;
-        cursor: pointer;
-        padding: 6px;
-        -webkit-tap-highlight-color: transparent;
-    }
-    /* Theme toggle button */
-    .theme-toggle-btn {
-        background: rgba(99,102,241,0.1);
-        border: 1px solid rgba(99,102,241,0.25);
-        color: #818cf8;
-        font-size: 0.85rem;
-        cursor: pointer;
-        padding: 6px 8px;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        -webkit-tap-highlight-color: transparent;
-        transition: background 0.2s, transform 0.2s;
-    }
-    .theme-toggle-btn:active { transform: scale(0.9); }
+/* =====================================================================
+   TOP NAVIGATION
+   ===================================================================== */
+.app-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 10px;
+    background: var(--nav-bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border2);
+    transition: background 0.3s;
+}
+.app-nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+.app-nav-logo img {
+    width: 34px; height: 34px;
+    border-radius: 9px; object-fit: cover;
+}
+.app-nav-title   { font-size: 0.95rem; font-weight: 800; color: var(--text); }
+.app-nav-subtitle{ font-size: 0.6rem;  color: var(--text3); font-weight: 500; }
+.app-nav-right   { display: flex; align-items: center; gap: 6px; }
+.btn-icon {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.18s;
+    font-size: 0.85rem;
+}
+.btn-icon:active { transform: scale(0.88); }
+#themeBtn {
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.28);
+    color: #818cf8;
+}
+.btn-menu {
+    background: none;
+    color: var(--text2);
+    font-size: 1.25rem;
+}
 
-    /* ── Page Scroll Container ── */
-    .page-content {
-        padding: 0 14px 20px;
-        max-width: 520px;
-        margin: 0 auto;
-    }
+/* =====================================================================
+   ANIMATED PROMO TICKER
+   ===================================================================== */
+.ticker-wrap {
+    background: linear-gradient(90deg, #1e1b4b, #312e81, #1e1b4b);
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(99,102,241,0.28);
+    position: relative;
+    z-index: 50;
+}
+.ticker-track {
+    display: inline-block;
+    animation: ticker 30s linear infinite;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #e0e7ff;
+    letter-spacing: 0.02em;
+    padding-left: 100%;
+}
+.ticker-track:hover { animation-play-state: paused; }
+@keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ticker-track { animation: none; padding-left: 12px; white-space: normal; }
+}
 
-    /* ── Hero Section with Student Image ── */
-    .hero-section {
-        position: relative;
-        margin: 16px 0 0;
-        border-radius: 20px;
-        overflow: hidden;
-        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-        min-height: 180px;
-        display: flex;
-        align-items: stretch;
-    }
-    .hero-text-col {
-        flex: 1;
-        padding: 20px 16px 20px 18px;
-        z-index: 2;
-        position: relative;
-    }
-    .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: rgba(99,102,241,0.18);
-        border: 1px solid rgba(99,102,241,0.35);
-        color: #818cf8;
-        font-size: 0.6rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        padding: 4px 10px;
-        border-radius: 50px;
-        margin-bottom: 10px;
-    }
-    .hero-title {
-        font-size: clamp(1rem, 4vw, 1.25rem);
-        font-weight: 900;
-        color: white;
-        line-height: 1.3;
-        margin-bottom: 8px;
-    }
-    .hero-title span {
-        background: linear-gradient(135deg, #fbbf24, #f97316);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    .hero-desc {
-        font-size: 0.72rem;
-        color: rgba(255,255,255,0.7);
-        line-height: 1.55;
-        max-width: 240px;
-    }
-    .hero-image-col {
-        width: 120px;
-        flex-shrink: 0;
-        position: relative;
-        overflow: hidden;
-    }
-    .hero-student-img {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        height: 100%;
-        width: auto;
-        object-fit: contain;
-        object-position: bottom right;
-        filter: drop-shadow(0 0 20px rgba(99,102,241,0.3));
-    }
-    /* Fallback gradient figure when no image */
-    .hero-student-fallback {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        background: linear-gradient(180deg,transparent 30%,rgba(99,102,241,0.1));
-    }
-    /* Decorative glow */
-    .hero-glow {
-        position: absolute;
-        top: -30%;
-        right: -10%;
-        width: 160px;
-        height: 160px;
-        background: rgba(168,85,247,0.18);
-        border-radius: 50%;
-        filter: blur(50px);
-        pointer-events: none;
-    }
+/* =====================================================================
+   PAGE SCROLL CONTAINER
+   ===================================================================== */
+.page-content {
+    padding: 0 14px 24px;
+    max-width: 520px;
+    margin: 0 auto;
+}
 
-    /* ── Video Player ── */
-    .video-card {
-        position: relative;
-        border-radius: 18px;
-        overflow: hidden;
-        background: #111827;
-        aspect-ratio: 16/9;
-        margin: 14px 0 18px;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(99,102,241,0.15);
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .video-card:active { transform: scale(0.985); }
-    .video-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-    .video-card-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .play-btn {
-        width: 64px;
-        height: 64px;
-        background: rgba(255,255,255,0.94);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.4), 0 0 0 6px rgba(255,255,255,0.15);
-        transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .play-btn:hover { transform: scale(1.08); }
-    .play-btn:active { transform: scale(0.92); }
-    .play-btn i { color: #0a0f1e; font-size: 1.4rem; margin-left: 4px; }
-    /* Video title overlay */
-    .video-title-bar {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, transparent 100%);
-        padding: 20px 14px 12px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: white;
-    }
+/* =====================================================================
+   HERO CARD  (student image + headline)
+   ===================================================================== */
+.hero-card {
+    position: relative;
+    margin: 16px 0 14px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 55%, #24243e 100%);
+    min-height: 170px;
+    display: flex;
+    align-items: stretch;
+    box-shadow: 0 12px 40px rgba(99,102,241,0.22);
+}
+/* decorative blur orbs */
+.hero-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -20px;
+    width: 160px; height: 160px;
+    background: rgba(168,85,247,0.18);
+    border-radius: 50%;
+    filter: blur(48px);
+    pointer-events: none;
+}
+.hero-text {
+    flex: 1;
+    padding: 20px 14px 20px 18px;
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; justify-content: center;
+}
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(99,102,241,0.18);
+    border: 1px solid rgba(99,102,241,0.38);
+    color: #a5b4fc;
+    font-size: 0.58rem; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 50px;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+.hero-h1 {
+    font-size: clamp(1rem, 4.5vw, 1.2rem);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.28;
+    margin-bottom: 8px;
+}
+.hero-h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, #fbbf24, #f97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero-sub {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.5;
+    max-width: 220px;
+}
+.hero-image {
+    width: 110px;
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 0;
+    overflow: hidden;
+}
+/* The student silhouette / emoji art */
+.hero-student {
+    font-size: 0;
+    /* We use emoji stack as a substitute for actual student image */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 10px;
+    filter: drop-shadow(0 0 18px rgba(99,102,241,0.4));
+}
+.hero-student span:nth-child(1) { font-size: 3.8rem; }
+.hero-student span:nth-child(2) { font-size: 2rem; margin-top: -6px; }
 
-    /* ── Section Title & Description ── */
-    .section-title {
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: var(--text-main);
-        line-height: 1.35;
-        margin-bottom: 7px;
-    }
-    .section-desc {
-        font-size: 0.82rem;
-        color: var(--text-muted);
-        line-height: 1.6;
-        margin-bottom: 18px;
-    }
+/* =====================================================================
+   VIDEO PLAYER CARD  — slightly larger, more prominent
+   ===================================================================== */
+.video-card {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #0d1526;
+    aspect-ratio: 16 / 9;
+    /* larger margins + stronger shadow than before */
+    margin: 0 0 18px;
+    box-shadow:
+        0 16px 48px rgba(0,0,0,0.6),
+        0 0 0 1.5px rgba(99,102,241,0.2);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.22s, box-shadow 0.22s;
+}
+.video-card:active { transform: scale(0.982); }
+.video-inner {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, #1e3a5f, #0f2744);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+}
+/* Chalkboard marks decoration */
+.chalk { position: absolute; color: rgba(255,255,255,0.14); font-style: italic; }
+.chalk-1 { top: 18%; left: 10%; font-size: 1.2rem; }
+.chalk-2 { top: 42%; left: 22%; font-size: 0.9rem; }
+.chalk-3 { bottom: 22%; left: 14%; font-size: 1rem; }
+.instructor-icon {
+    font-size: 3.8rem;
+    opacity: 0.55;
+    filter: drop-shadow(0 0 12px rgba(99,102,241,0.3));
+}
+.video-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.52) 100%);
+    display: flex; align-items: center; justify-content: center;
+}
+.play-btn {
+    width: 66px; height: 66px;
+    background: rgba(255,255,255,0.93);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.45), 0 0 0 7px rgba(255,255,255,0.14);
+    transition: transform 0.18s;
+}
+.play-btn:hover  { transform: scale(1.1); }
+.play-btn:active { transform: scale(0.91); }
+.play-btn i { color: #0a0f1e; font-size: 1.35rem; margin-left: 4px; }
+.video-title-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(0deg, rgba(0,0,0,0.88), transparent);
+    padding: 22px 14px 10px;
+    font-size: 0.72rem; font-weight: 700; color: #fff;
+}
 
-    /* ── 4 Feature Icons ── */
-    .features-row {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        margin-bottom: 20px;
-    }
-    .feature-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        padding: 12px 6px 10px;
-        background: var(--bg-feature);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        text-decoration: none;
-        -webkit-tap-highlight-color: transparent;
-        transition: border-color 0.2s, background 0.2s, transform 0.15s;
-        cursor: pointer;
-    }
-    .feature-item:hover { transform: translateY(-2px); }
-    .feature-item:active { background: rgba(51,65,85,0.8); border-color: rgba(99,102,241,0.5); transform: scale(0.96); }
-    .feature-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.15rem;
-    }
-    .feature-label {
-        font-size: 0.62rem;
-        font-weight: 700;
-        color: var(--text-muted);
-        text-align: center;
-        line-height: 1.3;
-    }
+/* =====================================================================
+   DESCRIPTION  (English only)
+   ===================================================================== */
+.desc-title {
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.35;
+    margin-bottom: 6px;
+}
+.desc-body {
+    font-size: 0.82rem;
+    color: var(--text2);
+    line-height: 1.62;
+    margin-bottom: 18px;
+}
 
-    /* ── Search Bar ── */
-    .search-bar {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--bg-search);
-        border: 1px solid var(--border);
-        border-radius: 50px;
-        padding: 8px 8px 8px 16px;
-        margin-bottom: 20px;
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .search-bar:focus-within {
-        border-color: rgba(99,102,241,0.5);
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
-    }
-    .search-bar input {
-        flex: 1;
-        background: none;
-        border: none;
-        outline: none;
-        color: var(--search-input);
-        font-size: 0.85rem;
-        min-width: 0;
-    }
-    .search-bar input::placeholder { color: var(--text-dim); }
-    .search-bar button {
-        background: linear-gradient(135deg, #f59e0b, #ea580c);
-        color: #0a0f1e;
-        border: none;
-        border-radius: 50px;
-        padding: 8px 20px;
-        font-size: 0.8rem;
-        font-weight: 900;
-        cursor: pointer;
-        white-space: nowrap;
-        -webkit-tap-highlight-color: transparent;
-        transition: transform 0.15s;
-    }
-    .search-bar button:active { transform: scale(0.96); }
+/* =====================================================================
+   4 FEATURE ICONS
+   ===================================================================== */
+.features-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+.feat {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+    padding: 11px 6px 9px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.16s, border-color 0.16s;
+}
+.feat:hover  { transform: translateY(-2px); }
+.feat:active { transform: scale(0.95); border-color: rgba(99,102,241,0.5); }
+.feat-icon {
+    width: 40px; height: 40px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+}
+.feat-label {
+    font-size: 0.6rem; font-weight: 700;
+    color: var(--text2); text-align: center; line-height: 1.3;
+}
 
-    /* ── Stats Row ── */
-    .stats-row {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-        margin-bottom: 22px;
-        padding: 16px 0;
-        border-top: 1px solid var(--stat-border);
-        border-bottom: 1px solid var(--stat-border);
-    }
-    .stat-item { text-align: center; }
-    .stat-icon { font-size: 1.1rem; margin-bottom: 3px; }
-    .stat-value {
-        font-size: 1.1rem;
-        font-weight: 900;
-        color: #fbbf24;
-        display: block;
-        line-height: 1.1;
-    }
-    .stat-label { font-size: 0.6rem; color: var(--text-dim); margin-top: 2px; }
+/* =====================================================================
+   SEARCH BAR
+   ===================================================================== */
+.search-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 8px 8px 16px;
+    margin-bottom: 20px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-bar:focus-within {
+    border-color: rgba(99,102,241,0.55);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+.search-bar input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--input-text); font-size: 0.84rem; min-width: 0;
+}
+.search-bar input::placeholder { color: var(--text3); }
+.search-bar button {
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: #0a0f1e; border: none; border-radius: 50px;
+    padding: 8px 20px; font-size: 0.78rem; font-weight: 900;
+    cursor: pointer; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s;
+}
+.search-bar button:active { transform: scale(0.95); }
 
-    /* ── Pricing Pill Row ── */
-    .pricing-row {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
-    }
-    .price-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 7px 14px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        white-space: nowrap;
-        text-decoration: none;
-        -webkit-tap-highlight-color: transparent;
-        transition: transform 0.15s;
-        flex: 1;
-        justify-content: center;
-    }
-    .price-pill:active { transform: scale(0.96); }
-    .price-pill-blue {
-        background: rgba(99,102,241,0.15);
-        border: 1.5px solid rgba(99,102,241,0.35);
-        color: #a5b4fc;
-    }
-    .price-pill-red {
-        background: rgba(244,63,94,0.15);
-        border: 1.5px solid rgba(244,63,94,0.35);
-        color: #fda4af;
-    }
+/* =====================================================================
+   STATS ROW
+   ===================================================================== */
+.stats-row {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 8px; margin-bottom: 22px;
+    padding: 14px 0;
+    border-top: 1px solid var(--stat-line);
+    border-bottom: 1px solid var(--stat-line);
+}
+.stat { text-align: center; }
+.stat-ico  { font-size: 1.05rem; margin-bottom: 2px; }
+.stat-val  { font-size: 1.05rem; font-weight: 900; color: #fbbf24; display: block; }
+.stat-lbl  { font-size: 0.58rem; color: var(--text3); margin-top: 1px; }
 
-    /* ── CTA Card ── */
-    .cta-card {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);
-        border-radius: 18px;
-        padding: 18px 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 20px;
-        box-shadow: 0 8px 32px rgba(99,102,241,0.35);
-        -webkit-tap-highlight-color: transparent;
-        transition: transform 0.15s, box-shadow 0.15s;
-        cursor: pointer;
-    }
-    .cta-card:active { transform: scale(0.98); }
-    .cta-card-icon { font-size: 2rem; flex-shrink: 0; }
-    .cta-card-text { flex: 1; min-width: 0; }
-    .cta-card-title {
-        font-weight: 800;
-        font-size: 0.92rem;
-        color: white;
-        line-height: 1.3;
-        margin-bottom: 3px;
-    }
-    .cta-card-sub {
-        font-size: 0.7rem;
-        color: rgba(255,255,255,0.75);
-        line-height: 1.4;
-    }
-    .cta-card-btn {
-        background: white;
-        color: #4f46e5;
-        font-weight: 900;
-        font-size: 0.75rem;
-        padding: 8px 16px;
-        border-radius: 50px;
-        white-space: nowrap;
-        flex-shrink: 0;
-        border: none;
-        cursor: pointer;
-        transition: transform 0.15s;
-    }
-    .cta-card-btn:active { transform: scale(0.95); }
+/* =====================================================================
+   PRICE PILLS
+   ===================================================================== */
+.price-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.ppill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px; border-radius: 50px;
+    font-size: 0.74rem; font-weight: 700;
+    text-decoration: none; flex: 1; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.14s;
+}
+.ppill:active { transform: scale(0.95); }
+.ppill-blue { background: rgba(99,102,241,0.15); border: 1.5px solid rgba(99,102,241,0.35); color: #a5b4fc; }
+.ppill-red  { background: rgba(244,63,94,0.15);  border: 1.5px solid rgba(244,63,94,0.35);  color: #fda4af; }
 
-    /* ── Categories Section ── */
-    .section-heading {
-        font-size: 1rem;
-        font-weight: 800;
-        color: var(--text-main);
-        margin-bottom: 12px;
-        margin-top: 4px;
-    }
-    .cat-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 24px;
-    }
-    .cat-tile {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 18px 14px;
-        text-align: center;
-        cursor: pointer;
-        position: relative;
-        -webkit-tap-highlight-color: transparent;
-        transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
-    }
-    .cat-tile:hover { box-shadow: 0 8px 24px rgba(99,102,241,0.15); }
-    .cat-tile:active { transform: scale(0.97); border-color: rgba(99,102,241,0.5); }
-    .cat-tile-icon { font-size: 1.6rem; margin-bottom: 8px; display: block; }
-    .cat-tile-name { font-weight: 700; color: var(--text-main); font-size: 0.85rem; margin-bottom: 4px; }
-    .cat-tile-price {
-        display: inline-block;
-        font-size: 0.68rem;
-        font-weight: 900;
-        padding: 2px 8px;
-        border-radius: 50px;
-        margin-top: 4px;
-    }
-    .cat-tile-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 0.6rem;
-        font-weight: 900;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 50px;
-    }
+/* =====================================================================
+   COURSE CATEGORY TILES
+   ===================================================================== */
+.section-h { font-size: 0.95rem; font-weight: 800; color: var(--text); margin: 4px 0 12px; }
+.cat-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.cat-tile {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 15px; padding: 17px 12px;
+    text-align: center; cursor: pointer; position: relative;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.cat-tile:hover  { box-shadow: 0 8px 24px rgba(99,102,241,0.15); }
+.cat-tile:active { transform: scale(0.965); }
+.cat-tile-ico  { font-size: 1.55rem; display: block; margin-bottom: 7px; }
+.cat-tile-name { font-weight: 700; color: var(--text); font-size: 0.83rem; margin-bottom: 4px; }
+.cat-tile-badge {
+    position: absolute; top: 9px; right: 9px;
+    font-size: 0.58rem; font-weight: 900; color: #fff;
+    padding: 2px 7px; border-radius: 50px;
+}
+.cat-tile-price {
+    display: inline-block; font-size: 0.66rem; font-weight: 900;
+    padding: 2px 8px; border-radius: 50px; margin-top: 3px;
+}
 
-    /* ── Footer ── */
-    .home-footer {
-        background: rgba(15,23,42,0.8);
-        border-top: 1px solid var(--border-nav);
-        padding: 20px 14px;
-        text-align: center;
-        max-width: 520px;
-        margin: 0 auto;
-    }
-    [data-theme="light"] .home-footer { background: rgba(240,244,255,0.9); }
-    .footer-links {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 6px 16px;
-        margin-bottom: 12px;
-    }
-    .footer-links a {
-        color: var(--text-dim);
-        text-decoration: none;
-        font-size: 0.72rem;
-        transition: color 0.2s;
-    }
-    .footer-links a:hover { color: #818cf8; }
-    .footer-copy {
-        font-size: 0.65rem;
-        color: var(--text-dim);
-    }
+/* =====================================================================
+   CTA CARD  — at the bottom, just above footer
+   ===================================================================== */
+.cta-card {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed, #9333ea);
+    border-radius: 18px; padding: 17px 15px;
+    display: flex; align-items: center; gap: 12px;
+    margin: 8px 0 16px;
+    box-shadow: 0 10px 36px rgba(99,102,241,0.38);
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: transform 0.16s;
+}
+.cta-card:active { transform: scale(0.978); }
+.cta-ico  { font-size: 1.9rem; flex-shrink: 0; }
+.cta-text { flex: 1; min-width: 0; }
+.cta-title{ font-weight: 800; font-size: 0.9rem; color: #fff; line-height: 1.3; margin-bottom: 2px; }
+.cta-sub  { font-size: 0.68rem; color: rgba(255,255,255,0.74); line-height: 1.4; }
+.cta-btn  {
+    background: #fff; color: #4f46e5;
+    font-weight: 900; font-size: 0.73rem;
+    padding: 8px 15px; border-radius: 50px;
+    white-space: nowrap; flex-shrink: 0;
+    border: none; cursor: pointer;
+    transition: transform 0.14s;
+}
+.cta-btn:active { transform: scale(0.93); }
 
-    /* ── Bottom Nav ── */
-    .mobile-bottom-nav {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 60px;
-        background: var(--bg-nav);
-        border-top: 1px solid var(--border-nav);
-        z-index: 9999;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-        box-shadow: 0 -2px 24px rgba(0,0,0,0.6);
-        transition: background 0.3s;
-    }
-    .nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: #475569;
-        text-decoration: none;
-        font-size: 10px;
-        font-weight: 600;
-        gap: 3px;
-        flex: 1;
-        height: 100%;
-        -webkit-tap-highlight-color: transparent;
-        position: relative;
-        transition: color 0.18s;
-    }
-    .nav-item.active { color: #38bdf8; }
-    .nav-item.active::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 24px;
-        height: 2px;
-        background: #38bdf8;
-        border-radius: 0 0 3px 3px;
-    }
+/* =====================================================================
+   FOOTER
+   ===================================================================== */
+.home-footer {
+    border-top: 1px solid var(--border2);
+    padding: 16px 14px 12px;
+    text-align: center;
+}
+.footer-links {
+    display: flex; justify-content: center;
+    flex-wrap: wrap; gap: 4px 14px;
+    margin-bottom: 8px;
+}
+.footer-links a {
+    color: var(--text3); font-size: 0.68rem;
+    text-decoration: none; transition: color 0.2s;
+}
+.footer-links a:hover { color: #818cf8; }
+.footer-copy { font-size: 0.6rem; color: var(--text3); }
 
-    /* ── Hamburger Menu ── */
-    .nav-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.7);
-        z-index: 200;
-        backdrop-filter: blur(4px);
-    }
-    .nav-overlay.open { display: block; }
-    .nav-drawer {
-        position: fixed;
-        top: 0;
-        right: -280px;
-        width: 260px;
-        height: 100vh;
-        background: var(--bg-nav);
-        border-left: 1px solid var(--border-nav);
-        z-index: 201;
-        transition: right 0.25s ease, background 0.3s;
-        padding: 60px 20px 20px;
-        overflow-y: auto;
-    }
-    .nav-drawer.open { right: 0; }
-    .nav-drawer a {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 14px;
-        color: var(--text-muted);
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        border-radius: 10px;
-        margin-bottom: 4px;
-        transition: background 0.2s, color 0.2s;
-    }
-    .nav-drawer a:hover, .nav-drawer a:active { background: rgba(99,102,241,0.12); color: var(--text-main); }
-    .nav-drawer-close {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: rgba(30,41,59,0.8);
-        border: none;
-        color: #94a3b8;
-        font-size: 1.1rem;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+/* =====================================================================
+   SLIDE-IN DRAWER (hamburger menu)
+   ===================================================================== */
+.nav-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 200;
+    backdrop-filter: blur(4px);
+}
+.nav-overlay.open { display: block; }
+.nav-drawer {
+    position: fixed; top: 0; right: -270px;
+    width: 255px; height: 100vh;
+    background: var(--nav-bg); border-left: 1px solid var(--border2);
+    z-index: 201; transition: right 0.26s ease, background 0.3s;
+    padding: 58px 18px 20px; overflow-y: auto;
+}
+.nav-drawer.open { right: 0; }
+.nav-drawer a {
+    display: flex; align-items: center; gap: 11px;
+    padding: 11px 13px; color: var(--text2);
+    text-decoration: none; font-weight: 600; font-size: 0.88rem;
+    border-radius: 10px; margin-bottom: 3px;
+    transition: background 0.2s, color 0.2s;
+}
+.nav-drawer a:hover { background: rgba(99,102,241,0.11); color: var(--text); }
+.nav-close {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(30,41,59,0.8); border: none;
+    color: #94a3b8; font-size: 1rem;
+    width: 34px; height: 34px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
 
-    /* ── Animations ── */
-    @keyframes ticker-scroll {
-        0%   { transform: translateX(0); }
-        100% { transform: translateX(-100%); }
-    }
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(16px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-    .page-content > * { animation: fadeInUp 0.4s ease both; }
-    .page-content > *:nth-child(2) { animation-delay: 0.05s; }
-    .page-content > *:nth-child(3) { animation-delay: 0.1s; }
-    .page-content > *:nth-child(4) { animation-delay: 0.15s; }
-    .page-content > *:nth-child(5) { animation-delay: 0.2s; }
+/* =====================================================================
+   MOBILE BOTTOM NAV
+   ===================================================================== */
+.mobile-bottom-nav {
+    display: flex; justify-content: space-around; align-items: center;
+    position: fixed; bottom: 0; left: 0; width: 100%;
+    height: 60px; background: var(--nav-bg);
+    border-top: 1px solid var(--border2); z-index: 9999;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -2px 24px rgba(0,0,0,0.55);
+    transition: background 0.3s;
+}
+.nav-item {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #475569; text-decoration: none;
+    font-size: 10px; font-weight: 600; gap: 3px;
+    flex: 1; height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    position: relative; transition: color 0.18s;
+}
+.nav-item.active { color: #38bdf8; }
+.nav-item.active::before {
+    content: ''; position: absolute; top: 0;
+    left: 50%; transform: translateX(-50%);
+    width: 22px; height: 2px;
+    background: #38bdf8; border-radius: 0 0 3px 3px;
+}
 
-    /* ── Desktop override — keep desktop layout untouched ── */
-    @media (min-width: 769px) {
-        body { padding-bottom: 0; background: #0a0f1e; }
-        .mobile-bottom-nav { display: none; }
-        .page-content { max-width: 900px; padding: 0 32px 40px; }
-        .hero-section { min-height: 240px; }
-        .hero-image-col { width: 200px; }
-        .video-card { margin: 20px 0 24px; }
-        .features-row { grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        .cat-grid { grid-template-columns: repeat(4, 1fr); }
-        .stats-row { grid-template-columns: repeat(4, 1fr); }
-        .app-nav { padding: 16px 32px 12px; }
-    }
+/* =====================================================================
+   ENTRANCE ANIMATIONS
+   ===================================================================== */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.page-content > * {
+    animation: fadeUp 0.38s ease both;
+}
+.page-content > *:nth-child(1) { animation-delay: 0.03s; }
+.page-content > *:nth-child(2) { animation-delay: 0.08s; }
+.page-content > *:nth-child(3) { animation-delay: 0.13s; }
+.page-content > *:nth-child(4) { animation-delay: 0.18s; }
+.page-content > *:nth-child(5) { animation-delay: 0.22s; }
+.page-content > *:nth-child(6) { animation-delay: 0.26s; }
 
-    @media (prefers-reduced-motion: reduce) {
-        #promoTicker { animation: none; padding-left: 16px; white-space: normal; }
-        .page-content > * { animation: none; }
-    }
-    </style>
+/* =====================================================================
+   DESKTOP OVERRIDE — keeps desktop layout intact, undoes mobile styles
+   ===================================================================== */
+@media (min-width: 769px) {
+    body { padding-bottom: 0; }
+    .mobile-bottom-nav { display: none; }
+    .page-content { max-width: 960px; padding: 0 32px 48px; }
+    .hero-card  { min-height: 220px; }
+    .hero-image { width: 180px; }
+    .hero-h1    { font-size: 1.45rem; }
+    .hero-sub   { font-size: 0.8rem; max-width: 340px; }
+    .video-card { margin: 8px 0 24px; }
+    .features-row { gap: 14px; }
+    .cat-grid   { grid-template-columns: repeat(4, 1fr); }
+    .stats-row  { grid-template-columns: repeat(4, 1fr); }
+    .stat-val   { font-size: 1.35rem; }
+    .app-nav    { padding: 14px 32px 12px; }
+    .desc-title { font-size: 1.25rem; }
+    .desc-body  { font-size: 0.9rem; }
+}
+</style>
 </head>
 <body>
 
-    <!-- ── Top Navigation ────────────────────────────────────────────────────── -->
-    <nav class="app-nav">
-        <a href="home.html" class="app-nav-logo">
-            <img src="logo.png" alt="Alpha FT" onerror="this.style.display='none'">
-            <div>
-                <div class="app-nav-title">Alpha Freshman Tutorial</div>
-                <div class="app-nav-subtitle">Login &nbsp;•&nbsp; Sign Up &nbsp;•&nbsp; Dashboard</div>
-            </div>
-        </a>
-                <div style="display:flex;align-items:center;gap:6px">
-            <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle theme"
-                style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);
-                color:#818cf8;font-size:0.85rem;cursor:pointer;padding:0;border-radius:50%;
-                width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-                -webkit-tap-highlight-color:transparent;transition:transform 0.2s">
-                <i class="fa-solid fa-moon" id="themeIcon"></i>
-            </button>
-            <button class="app-nav-menu" onclick="openNavDrawer()" aria-label="Menu">
-                <i class="fa-solid fa-bars"></i>
-            </button>
+<!-- ── TOP NAV ───────────────────────────────────────────────────────── -->
+<nav class="app-nav">
+    <a href="home.html" class="app-nav-logo">
+        <img src="logo.png" alt="Alpha FT" onerror="this.style.display='none'">
+        <div>
+            <div class="app-nav-title">Alpha Freshman Tutorial</div>
+            <div class="app-nav-subtitle">Login &nbsp;&bull;&nbsp; Sign Up &nbsp;&bull;&nbsp; Dashboard</div>
         </div>
-    </nav> ──────────────────────────────────────────────────── -->
-    <div class="nav-overlay" id="navOverlay" onclick="closeNavDrawer()"></div>
-    <div class="nav-drawer" id="navDrawer">
-        <button class="nav-drawer-close" onclick="closeNavDrawer()">
-            <i class="fa-solid fa-xmark"></i>
+    </a>
+    <div class="app-nav-right">
+        <!-- Dark / Light toggle -->
+        <button class="btn-icon" id="themeBtn" onclick="toggleTheme()" aria-label="Toggle theme" title="Dark / Light mode">
+            <i class="fa-solid fa-moon" id="themeIcon"></i>
         </button>
-        <a href="home.html"><i class="fa-solid fa-house" style="color:#818cf8"></i> Home</a>
-        <a href="courses.html"><i class="fa-solid fa-book" style="color:#fbbf24"></i> Courses</a>
-        <a href="study-hub.html"><i class="fa-solid fa-book-open" style="color:#34d399"></i> Study Hub</a>
-        <a href="department-guide.html"><i class="fa-solid fa-building" style="color:#60a5fa"></i> Departments</a>
-        <a href="offline.html"><i class="fa-solid fa-download" style="color:#a78bfa"></i> Offline Videos</a>
-        <a href="auth-login.html"><i class="fa-solid fa-right-to-bracket" style="color:#f87171"></i> Login</a>
-        <a href="auth-register.html"><i class="fa-solid fa-user-plus" style="color:#86efac"></i> Sign Up</a>
-        <div style="border-top:1px solid #1e293b;margin:12px 0;padding-top:12px">
-            <a href="payment.html?method=manual" style="background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3)">
-                <i class="fa-solid fa-graduation-cap"></i> Enroll — 399 ETB
-            </a>
-            <a href="payment.html?plan=coc&method=manual" style="background:rgba(244,63,94,0.12);color:#f87171;border:1px solid rgba(244,63,94,0.3)">
-                <i class="fa-solid fa-heart-pulse"></i> COC Prep — 299 ብር
-            </a>
+        <!-- Hamburger -->
+        <button class="btn-icon btn-menu" onclick="openDrawer()" aria-label="Menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </div>
+</nav>
+
+<!-- ── SIDE DRAWER ───────────────────────────────────────────────────── -->
+<div class="nav-overlay" id="navOverlay" onclick="closeDrawer()"></div>
+<div class="nav-drawer"  id="navDrawer">
+    <button class="nav-close" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
+    <a href="home.html">        <i class="fa-solid fa-house"             style="color:#818cf8"></i> Home</a>
+    <a href="courses.html">     <i class="fa-solid fa-book"              style="color:#fbbf24"></i> Courses</a>
+    <a href="study-hub.html">   <i class="fa-solid fa-book-open"         style="color:#34d399"></i> Study Hub</a>
+    <a href="department-guide.html"><i class="fa-solid fa-building"      style="color:#60a5fa"></i> Departments</a>
+    <a href="offline.html">     <i class="fa-solid fa-download"          style="color:#a78bfa"></i> Offline Videos</a>
+    <a href="auth-login.html">  <i class="fa-solid fa-right-to-bracket"  style="color:#f87171"></i> Login</a>
+    <a href="auth-register.html"><i class="fa-solid fa-user-plus"        style="color:#86efac"></i> Sign Up</a>
+    <div style="border-top:1px solid var(--border2);margin:12px 0;padding-top:10px">
+        <a href="payment.html?method=manual" style="background:rgba(99,102,241,0.12);color:#818cf8;border:1px solid rgba(99,102,241,0.28)">
+            <i class="fa-solid fa-graduation-cap"></i> Enroll &mdash; 399 ETB
+        </a>
+        <a href="payment.html?plan=coc&method=manual" style="background:rgba(244,63,94,0.1);color:#f87171;border:1px solid rgba(244,63,94,0.28)">
+            <i class="fa-solid fa-heart-pulse"></i> COC Prep &mdash; 299 ETB
+        </a>
+    </div>
+</div>
+
+<!-- ── ANIMATED PROMO TICKER ─────────────────────────────────────────── -->
+<div class="ticker-wrap" aria-hidden="true">
+    <div class="ticker-track" id="promoTicker">
+        &#x1F525;&nbsp;Enrolled Now @ 299 ETB &mdash; COC Health Science Prep!&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        &#x26A1;&nbsp;Freshman Courses &mdash; 1st &amp; 2nd Semester &mdash; Only 399 ETB!&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        &#x1F393;&nbsp;1,200+ Students Already Enrolled &mdash; Join Them Today!&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        &#x1F4E5;&nbsp;Offline Access Available &mdash; Learn Without Internet!&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        &#x1F525;&nbsp;Enrolled Now @ 299 ETB &mdash; COC Special Offer!&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        &#x1F4D0;&nbsp;Video Lessons, PDF Notes, Quizzes &amp; Exams &mdash; All In One!&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        &#x2705;&nbsp;Learn Anywhere, Anytime &mdash; Alpha Freshman Tutorial!&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    </div>
+</div>
+
+<!-- ── PAGE CONTENT ──────────────────────────────────────────────────── -->
+<div class="page-content">
+
+    <!-- 1. HERO CARD with student imagery -->
+    <div class="hero-card">
+        <div class="hero-text">
+            <div class="hero-badge">
+                <i class="fa-solid fa-graduation-cap"></i> #1 Freshman Platform
+            </div>
+            <h1 class="hero-h1">
+                Your Gateway to<br>
+                <em>Academic Success</em>
+            </h1>
+            <p class="hero-sub">
+                Ethiopian Freshman &amp; Health Science
+                CoC Preparation &mdash; all in one place.
+            </p>
+        </div>
+        <div class="hero-image">
+            <div class="hero-student">
+                <span>&#x1F4DA;</span><!-- books emoji -->
+                <span>&#x1F393;</span><!-- graduation cap -->
+            </div>
         </div>
     </div>
 
-    <!-- ── Animated Promo Ticker ─────────────────────────────────────────────── -->
-    <div style="
-        background:linear-gradient(90deg,#1e1b4b,#312e81,#1e1b4b);
-        overflow:hidden;
-        white-space:nowrap;
-        padding:9px 0;
-        border-bottom:1px solid rgba(99,102,241,0.25);
-        position:relative;
-        z-index:50">
-        <div id="promoTicker" style="
-            display:inline-block;
-            animation:ticker-scroll 28s linear infinite;
-            font-size:0.78rem;
-            font-weight:700;
-            color:#e0e7ff;
-            letter-spacing:0.02em;
-            padding-left:100%">
-            &#x1F525;&nbsp;Enrolled Now @ 299 ETB &mdash; COC Health Science Prep&nbsp;&nbsp;
-            &#x26A1;&nbsp;Freshman 1st &amp; 2nd Semester &mdash; 399 ETB Only&nbsp;&nbsp;
-            &#x1F393;&nbsp;1,200+ Students Enrolled &mdash; Join Today!&nbsp;&nbsp;
-            &#x1F4E5;&nbsp;Offline Access &mdash; Learn Without Internet&nbsp;&nbsp;
-            &#x1F525;&nbsp;Enrolled Now @ 299 ETB &mdash; COC Yileyal! Special Offer&nbsp;&nbsp;
-            &#x1F4D0;&nbsp;Video Lessons, PDF Notes, Quizzes &amp; Exams&nbsp;&nbsp;
-            &#x2705;&nbsp;Learn Anywhere, Anytime &mdash; Alpha Freshman Tutorial&nbsp;&nbsp;
+    <!-- 2. VIDEO PLAYER — larger, prominent, English title overlay -->
+    <div class="video-card" onclick="handleVideoClick()">
+        <div class="video-inner">
+            <span class="chalk chalk-1">&#x2211;</span>
+            <span class="chalk chalk-2">&#x222B;dx</span>
+            <span class="chalk chalk-3">F=ma</span>
+            <div class="instructor-icon">&#x1F469;&#x200D;&#x1F3EB;</div>
         </div>
-    </div>
-    <style>
-    @keyframes ticker-scroll {
-        0%   { transform: translateX(0); }
-        100% { transform: translateX(-100%); }
-    }
-    /* Pause on touch/hover */
-    #promoTicker:hover,
-    #promoTicker:focus { animation-play-state: paused; }
-    /* Reduce motion for accessibility */
-    @media (prefers-reduced-motion: reduce) {
-        #promoTicker { animation: none; padding-left: 16px; white-space: normal; }
-    }
-    </style>
-
-    <!-- ── Page Content ──────────────────────────────────────────────────────── -->
-    <div class="page-content">
-
-        <!-- Hero Section with Student Image -->
-        <div class="hero-section" style="margin-bottom:16px">
-            <div class="hero-text-col">
-                <div class="hero-badge">
-                    <i class="fa-solid fa-graduation-cap"></i> #1 Freshman Platform
-                </div>
-                <div class="hero-title">
-                    Your Gateway to<br>
-                    <span>Academic Success</span>
-                </div>
-                <div class="hero-desc">
-                    Ethiopian Freshman & Health Science CoC
-                    Preparation — all in one place.
-                </div>
-            </div>
-            <div class="hero-image-col">
-                <div class="hero-glow"></div>
-                <div class="hero-student-fallback" style="position:absolute;bottom:0;right:0;width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center">
-                    <div style="text-align:center;padding-bottom:8px">
-                        <div style="font-size:4rem;filter:drop-shadow(0 0 16px rgba(99,102,241,0.4))">📚</div>
-                        <div style="font-size:2.5rem;margin-top:-8px;filter:drop-shadow(0 0 12px rgba(168,85,247,0.5))">🎓</div>
-                    </div>
-                </div>
+        <div class="video-overlay">
+            <div class="play-btn" aria-label="Play preview">
+                <i class="fa-solid fa-play"></i>
             </div>
         </div>
-        <!-- 1. Video Preview Card -->
-        <div class="video-card" onclick="handleVideoClick()">
-            <!-- Instructor thumbnail — if no actual thumbnail, show gradient placeholder -->
-            <div style="width:100%;height:100%;background:linear-gradient(135deg,#1a2744,#0f3460,#1a2744);
-                display:flex;align-items:center;justify-content:center;position:relative">
-                <!-- Instructor silhouette / placeholder art -->
-                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:flex-end;
-                    padding-right:20%;position:relative;overflow:hidden">
-                    <!-- Chalkboard background suggestion -->
-                    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1e3a5f 0%,#0f2744 100%);
-                        opacity:0.8"></div>
-                    <div style="position:absolute;left:12px;top:12px;right:12px;bottom:12px;
-                        border:2px dashed rgba(255,255,255,0.08);border-radius:8px"></div>
-                    <!-- Instructor icon -->
-                    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-60%);
-                        text-align:center">
-                        <div style="font-size:3.5rem;opacity:0.5">👩‍🏫</div>
-                        <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);margin-top:4px">
-                            Preview Lesson
-                        </div>
-                    </div>
-                    <!-- Decorative chalk marks -->
-                    <div style="position:absolute;top:20%;left:10%;color:rgba(255,255,255,0.15);font-size:1.2rem">∑</div>
-                    <div style="position:absolute;top:40%;left:20%;color:rgba(255,255,255,0.15);font-size:0.9rem">∫dx</div>
-                    <div style="position:absolute;bottom:25%;left:15%;color:rgba(255,255,255,0.12);font-size:1rem">F=ma</div>
-                </div>
-            </div>
-            <div class="video-card-overlay">
-                <div class="play-btn">
-                    <i class="fa-solid fa-play"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. Title + Bilingual Description -->
-        <h1 class="section-title">
+        <div class="video-title-bar">
             Welcome to Academic Success: Preview of Core Concepts
-        </h1>
-        <p class="section-desc">
-            Ethiopian Freshman &amp; Health Science CoC Preparation with top-tier materials,
-            video lessons, quizzes, and more — all in one place.
-        </p>
-        <!-- 3. 4 Feature Icons -->
-        <div class="features-row">
-            <a href="courses.html" class="feature-item">
-                <div class="feature-icon" style="background:rgba(99,102,241,0.15)">
-                    <i class="fa-solid fa-play" style="color:#818cf8"></i>
-                </div>
-                <span class="feature-label">Video<br>Lessons</span>
-            </a>
-            <a href="courses.html" class="feature-item">
-                <div class="feature-icon" style="background:rgba(244,63,94,0.12)">
-                    <i class="fa-solid fa-file-pdf" style="color:#f87171"></i>
-                </div>
-                <span class="feature-label">PDF<br>Notes</span>
-            </a>
-            <a href="courses.html" class="feature-item">
-                <div class="feature-icon" style="background:rgba(245,158,11,0.12)">
-                    <i class="fa-solid fa-circle-question" style="color:#fbbf24"></i>
-                </div>
-                <span class="feature-label">Quizzes &amp;<br>Exams</span>
-            </a>
-            <a href="offline.html" class="feature-item">
-                <div class="feature-icon" style="background:rgba(16,185,129,0.12)">
-                    <i class="fa-solid fa-wifi" style="color:#34d399"></i>
-                    <i class="fa-solid fa-slash" style="color:#34d399;font-size:0.6rem;position:absolute"></i>
-                </div>
-                <span class="feature-label">Offline<br>Access</span>
-            </a>
         </div>
+    </div>
 
-        <!-- 4. Search Bar -->
-        <div class="search-bar">
-            <i class="fa-solid fa-magnifying-glass" style="color:#64748b;font-size:0.9rem;flex-shrink:0"></i>
-            <input type="text" id="heroSearch" placeholder="Search courses, topics, instructors..."
-                onkeydown="if(event.key==='Enter')searchFromHero()">
-            <button onclick="searchFromHero()">Search</button>
+    <!-- 3. DESCRIPTION — English only, no Amharic -->
+    <h2 class="desc-title">Welcome to Academic Success</h2>
+    <p class="desc-body">
+        Ethiopian Freshman Curriculum &amp; Health Science CoC Preparation
+        with top-tier materials, video lessons, quizzes, and more &mdash;
+        all in one place.
+    </p>
+
+    <!-- 4. FOUR FEATURE ICONS -->
+    <div class="features-row">
+        <a href="courses.html" class="feat">
+            <div class="feat-icon" style="background:rgba(99,102,241,0.15)">
+                <i class="fa-solid fa-play" style="color:#818cf8"></i>
+            </div>
+            <span class="feat-label">Video<br>Lessons</span>
+        </a>
+        <a href="courses.html" class="feat">
+            <div class="feat-icon" style="background:rgba(244,63,94,0.12)">
+                <i class="fa-solid fa-file-pdf" style="color:#f87171"></i>
+            </div>
+            <span class="feat-label">PDF<br>Notes</span>
+        </a>
+        <a href="courses.html" class="feat">
+            <div class="feat-icon" style="background:rgba(245,158,11,0.12)">
+                <i class="fa-solid fa-circle-question" style="color:#fbbf24"></i>
+            </div>
+            <span class="feat-label">Quizzes &amp;<br>Exams</span>
+        </a>
+        <a href="offline.html" class="feat">
+            <div class="feat-icon" style="background:rgba(16,185,129,0.12)">
+                <i class="fa-solid fa-cloud-arrow-down" style="color:#34d399"></i>
+            </div>
+            <span class="feat-label">Offline<br>Access</span>
+        </a>
+    </div>
+
+    <!-- 5. SEARCH BAR -->
+    <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass" style="color:var(--text3);font-size:0.88rem;flex-shrink:0"></i>
+        <input type="text" id="heroSearch"
+            placeholder="Search courses, topics, instructors..."
+            onkeydown="if(event.key==='Enter')doSearch()">
+        <button onclick="doSearch()">Search</button>
+    </div>
+
+    <!-- 6. STATS ROW -->
+    <div class="stats-row">
+        <div class="stat">
+            <div class="stat-ico">&#x1F465;</div>
+            <span class="stat-val" id="stat-users">1,200+</span>
+            <div class="stat-lbl">Students</div>
         </div>
-
-        <!-- 5. Stats Row -->
-        <div class="stats-row">
-            <div class="stat-item">
-                <div class="stat-icon">👥</div>
-                <span class="stat-value" id="stat-users">1,200+</span>
-                <div class="stat-label">Students</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">📚</div>
-                <span class="stat-value" id="stat-courses">22</span>
-                <div class="stat-label">Courses</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">🎓</div>
-                <span class="stat-value" id="stat-instructors">15+</span>
-                <div class="stat-label">Instructors</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">📅</div>
-                <span class="stat-value">2</span>
-                <div class="stat-label">Semesters</div>
-            </div>
+        <div class="stat">
+            <div class="stat-ico">&#x1F4DA;</div>
+            <span class="stat-val" id="stat-courses">22</span>
+            <div class="stat-lbl">Courses</div>
         </div>
-
-        <!-- 6. Pricing Pills (clean, no duplicate buttons) -->
-        <div class="pricing-row">
-            <a href="payment.html?method=manual" class="price-pill price-pill-blue">
-                <i class="fa-solid fa-graduation-cap"></i>
-                Freshman — 399 ETB
-            </a>
-            <a href="payment.html?plan=coc&method=manual" class="price-pill price-pill-red">
-                <i class="fa-solid fa-heart-pulse"></i>
-                COC — 299 ብር
-            </a>
+        <div class="stat">
+            <div class="stat-ico">&#x1F393;</div>
+            <span class="stat-val" id="stat-instructors">15+</span>
+            <div class="stat-lbl">Instructors</div>
         </div>
-
-        <!-- 7. Single CTA Card — "Start Your Learning Journey Today" -->
-        <div class="cta-card" onclick="handleCtaClick()">
-            <div class="cta-card-icon">🚀</div>
-            <div class="cta-card-text">
-                <div class="cta-card-title">Start Your Learning Journey Today</div>
-                <div class="cta-card-sub">All courses — Freshman &amp; COC Prep. Enroll now!</div>
-            </div>
-            <button class="cta-card-btn" onclick="event.stopPropagation();handleCtaClick()">
-                Get Started →
-            </button>
+        <div class="stat">
+            <div class="stat-ico">&#x1F4C5;</div>
+            <span class="stat-val">2</span>
+            <div class="stat-lbl">Semesters</div>
         </div>
+    </div>
 
-        <!-- 8. Course Categories -->
-        <div class="section-heading">📖 Browse Courses</div>
-        <div class="cat-grid">
-            <div class="cat-tile" onclick="window.location.href='courses.html?category=sem1'">
-                <span class="cat-tile-icon">☀️</span>
-                <div class="cat-tile-name">First Semester</div>
-                <span class="cat-tile-price" style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3)">399 ETB</span>
-            </div>
-            <div class="cat-tile" onclick="window.location.href='courses.html?category=sem2'">
-                <span class="cat-tile-icon">🌙</span>
-                <div class="cat-tile-name">Second Semester</div>
-                <span class="cat-tile-price" style="background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3)">399 ETB</span>
-            </div>
-            <div class="cat-tile" onclick="window.location.href='payment.html?plan=coc&method=manual'">
-                <span class="cat-tile-badge" style="background:#f43f5e">ቅናሽ</span>
-                <span class="cat-tile-icon">🏥</span>
-                <div class="cat-tile-name">CoC for Health Science</div>
-                <div style="display:flex;align-items:center;justify-content:center;gap:5px;margin-top:4px">
-                    <span style="text-decoration:line-through;color:#64748b;font-size:0.65rem">399</span>
-                    <span class="cat-tile-price" style="background:#f43f5e;color:white">299 ብር</span>
-                </div>
-            </div>
-            <div class="cat-tile" onclick="window.location.href='offline.html'">
-                <span class="cat-tile-badge" style="background:#059669">OFFLINE</span>
-                <span class="cat-tile-icon">📥</span>
-                <div class="cat-tile-name">Offline Downloads</div>
-                <span style="font-size:0.65rem;color:#34d399;margin-top:4px;display:block">ያለ ኢንተርኔት</span>
+    <!-- 7. PRICE PILLS -->
+    <div class="price-row">
+        <a href="payment.html?method=manual" class="ppill ppill-blue">
+            <i class="fa-solid fa-graduation-cap"></i> Freshman &mdash; 399 ETB
+        </a>
+        <a href="payment.html?plan=coc&method=manual" class="ppill ppill-red">
+            <i class="fa-solid fa-heart-pulse"></i> COC &mdash; 299 ETB
+        </a>
+    </div>
+
+    <!-- 8. BROWSE COURSES -->
+    <div class="section-h">&#x1F4D6; Browse Courses</div>
+    <div class="cat-grid">
+        <div class="cat-tile" onclick="location.href='courses.html?category=sem1'">
+            <span class="cat-tile-ico">&#x2600;&#xFE0F;</span>
+            <div class="cat-tile-name">First Semester</div>
+            <span class="cat-tile-price" style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3)">399 ETB</span>
+        </div>
+        <div class="cat-tile" onclick="location.href='courses.html?category=sem2'">
+            <span class="cat-tile-ico">&#x1F319;</span>
+            <div class="cat-tile-name">Second Semester</div>
+            <span class="cat-tile-price" style="background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3)">399 ETB</span>
+        </div>
+        <div class="cat-tile" onclick="location.href='payment.html?plan=coc&method=manual'">
+            <span class="cat-tile-badge" style="background:#f43f5e">Sale</span>
+            <span class="cat-tile-ico">&#x1F3E5;</span>
+            <div class="cat-tile-name">CoC Health Science</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:5px;margin-top:4px">
+                <span style="text-decoration:line-through;color:var(--text3);font-size:0.62rem">399</span>
+                <span class="cat-tile-price" style="background:#f43f5e;color:white">299 ETB</span>
             </div>
         </div>
-
-
-        <!-- CTA at bottom — just above nav -->
-        <div class="cta-card" onclick="handleCtaClick()" style="margin-top:8px;margin-bottom:8px">
-            <div class="cta-card-icon">🚀</div>
-            <div class="cta-card-text">
-                <div class="cta-card-title">Start Your Learning Journey Today</div>
-                <div class="cta-card-sub">Enroll now — 399 ETB Freshman · 299 ETB COC</div>
-            </div>
-            <button class="cta-card-btn" onclick="event.stopPropagation();handleCtaClick()">
-                Get Started →
-            </button>
+        <div class="cat-tile" onclick="location.href='offline.html'">
+            <span class="cat-tile-badge" style="background:#059669">Free</span>
+            <span class="cat-tile-ico">&#x1F4E5;</span>
+            <div class="cat-tile-name">Offline Downloads</div>
+            <span style="font-size:0.62rem;color:#34d399;margin-top:4px;display:block">No Internet Needed</span>
         </div>
+    </div>
 
-    </div><!-- /page-content -->
+    <!-- 9. CTA CARD — at the bottom, just above footer -->
+    <div class="cta-card" onclick="handleCtaClick()">
+        <div class="cta-ico">&#x1F680;</div>
+        <div class="cta-text">
+            <div class="cta-title">Start Your Learning Journey Today</div>
+            <div class="cta-sub">Enroll now &mdash; Freshman 399 ETB &bull; COC 299 ETB</div>
+        </div>
+        <button class="cta-btn" onclick="event.stopPropagation();handleCtaClick()">
+            Get Started &#x2192;
+        </button>
+    </div>
 
-    <!-- Footer -->
-    <footer style="background:rgba(15,23,42,0.9);border-top:1px solid rgba(30,41,59,0.9);
-        padding:20px 14px 16px;text-align:center;max-width:520px;margin:0 auto">
-        <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:4px 14px;margin-bottom:10px">
-            <a href="home.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Home</a>
-            <a href="courses.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Courses</a>
-            <a href="auth-login.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Login</a>
-            <a href="auth-register.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Sign Up</a>
-            <a href="offline.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Offline</a>
-            <a href="study-hub.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Study Hub</a>
+    <!-- 10. FOOTER — copyright and links at very bottom -->
+    <footer class="home-footer">
+        <div class="footer-links">
+            <a href="home.html">Home</a>
+            <a href="courses.html">Courses</a>
+            <a href="auth-login.html">Login</a>
+            <a href="auth-register.html">Sign Up</a>
+            <a href="offline.html">Offline</a>
+            <a href="study-hub.html">Study Hub</a>
+            <a href="department-guide.html">Departments</a>
         </div>
-        <div style="font-size:0.62rem;color:#475569">
-            &copy; 2026 Alpha Freshman Tutorial &mdash; All rights reserved
-        </div>
+        <div class="footer-copy">&copy; 2026 Alpha Freshman Tutorial &mdash; All rights reserved.</div>
     </footer>
 
+</div><!-- /page-content -->
 
-    <!-- ── Fixed Bottom Navigation ───────────────────────────────────────────── -->
-    <nav class="mobile-bottom-nav" id="mobileBottomNav">
-        <a href="home.html" class="nav-item active" id="mbn-home">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span>Home</span>
-        </a>
-        <a href="courses.html" class="nav-item" id="mbn-courses">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5Z"/></svg>
-            <span>Courses</span>
-        </a>
-        <a href="study-hub.html" class="nav-item" id="mbn-study">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            <span>Study</span>
-        </a>
-        <a href="student-dashboard.html" class="nav-item" id="mbn-dashboard">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <span>Profile</span>
-        </a>
-    </nav>
+<!-- ── FIXED BOTTOM NAV ───────────────────────────────────────────────── -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <a href="home.html"          class="nav-item active" id="mbn-home">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+    </a>
+    <a href="courses.html"       class="nav-item" id="mbn-courses">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5Z"/></svg>
+        <span>Courses</span>
+    </a>
+    <a href="study-hub.html"     class="nav-item" id="mbn-study">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>Study</span>
+    </a>
+    <a href="student-dashboard.html" class="nav-item" id="mbn-profile">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+    </a>
+</nav>
 
-    <!-- ── Scripts ───────────────────────────────────────────────────────────── -->
-    <script src="theme.js"></script>
-    <script src="api.js"></script>
-    <script src="notifications.js" onerror="void 0"></script>
+<!-- ── SCRIPTS ────────────────────────────────────────────────────────── -->
+<script src="theme.js"          onerror="void 0"></script>
+<script src="api.js"            onerror="void 0"></script>
+<script src="notifications.js"  onerror="void 0"></script>
 
-    <script>
-    // ── Dark / Light Mode Toggle ────────────────────────────────────────────────
-    (function initTheme() {
-        var saved = localStorage.getItem('aft-theme') || 'dark';
-        applyTheme(saved);
-    })();
-    function applyTheme(mode) {
-        var icon = document.getElementById('themeIcon');
-        if (mode === 'light') {
-            document.documentElement.setAttribute('data-theme', 'light');
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f0f4ff');
-            if (icon) { icon.className = 'fa-solid fa-sun'; icon.style.color = '#f59e0b'; }
-        } else {
-            document.documentElement.removeAttribute('data-theme');
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f172a');
-            if (icon) { icon.className = 'fa-solid fa-moon'; icon.style.color = '#818cf8'; }
+<script>
+// ── Dark / Light Mode ────────────────────────────────────────────────────────
+(function initTheme() {
+    var t = localStorage.getItem('aft-theme') || 'dark';
+    applyTheme(t, false);
+})();
+
+function applyTheme(mode, animate) {
+    var root = document.documentElement;
+    var icon = document.getElementById('themeIcon');
+    var meta = document.getElementById('themeColorMeta');
+    if (animate !== false) {
+        root.style.transition = 'background 0.3s, color 0.3s';
+    }
+    if (mode === 'light') {
+        root.setAttribute('data-theme', 'light');
+        if (icon) { icon.className = 'fa-solid fa-sun'; icon.style.color = '#f59e0b'; }
+        if (meta) meta.setAttribute('content', '#f0f4ff');
+    } else {
+        root.setAttribute('data-theme', 'dark');
+        if (icon) { icon.className = 'fa-solid fa-moon'; icon.style.color = '#818cf8'; }
+        if (meta) meta.setAttribute('content', '#0f172a');
+    }
+    localStorage.setItem('aft-theme', mode);
+}
+
+function toggleTheme() {
+    var cur = localStorage.getItem('aft-theme') || 'dark';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+    var btn = document.getElementById('themeBtn');
+    if (btn) { btn.style.transform = 'scale(0.82)'; setTimeout(function(){ btn.style.transform = ''; }, 180); }
+}
+
+// ── Drawer ───────────────────────────────────────────────────────────────────
+function openDrawer()  {
+    document.getElementById('navDrawer').classList.add('open');
+    document.getElementById('navOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+    document.getElementById('navDrawer').classList.remove('open');
+    document.getElementById('navOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+// ── Video click ──────────────────────────────────────────────────────────────
+function handleVideoClick() { window.location.href = 'courses.html'; }
+
+// ── CTA click ────────────────────────────────────────────────────────────────
+function handleCtaClick() {
+    var user = null;
+    try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
+    window.location.href = (user && user.id) ? 'payment.html?method=manual' : 'auth-register.html';
+}
+
+// ── Search ───────────────────────────────────────────────────────────────────
+function doSearch() {
+    var q = document.getElementById('heroSearch').value.trim();
+    window.location.href = q ? 'courses.html?search=' + encodeURIComponent(q) : 'courses.html';
+}
+
+// ── Live stats ───────────────────────────────────────────────────────────────
+(async function loadStats() {
+    try {
+        if (typeof api === 'undefined') return;
+        var r = await api.getAdminStats();
+        if (r && r.success && r.stats) {
+            var s = r.stats;
+            var u = document.getElementById('stat-users');
+            var c = document.getElementById('stat-courses');
+            var i = document.getElementById('stat-instructors');
+            if (u) u.textContent = (s.totalStudents || 1200).toLocaleString() + '+';
+            if (c) c.textContent = s.totalCourses  || 22;
+            if (i) i.textContent = (s.totalInstructors || 15) + '+';
         }
-        localStorage.setItem('aft-theme', mode);
-    }
-    function toggleTheme() {
-        var current = localStorage.getItem('aft-theme') || 'dark';
-        applyTheme(current === 'dark' ? 'light' : 'dark');
-        var btn = document.getElementById('themeToggleBtn');
-        if (btn) { btn.style.transform = 'scale(0.85)'; setTimeout(function(){ btn.style.transform = ''; }, 200); }
-    }
+    } catch(e) {}
+})();
 
-    // ── Nav Drawer ─────────────────────────────────────────────────────────────
-    function openNavDrawer() {
-        document.getElementById('navDrawer').classList.add('open');
-        document.getElementById('navOverlay').classList.add('open');
-        document.body.style.overflow = 'hidden';
+// ── Active bottom-nav tab ────────────────────────────────────────────────────
+(function() {
+    var pg  = window.location.pathname.split('/').pop() || 'home.html';
+    var map = {
+        'home.html':             'mbn-home',
+        'courses.html':          'mbn-courses',
+        'study-hub.html':        'mbn-study',
+        'student-dashboard.html':'mbn-profile',
+        'dashboard.html':        'mbn-profile'
+    };
+    Object.values(map).forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+    });
+    if (map[pg]) {
+        var el = document.getElementById(map[pg]);
+        if (el) el.classList.add('active');
     }
-    function closeNavDrawer() {
-        document.getElementById('navDrawer').classList.remove('open');
-        document.getElementById('navOverlay').classList.remove('open');
-        document.body.style.overflow = '';
-    }
+})();
 
-    // ── Video Click ────────────────────────────────────────────────────────────
-    function handleVideoClick() {
-        var user = null;
-        try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
-        if (user && user.paymentStatus === 'APPROVED') {
-            window.location.href = 'courses.html';
-        } else {
-            window.location.href = 'courses.html';
+// ── Show user name in subtitle ────────────────────────────────────────────────
+(function() {
+    try {
+        var u = JSON.parse(localStorage.getItem('currentUser'));
+        if (u && u.fullName) {
+            var s = document.querySelector('.app-nav-subtitle');
+            if (s) s.textContent = '\u{1F464} ' + u.fullName;
         }
-    }
-
-    // ── CTA Button ─────────────────────────────────────────────────────────────
-    function handleCtaClick() {
-        var user = null;
-        try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
-        if (user && user.id) {
-            window.location.href = 'payment.html?method=manual';
-        } else {
-            window.location.href = 'auth-register.html';
-        }
-    }
-
-    // ── Search ─────────────────────────────────────────────────────────────────
-    function searchFromHero() {
-        var q = document.getElementById('heroSearch').value.trim();
-        if (q) window.location.href = 'courses.html?search=' + encodeURIComponent(q);
-        else window.location.href = 'courses.html';
-    }
-
-    // ── Live Stats ─────────────────────────────────────────────────────────────
-    (async function loadStats() {
-        try {
-            if (typeof api === 'undefined') return;
-            var res = await api.getAdminStats();
-            if (res && res.success && res.stats) {
-                var s = res.stats;
-                var u = document.getElementById('stat-users');
-                var c = document.getElementById('stat-courses');
-                var i = document.getElementById('stat-instructors');
-                if (u) u.textContent = (s.totalStudents || 1200).toLocaleString() + '+';
-                if (c) c.textContent = s.totalCourses || 22;
-                if (i) i.textContent = (s.totalInstructors || 15) + '+';
-            }
-        } catch(e) {}
-    })();
-
-    // ── Active nav tab ─────────────────────────────────────────────────────────
-    (function() {
-        var page = window.location.pathname.split('/').pop() || 'home.html';
-        var map = {
-            'home.html': 'mbn-home',
-            'courses.html': 'mbn-courses',
-            'study-hub.html': 'mbn-study',
-            'dashboard.html': 'mbn-dashboard',
-            'student-dashboard.html': 'mbn-dashboard'
-        };
-        Object.values(map).forEach(function(id) {
-            var el = document.getElementById(id);
-            if (el) el.classList.remove('active');
-        });
-        if (map[page]) {
-            var el = document.getElementById(map[page]);
-            if (el) el.classList.add('active');
-        }
-    })();
-
-    // ── Update nav for logged-in user ──────────────────────────────────────────
-    (function() {
-        var user = null;
-        try { user = JSON.parse(localStorage.getItem('currentUser')); } catch(e) {}
-        if (user && user.fullName) {
-            var sub = document.querySelector('.app-nav-subtitle');
-            if (sub) sub.textContent = '👤 ' + user.fullName;
-        }
-    })();
-    </script>
-    <script src="/pwa.js" onerror="void 0"></script>
+    } catch(e) {}
+})();
+</script>
+<script src="/pwa.js" onerror="void 0"></script>
 </body>
 </html>
