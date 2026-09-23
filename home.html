@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -19,12 +19,44 @@
     <style>
     /* ── Reset & Base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Dark / Light theme variables ── */
+    :root {
+        --bg-app:     #0a0f1e;
+        --bg-card:    rgba(15,23,42,0.9);
+        --bg-feature: rgba(30,41,59,0.7);
+        --bg-nav:     #0a0f1e;
+        --bg-search:  rgba(15,23,42,0.9);
+        --text-main:  #e2e8f0;
+        --text-muted: #94a3b8;
+        --text-dim:   #64748b;
+        --border:     rgba(51,65,85,0.6);
+        --border-nav: #1e293b;
+        --stat-border:rgba(30,41,59,0.9);
+        --search-input:#e2e8f0;
+    }
+    [data-theme="light"] {
+        --bg-app:     #f0f4ff;
+        --bg-card:    #ffffff;
+        --bg-feature: #e8ecf8;
+        --bg-nav:     #ffffff;
+        --bg-search:  #ffffff;
+        --text-main:  #0f172a;
+        --text-muted: #334155;
+        --text-dim:   #64748b;
+        --border:     rgba(99,102,241,0.2);
+        --border-nav: rgba(99,102,241,0.15);
+        --stat-border:rgba(99,102,241,0.1);
+        --search-input:#0f172a;
+    }
+
     html, body {
-        background: #0a0f1e;
-        color: #e2e8f0;
+        background: var(--bg-app);
+        color: var(--text-main);
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         min-height: 100vh;
         overflow-x: hidden;
+        transition: background 0.3s, color 0.3s;
     }
     body {
         padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
@@ -36,11 +68,12 @@
         align-items: center;
         justify-content: space-between;
         padding: 14px 16px 10px;
-        background: #0a0f1e;
+        background: var(--bg-nav);
         position: sticky;
         top: 0;
         z-index: 100;
         border-bottom: 1px solid rgba(99,102,241,0.12);
+        transition: background 0.3s;
     }
     .app-nav-logo {
         display: flex;
@@ -57,13 +90,18 @@
     .app-nav-title {
         font-size: 1rem;
         font-weight: 800;
-        color: white;
+        color: var(--text-main);
         line-height: 1.2;
     }
     .app-nav-subtitle {
         font-size: 0.62rem;
-        color: #64748b;
+        color: var(--text-dim);
         font-weight: 500;
+    }
+    .app-nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
     }
     .app-nav-menu {
         background: none;
@@ -74,6 +112,24 @@
         padding: 6px;
         -webkit-tap-highlight-color: transparent;
     }
+    /* Theme toggle button */
+    .theme-toggle-btn {
+        background: rgba(99,102,241,0.1);
+        border: 1px solid rgba(99,102,241,0.25);
+        color: #818cf8;
+        font-size: 0.85rem;
+        cursor: pointer;
+        padding: 6px 8px;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.2s, transform 0.2s;
+    }
+    .theme-toggle-btn:active { transform: scale(0.9); }
 
     /* ── Page Scroll Container ── */
     .page-content {
@@ -82,18 +138,112 @@
         margin: 0 auto;
     }
 
+    /* ── Hero Section with Student Image ── */
+    .hero-section {
+        position: relative;
+        margin: 16px 0 0;
+        border-radius: 20px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        min-height: 180px;
+        display: flex;
+        align-items: stretch;
+    }
+    .hero-text-col {
+        flex: 1;
+        padding: 20px 16px 20px 18px;
+        z-index: 2;
+        position: relative;
+    }
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(99,102,241,0.18);
+        border: 1px solid rgba(99,102,241,0.35);
+        color: #818cf8;
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 50px;
+        margin-bottom: 10px;
+    }
+    .hero-title {
+        font-size: clamp(1rem, 4vw, 1.25rem);
+        font-weight: 900;
+        color: white;
+        line-height: 1.3;
+        margin-bottom: 8px;
+    }
+    .hero-title span {
+        background: linear-gradient(135deg, #fbbf24, #f97316);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .hero-desc {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.7);
+        line-height: 1.55;
+        max-width: 240px;
+    }
+    .hero-image-col {
+        width: 120px;
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-student-img {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        height: 100%;
+        width: auto;
+        object-fit: contain;
+        object-position: bottom right;
+        filter: drop-shadow(0 0 20px rgba(99,102,241,0.3));
+    }
+    /* Fallback gradient figure when no image */
+    .hero-student-fallback {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        background: linear-gradient(180deg,transparent 30%,rgba(99,102,241,0.1));
+    }
+    /* Decorative glow */
+    .hero-glow {
+        position: absolute;
+        top: -30%;
+        right: -10%;
+        width: 160px;
+        height: 160px;
+        background: rgba(168,85,247,0.18);
+        border-radius: 50%;
+        filter: blur(50px);
+        pointer-events: none;
+    }
+
     /* ── Video Player ── */
     .video-card {
         position: relative;
-        border-radius: 16px;
+        border-radius: 18px;
         overflow: hidden;
         background: #111827;
         aspect-ratio: 16/9;
         margin: 14px 0 18px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(99,102,241,0.15);
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
+    .video-card:active { transform: scale(0.985); }
     .video-card img {
         width: 100%;
         height: 100%;
@@ -103,42 +253,49 @@
     .video-card-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.45) 100%);
+        background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
     }
     .play-btn {
-        width: 58px;
-        height: 58px;
-        background: rgba(255,255,255,0.92);
+        width: 64px;
+        height: 64px;
+        background: rgba(255,255,255,0.94);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        transition: transform 0.15s;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.4), 0 0 0 6px rgba(255,255,255,0.15);
+        transition: transform 0.15s, box-shadow 0.15s;
     }
+    .play-btn:hover { transform: scale(1.08); }
     .play-btn:active { transform: scale(0.92); }
-    .play-btn i { color: #0a0f1e; font-size: 1.3rem; margin-left: 3px; }
+    .play-btn i { color: #0a0f1e; font-size: 1.4rem; margin-left: 4px; }
+    /* Video title overlay */
+    .video-title-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+        padding: 20px 14px 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: white;
+    }
 
     /* ── Section Title & Description ── */
     .section-title {
-        font-size: 1.15rem;
+        font-size: 1.1rem;
         font-weight: 800;
-        color: white;
+        color: var(--text-main);
         line-height: 1.35;
-        margin-bottom: 8px;
+        margin-bottom: 7px;
     }
     .section-desc {
         font-size: 0.82rem;
-        color: #94a3b8;
-        line-height: 1.6;
-        margin-bottom: 6px;
-    }
-    .section-desc-am {
-        font-size: 0.78rem;
-        color: #64748b;
+        color: var(--text-muted);
         line-height: 1.6;
         margin-bottom: 18px;
     }
@@ -156,15 +313,16 @@
         align-items: center;
         gap: 6px;
         padding: 12px 6px 10px;
-        background: rgba(30,41,59,0.7);
-        border: 1px solid rgba(51,65,85,0.6);
+        background: var(--bg-feature);
+        border: 1px solid var(--border);
         border-radius: 14px;
         text-decoration: none;
         -webkit-tap-highlight-color: transparent;
-        transition: border-color 0.2s, background 0.2s;
+        transition: border-color 0.2s, background 0.2s, transform 0.15s;
         cursor: pointer;
     }
-    .feature-item:active { background: rgba(51,65,85,0.8); border-color: rgba(99,102,241,0.5); }
+    .feature-item:hover { transform: translateY(-2px); }
+    .feature-item:active { background: rgba(51,65,85,0.8); border-color: rgba(99,102,241,0.5); transform: scale(0.96); }
     .feature-icon {
         width: 42px;
         height: 42px;
@@ -177,7 +335,7 @@
     .feature-label {
         font-size: 0.62rem;
         font-weight: 700;
-        color: #cbd5e1;
+        color: var(--text-muted);
         text-align: center;
         line-height: 1.3;
     }
@@ -187,22 +345,27 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        background: rgba(15,23,42,0.9);
-        border: 1px solid rgba(51,65,85,0.7);
+        background: var(--bg-search);
+        border: 1px solid var(--border);
         border-radius: 50px;
         padding: 8px 8px 8px 16px;
         margin-bottom: 20px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-bar:focus-within {
+        border-color: rgba(99,102,241,0.5);
+        box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
     }
     .search-bar input {
         flex: 1;
         background: none;
         border: none;
         outline: none;
-        color: white;
+        color: var(--search-input);
         font-size: 0.85rem;
         min-width: 0;
     }
-    .search-bar input::placeholder { color: #64748b; }
+    .search-bar input::placeholder { color: var(--text-dim); }
     .search-bar button {
         background: linear-gradient(135deg, #f59e0b, #ea580c);
         color: #0a0f1e;
@@ -214,7 +377,9 @@
         cursor: pointer;
         white-space: nowrap;
         -webkit-tap-highlight-color: transparent;
+        transition: transform 0.15s;
     }
+    .search-bar button:active { transform: scale(0.96); }
 
     /* ── Stats Row ── */
     .stats-row {
@@ -223,8 +388,8 @@
         gap: 10px;
         margin-bottom: 22px;
         padding: 16px 0;
-        border-top: 1px solid rgba(30,41,59,0.9);
-        border-bottom: 1px solid rgba(30,41,59,0.9);
+        border-top: 1px solid var(--stat-border);
+        border-bottom: 1px solid var(--stat-border);
     }
     .stat-item { text-align: center; }
     .stat-icon { font-size: 1.1rem; margin-bottom: 3px; }
@@ -235,7 +400,7 @@
         display: block;
         line-height: 1.1;
     }
-    .stat-label { font-size: 0.6rem; color: #64748b; margin-top: 2px; }
+    .stat-label { font-size: 0.6rem; color: var(--text-dim); margin-top: 2px; }
 
     /* ── Pricing Pill Row ── */
     .pricing-row {
@@ -282,7 +447,6 @@
         gap: 12px;
         margin-bottom: 20px;
         box-shadow: 0 8px 32px rgba(99,102,241,0.35);
-        text-decoration: none;
         -webkit-tap-highlight-color: transparent;
         transition: transform 0.15s, box-shadow 0.15s;
         cursor: pointer;
@@ -313,13 +477,15 @@
         flex-shrink: 0;
         border: none;
         cursor: pointer;
+        transition: transform 0.15s;
     }
+    .cta-card-btn:active { transform: scale(0.95); }
 
     /* ── Categories Section ── */
     .section-heading {
         font-size: 1rem;
         font-weight: 800;
-        color: white;
+        color: var(--text-main);
         margin-bottom: 12px;
         margin-top: 4px;
     }
@@ -330,19 +496,20 @@
         margin-bottom: 24px;
     }
     .cat-tile {
-        background: rgba(15,23,42,0.9);
-        border: 1px solid rgba(30,41,59,0.9);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
         border-radius: 16px;
         padding: 18px 14px;
         text-align: center;
         cursor: pointer;
         position: relative;
         -webkit-tap-highlight-color: transparent;
-        transition: border-color 0.2s, transform 0.15s;
+        transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
     }
+    .cat-tile:hover { box-shadow: 0 8px 24px rgba(99,102,241,0.15); }
     .cat-tile:active { transform: scale(0.97); border-color: rgba(99,102,241,0.5); }
     .cat-tile-icon { font-size: 1.6rem; margin-bottom: 8px; display: block; }
-    .cat-tile-name { font-weight: 700; color: white; font-size: 0.85rem; margin-bottom: 4px; }
+    .cat-tile-name { font-weight: 700; color: var(--text-main); font-size: 0.85rem; margin-bottom: 4px; }
     .cat-tile-price {
         display: inline-block;
         font-size: 0.68rem;
@@ -361,14 +528,34 @@
         padding: 2px 8px;
         border-radius: 50px;
     }
-    #catDrawer {
-        display: none;
-        background: #0f172a;
-        border: 1px solid rgba(99,102,241,0.3);
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 16px;
-        color: white;
+
+    /* ── Footer ── */
+    .home-footer {
+        background: rgba(15,23,42,0.8);
+        border-top: 1px solid var(--border-nav);
+        padding: 20px 14px;
+        text-align: center;
+        max-width: 520px;
+        margin: 0 auto;
+    }
+    [data-theme="light"] .home-footer { background: rgba(240,244,255,0.9); }
+    .footer-links {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        margin-bottom: 12px;
+    }
+    .footer-links a {
+        color: var(--text-dim);
+        text-decoration: none;
+        font-size: 0.72rem;
+        transition: color 0.2s;
+    }
+    .footer-links a:hover { color: #818cf8; }
+    .footer-copy {
+        font-size: 0.65rem;
+        color: var(--text-dim);
     }
 
     /* ── Bottom Nav ── */
@@ -381,11 +568,12 @@
         left: 0;
         width: 100%;
         height: 60px;
-        background: #0a0f1e;
-        border-top: 1px solid #1e293b;
+        background: var(--bg-nav);
+        border-top: 1px solid var(--border-nav);
         z-index: 9999;
         padding-bottom: env(safe-area-inset-bottom, 0px);
         box-shadow: 0 -2px 24px rgba(0,0,0,0.6);
+        transition: background 0.3s;
     }
     .nav-item {
         display: flex;
@@ -416,7 +604,7 @@
         border-radius: 0 0 3px 3px;
     }
 
-    /* ── Hamburger Menu Overlay ── */
+    /* ── Hamburger Menu ── */
     .nav-overlay {
         display: none;
         position: fixed;
@@ -432,10 +620,10 @@
         right: -280px;
         width: 260px;
         height: 100vh;
-        background: #0f172a;
-        border-left: 1px solid #1e293b;
+        background: var(--bg-nav);
+        border-left: 1px solid var(--border-nav);
         z-index: 201;
-        transition: right 0.25s ease;
+        transition: right 0.25s ease, background 0.3s;
         padding: 60px 20px 20px;
         overflow-y: auto;
     }
@@ -445,7 +633,7 @@
         align-items: center;
         gap: 12px;
         padding: 12px 14px;
-        color: #cbd5e1;
+        color: var(--text-muted);
         text-decoration: none;
         font-weight: 600;
         font-size: 0.9rem;
@@ -453,7 +641,7 @@
         margin-bottom: 4px;
         transition: background 0.2s, color 0.2s;
     }
-    .nav-drawer a:hover, .nav-drawer a:active { background: rgba(99,102,241,0.12); color: white; }
+    .nav-drawer a:hover, .nav-drawer a:active { background: rgba(99,102,241,0.12); color: var(--text-main); }
     .nav-drawer-close {
         position: absolute;
         top: 16px;
@@ -470,6 +658,40 @@
         align-items: center;
         justify-content: center;
     }
+
+    /* ── Animations ── */
+    @keyframes ticker-scroll {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-100%); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .page-content > * { animation: fadeInUp 0.4s ease both; }
+    .page-content > *:nth-child(2) { animation-delay: 0.05s; }
+    .page-content > *:nth-child(3) { animation-delay: 0.1s; }
+    .page-content > *:nth-child(4) { animation-delay: 0.15s; }
+    .page-content > *:nth-child(5) { animation-delay: 0.2s; }
+
+    /* ── Desktop override — keep desktop layout untouched ── */
+    @media (min-width: 769px) {
+        body { padding-bottom: 0; background: #0a0f1e; }
+        .mobile-bottom-nav { display: none; }
+        .page-content { max-width: 900px; padding: 0 32px 40px; }
+        .hero-section { min-height: 240px; }
+        .hero-image-col { width: 200px; }
+        .video-card { margin: 20px 0 24px; }
+        .features-row { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .cat-grid { grid-template-columns: repeat(4, 1fr); }
+        .stats-row { grid-template-columns: repeat(4, 1fr); }
+        .app-nav { padding: 16px 32px 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #promoTicker { animation: none; padding-left: 16px; white-space: normal; }
+        .page-content > * { animation: none; }
+    }
     </style>
 </head>
 <body>
@@ -483,12 +705,19 @@
                 <div class="app-nav-subtitle">Login &nbsp;•&nbsp; Sign Up &nbsp;•&nbsp; Dashboard</div>
             </div>
         </a>
-        <button class="app-nav-menu" onclick="openNavDrawer()" aria-label="Menu">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-    </nav>
-
-    <!-- ── Hamburger Drawer ──────────────────────────────────────────────────── -->
+                <div style="display:flex;align-items:center;gap:6px">
+            <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle theme"
+                style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);
+                color:#818cf8;font-size:0.85rem;cursor:pointer;padding:0;border-radius:50%;
+                width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+                -webkit-tap-highlight-color:transparent;transition:transform 0.2s">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+            <button class="app-nav-menu" onclick="openNavDrawer()" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav> ──────────────────────────────────────────────────── -->
     <div class="nav-overlay" id="navOverlay" onclick="closeNavDrawer()"></div>
     <div class="nav-drawer" id="navDrawer">
         <button class="nav-drawer-close" onclick="closeNavDrawer()">
@@ -528,13 +757,13 @@
             color:#e0e7ff;
             letter-spacing:0.02em;
             padding-left:100%">
-            🔥&nbsp;Freshman &amp; Health Science CoC Preparation — 299 ETB&nbsp;&nbsp;
-            ⚡&nbsp;Complete Video Lessons, PDF Notes &amp; Quizzes&nbsp;&nbsp;
-            📥&nbsp;Offline Access — Learn Without Internet&nbsp;&nbsp;
-            🎓&nbsp;1,200+ Students Already Enrolled&nbsp;&nbsp;
-            🏥&nbsp;COC Yileyal! 299 ብር ብቻ — ልዩ ቅናሽ&nbsp;&nbsp;
-            📐&nbsp;Freshman 1st &amp; 2nd Semester — 399 ETB&nbsp;&nbsp;
-            🔥&nbsp;Learn Anywhere, Anytime — Alpha Freshman Tutorial&nbsp;&nbsp;
+            &#x1F525;&nbsp;Enrolled Now @ 299 ETB &mdash; COC Health Science Prep&nbsp;&nbsp;
+            &#x26A1;&nbsp;Freshman 1st &amp; 2nd Semester &mdash; 399 ETB Only&nbsp;&nbsp;
+            &#x1F393;&nbsp;1,200+ Students Enrolled &mdash; Join Today!&nbsp;&nbsp;
+            &#x1F4E5;&nbsp;Offline Access &mdash; Learn Without Internet&nbsp;&nbsp;
+            &#x1F525;&nbsp;Enrolled Now @ 299 ETB &mdash; COC Yileyal! Special Offer&nbsp;&nbsp;
+            &#x1F4D0;&nbsp;Video Lessons, PDF Notes, Quizzes &amp; Exams&nbsp;&nbsp;
+            &#x2705;&nbsp;Learn Anywhere, Anytime &mdash; Alpha Freshman Tutorial&nbsp;&nbsp;
         </div>
     </div>
     <style>
@@ -554,6 +783,31 @@
     <!-- ── Page Content ──────────────────────────────────────────────────────── -->
     <div class="page-content">
 
+        <!-- Hero Section with Student Image -->
+        <div class="hero-section" style="margin-bottom:16px">
+            <div class="hero-text-col">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-graduation-cap"></i> #1 Freshman Platform
+                </div>
+                <div class="hero-title">
+                    Your Gateway to<br>
+                    <span>Academic Success</span>
+                </div>
+                <div class="hero-desc">
+                    Ethiopian Freshman & Health Science CoC
+                    Preparation — all in one place.
+                </div>
+            </div>
+            <div class="hero-image-col">
+                <div class="hero-glow"></div>
+                <div class="hero-student-fallback" style="position:absolute;bottom:0;right:0;width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center">
+                    <div style="text-align:center;padding-bottom:8px">
+                        <div style="font-size:4rem;filter:drop-shadow(0 0 16px rgba(99,102,241,0.4))">📚</div>
+                        <div style="font-size:2.5rem;margin-top:-8px;filter:drop-shadow(0 0 12px rgba(168,85,247,0.5))">🎓</div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- 1. Video Preview Card -->
         <div class="video-card" onclick="handleVideoClick()">
             <!-- Instructor thumbnail — if no actual thumbnail, show gradient placeholder -->
@@ -596,11 +850,6 @@
             Ethiopian Freshman &amp; Health Science CoC Preparation with top-tier materials,
             video lessons, quizzes, and more — all in one place.
         </p>
-        <p class="section-desc-am">
-            በካፍተኛ ቅናሽ የፍሬሽማን ኮርሶችና Health Science CoC ዝግጅት — ቪዲዮ ትምህርቶች፣ ፈተናዎች
-            ምንም ይሁን ምን በአንድ ቦታ።
-        </p>
-
         <!-- 3. 4 Feature Icons -->
         <div class="features-row">
             <a href="courses.html" class="feature-item">
@@ -679,7 +928,7 @@
             <div class="cta-card-icon">🚀</div>
             <div class="cta-card-text">
                 <div class="cta-card-title">Start Your Learning Journey Today</div>
-                <div class="cta-card-sub">ሁሉም Freshman ኮርሶችና CoC Prep — አሁን ይጀምሩ!</div>
+                <div class="cta-card-sub">All courses — Freshman &amp; COC Prep. Enroll now!</div>
             </div>
             <button class="cta-card-btn" onclick="event.stopPropagation();handleCtaClick()">
                 Get Started →
@@ -716,7 +965,37 @@
             </div>
         </div>
 
+
+        <!-- CTA at bottom — just above nav -->
+        <div class="cta-card" onclick="handleCtaClick()" style="margin-top:8px;margin-bottom:8px">
+            <div class="cta-card-icon">🚀</div>
+            <div class="cta-card-text">
+                <div class="cta-card-title">Start Your Learning Journey Today</div>
+                <div class="cta-card-sub">Enroll now — 399 ETB Freshman · 299 ETB COC</div>
+            </div>
+            <button class="cta-card-btn" onclick="event.stopPropagation();handleCtaClick()">
+                Get Started →
+            </button>
+        </div>
+
     </div><!-- /page-content -->
+
+    <!-- Footer -->
+    <footer style="background:rgba(15,23,42,0.9);border-top:1px solid rgba(30,41,59,0.9);
+        padding:20px 14px 16px;text-align:center;max-width:520px;margin:0 auto">
+        <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:4px 14px;margin-bottom:10px">
+            <a href="home.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Home</a>
+            <a href="courses.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Courses</a>
+            <a href="auth-login.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Login</a>
+            <a href="auth-register.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Sign Up</a>
+            <a href="offline.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Offline</a>
+            <a href="study-hub.html" style="color:#64748b;font-size:0.7rem;text-decoration:none">Study Hub</a>
+        </div>
+        <div style="font-size:0.62rem;color:#475569">
+            &copy; 2026 Alpha Freshman Tutorial &mdash; All rights reserved
+        </div>
+    </footer>
+
 
     <!-- ── Fixed Bottom Navigation ───────────────────────────────────────────── -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
@@ -744,6 +1023,31 @@
     <script src="notifications.js" onerror="void 0"></script>
 
     <script>
+    // ── Dark / Light Mode Toggle ────────────────────────────────────────────────
+    (function initTheme() {
+        var saved = localStorage.getItem('aft-theme') || 'dark';
+        applyTheme(saved);
+    })();
+    function applyTheme(mode) {
+        var icon = document.getElementById('themeIcon');
+        if (mode === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f0f4ff');
+            if (icon) { icon.className = 'fa-solid fa-sun'; icon.style.color = '#f59e0b'; }
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f172a');
+            if (icon) { icon.className = 'fa-solid fa-moon'; icon.style.color = '#818cf8'; }
+        }
+        localStorage.setItem('aft-theme', mode);
+    }
+    function toggleTheme() {
+        var current = localStorage.getItem('aft-theme') || 'dark';
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+        var btn = document.getElementById('themeToggleBtn');
+        if (btn) { btn.style.transform = 'scale(0.85)'; setTimeout(function(){ btn.style.transform = ''; }, 200); }
+    }
+
     // ── Nav Drawer ─────────────────────────────────────────────────────────────
     function openNavDrawer() {
         document.getElementById('navDrawer').classList.add('open');
