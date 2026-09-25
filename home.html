@@ -560,24 +560,77 @@ body {
 .page-content > *:nth-child(6) { animation-delay: 0.26s; }
 
 /* =====================================================================
-   DESKTOP OVERRIDE — keeps desktop layout intact, undoes mobile styles
+   DESKTOP OVERRIDE — proper wide layout, keeps mobile styles separate
    ===================================================================== */
 @media (min-width: 769px) {
     body { padding-bottom: 0; }
     .mobile-bottom-nav { display: none; }
-    .page-content { max-width: 960px; padding: 0 32px 48px; }
-    .hero-card  { min-height: 220px; }
-    .hero-image { width: 180px; }
-    .hero-h1    { font-size: 1.45rem; }
-    .hero-sub   { font-size: 0.8rem; max-width: 340px; }
-    .video-card { margin: 8px 0 24px; }
-    .features-row { gap: 14px; }
-    .cat-grid   { grid-template-columns: repeat(4, 1fr); }
-    .stats-row  { grid-template-columns: repeat(4, 1fr); }
-    .stat-val   { font-size: 1.35rem; }
-    .app-nav    { padding: 14px 32px 12px; }
-    .desc-title { font-size: 1.25rem; }
-    .desc-body  { font-size: 0.9rem; }
+
+    /* Wide container */
+    .page-content {
+        max-width: 1100px;
+        padding: 0 40px 60px;
+        margin: 0 auto;
+    }
+
+    /* Top nav wider */
+    .app-nav { padding: 16px 40px 14px; }
+    .app-nav-title { font-size: 1.1rem; }
+
+    /* Hero — full width row with larger text */
+    .hero-card   { min-height: 240px; margin: 24px 0 20px; }
+    .hero-image  { width: 200px; }
+    .hero-h1     { font-size: 1.6rem; }
+    .hero-sub    { font-size: 0.85rem; max-width: 380px; }
+    .hero-student span:nth-child(1) { font-size: 5rem; }
+    .hero-student span:nth-child(2) { font-size: 3rem; }
+
+    /* Video — capped width so it doesn't stretch wall-to-wall */
+    .video-card {
+        max-width: 680px;
+        margin: 0 auto 28px;
+        display: block;
+    }
+
+    /* Description */
+    .desc-title { font-size: 1.4rem; }
+    .desc-body  { font-size: 0.92rem; max-width: 700px; }
+
+    /* Features — 4 columns with more padding */
+    .features-row {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        max-width: 700px;
+    }
+    .feat       { padding: 16px 10px 14px; }
+    .feat-icon  { width: 52px; height: 52px; font-size: 1.35rem; }
+    .feat-label { font-size: 0.72rem; }
+
+    /* Search */
+    .search-bar { max-width: 560px; }
+
+    /* Stats */
+    .stats-row  { max-width: 700px; }
+    .stat-val   { font-size: 1.4rem; }
+    .stat-ico   { font-size: 1.3rem; }
+
+    /* Price pills */
+    .price-row  { max-width: 560px; }
+    .ppill      { font-size: 0.82rem; padding: 9px 20px; }
+
+    /* Category grid — 4 columns on desktop */
+    .cat-grid   { grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .cat-tile   { padding: 22px 16px; }
+    .cat-tile-ico  { font-size: 2rem; }
+    .cat-tile-name { font-size: 0.9rem; }
+
+    /* CTA */
+    .cta-card   { max-width: 700px; padding: 22px 20px; }
+    .cta-title  { font-size: 1rem; }
+    .cta-sub    { font-size: 0.78rem; }
+
+    /* Ticker font */
+    .ticker-track { font-size: 0.88rem; }
 }
 </style>
 </head>
