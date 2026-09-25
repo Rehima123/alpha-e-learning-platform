@@ -844,6 +844,206 @@ body {
         </div>
     </div>
 
+    <!-- AI SAMPLE QUESTIONS SECTION -->
+    <section style="margin:8px 0 20px">
+
+        <!-- Section header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:40px;height:40px;border-radius:12px;
+                    background:linear-gradient(135deg,#6366f1,#8b5cf6,#06b6d4);
+                    display:flex;align-items:center;justify-content:center;
+                    box-shadow:0 4px 16px rgba(99,102,241,0.4);flex-shrink:0">
+                    <span style="font-size:1.15rem">&#x1F916;</span>
+                </div>
+                <div>
+                    <div style="font-size:0.95rem;font-weight:800;color:var(--text);line-height:1.2">
+                        AI Tutor &mdash; Sample Questions
+                    </div>
+                    <div style="font-size:0.62rem;color:#818cf8;font-weight:700;
+                        display:flex;align-items:center;gap:4px;margin-top:2px">
+                        <span style="width:6px;height:6px;border-radius:50%;
+                            background:#22d3ee;display:inline-block;
+                            animation:ai-pulse 1.6s ease-in-out infinite"></span>
+                        AI-Powered Instant Answers
+                    </div>
+                </div>
+            </div>
+            <a href="ai-assistant.html" style="font-size:0.68rem;font-weight:700;
+                color:#818cf8;text-decoration:none;
+                background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);
+                padding:5px 12px;border-radius:50px;white-space:nowrap;
+                transition:background 0.2s">
+                Ask AI &#x2192;
+            </a>
+        </div>
+
+        <!-- Sample question cards — scrollable row on mobile, grid on desktop -->
+        <div id="aiQuestionsRow" style="
+            display:flex;gap:10px;overflow-x:auto;
+            padding-bottom:6px;scroll-snap-type:x mandatory;
+            -webkit-overflow-scrolling:touch;
+            scrollbar-width:none">
+
+            <!-- Card 1 -->
+            <div onclick="askSampleQuestion(this)" data-q="What is Newton's Second Law of Motion?"
+                style="flex-shrink:0;width:220px;scroll-snap-align:start;
+                background:var(--card);border:1px solid var(--border);
+                border-radius:16px;padding:16px 14px;cursor:pointer;
+                transition:transform 0.18s,border-color 0.18s;
+                -webkit-tap-highlight-color:transparent">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">
+                    <span style="font-size:1.1rem">&#x2694;&#xFE0F;</span>
+                    <span style="font-size:0.65rem;font-weight:800;color:#818cf8;
+                        background:rgba(99,102,241,0.12);padding:2px 8px;
+                        border-radius:50px;border:1px solid rgba(99,102,241,0.25)">Physics</span>
+                </div>
+                <p style="font-size:0.78rem;font-weight:700;color:var(--text);
+                    line-height:1.45;margin-bottom:10px">
+                    What is Newton's Second Law of Motion?
+                </p>
+                <div style="font-size:0.65rem;color:var(--text3);
+                    display:flex;align-items:center;gap:5px">
+                    <span style="font-size:0.8rem">&#x1F916;</span> Tap to ask AI
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div onclick="askSampleQuestion(this)" data-q="Explain the process of photosynthesis in plants."
+                style="flex-shrink:0;width:220px;scroll-snap-align:start;
+                background:var(--card);border:1px solid var(--border);
+                border-radius:16px;padding:16px 14px;cursor:pointer;
+                transition:transform 0.18s,border-color 0.18s;
+                -webkit-tap-highlight-color:transparent">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">
+                    <span style="font-size:1.1rem">&#x1F33F;</span>
+                    <span style="font-size:0.65rem;font-weight:800;color:#34d399;
+                        background:rgba(16,185,129,0.12);padding:2px 8px;
+                        border-radius:50px;border:1px solid rgba(16,185,129,0.25)">Biology</span>
+                </div>
+                <p style="font-size:0.78rem;font-weight:700;color:var(--text);
+                    line-height:1.45;margin-bottom:10px">
+                    Explain photosynthesis in plants.
+                </p>
+                <div style="font-size:0.65rem;color:var(--text3);
+                    display:flex;align-items:center;gap:5px">
+                    <span style="font-size:0.8rem">&#x1F916;</span> Tap to ask AI
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div onclick="askSampleQuestion(this)" data-q="What is the difference between acids and bases?"
+                style="flex-shrink:0;width:220px;scroll-snap-align:start;
+                background:var(--card);border:1px solid var(--border);
+                border-radius:16px;padding:16px 14px;cursor:pointer;
+                transition:transform 0.18s,border-color 0.18s;
+                -webkit-tap-highlight-color:transparent">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">
+                    <span style="font-size:1.1rem">&#x1F9EA;</span>
+                    <span style="font-size:0.65rem;font-weight:800;color:#fbbf24;
+                        background:rgba(245,158,11,0.12);padding:2px 8px;
+                        border-radius:50px;border:1px solid rgba(245,158,11,0.25)">Chemistry</span>
+                </div>
+                <p style="font-size:0.78rem;font-weight:700;color:var(--text);
+                    line-height:1.45;margin-bottom:10px">
+                    Difference between acids and bases?
+                </p>
+                <div style="font-size:0.65rem;color:var(--text3);
+                    display:flex;align-items:center;gap:5px">
+                    <span style="font-size:0.8rem">&#x1F916;</span> Tap to ask AI
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div onclick="askSampleQuestion(this)" data-q="Solve: find the derivative of f(x) = 3x² + 2x - 5"
+                style="flex-shrink:0;width:220px;scroll-snap-align:start;
+                background:var(--card);border:1px solid var(--border);
+                border-radius:16px;padding:16px 14px;cursor:pointer;
+                transition:transform 0.18s,border-color 0.18s;
+                -webkit-tap-highlight-color:transparent">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">
+                    <span style="font-size:1.1rem">&#x1F4D0;</span>
+                    <span style="font-size:0.65rem;font-weight:800;color:#f87171;
+                        background:rgba(244,63,94,0.12);padding:2px 8px;
+                        border-radius:50px;border:1px solid rgba(244,63,94,0.25)">Math</span>
+                </div>
+                <p style="font-size:0.78rem;font-weight:700;color:var(--text);
+                    line-height:1.45;margin-bottom:10px">
+                    Find the derivative of f(x) = 3x&#xB2; + 2x &minus; 5
+                </p>
+                <div style="font-size:0.65rem;color:var(--text3);
+                    display:flex;align-items:center;gap:5px">
+                    <span style="font-size:0.8rem">&#x1F916;</span> Tap to ask AI
+                </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div onclick="askSampleQuestion(this)" data-q="What are the main causes of the Ethiopian Student Movement?"
+                style="flex-shrink:0;width:220px;scroll-snap-align:start;
+                background:var(--card);border:1px solid var(--border);
+                border-radius:16px;padding:16px 14px;cursor:pointer;
+                transition:transform 0.18s,border-color 0.18s;
+                -webkit-tap-highlight-color:transparent">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">
+                    <span style="font-size:1.1rem">&#x1F30D;</span>
+                    <span style="font-size:0.65rem;font-weight:800;color:#60a5fa;
+                        background:rgba(96,165,250,0.12);padding:2px 8px;
+                        border-radius:50px;border:1px solid rgba(96,165,250,0.25)">History</span>
+                </div>
+                <p style="font-size:0.78rem;font-weight:700;color:var(--text);
+                    line-height:1.45;margin-bottom:10px">
+                    Causes of the Ethiopian Student Movement?
+                </p>
+                <div style="font-size:0.65rem;color:var(--text3);
+                    display:flex;align-items:center;gap:5px">
+                    <span style="font-size:0.8rem">&#x1F916;</span> Tap to ask AI
+                </div>
+            </div>
+
+        </div><!-- /questions row -->
+        <style>
+        #aiQuestionsRow::-webkit-scrollbar { display:none; }
+        [data-q]:hover { transform:translateY(-3px); border-color:rgba(99,102,241,0.45) !important; }
+        [data-q]:active { transform:scale(0.96); }
+        @keyframes ai-pulse {
+            0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(34,211,238,0.5); }
+            50%      { opacity:0.6; box-shadow:0 0 0 4px rgba(34,211,238,0); }
+        }
+        /* Desktop: unwrap into a 3-col grid */
+        @media(min-width:769px) {
+            #aiQuestionsRow {
+                display:grid !important;
+                grid-template-columns:repeat(3,1fr);
+                overflow-x:visible;
+                gap:14px;
+            }
+            #aiQuestionsRow > div { width:auto !important; }
+        }
+        </style>
+
+        <!-- AI Quick-answer panel (shows when a question is tapped) -->
+        <div id="aiAnswerPanel" style="display:none;margin-top:14px;
+            background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(6,182,212,0.08));
+            border:1px solid rgba(99,102,241,0.3);border-radius:16px;padding:16px 14px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                <div style="width:28px;height:28px;border-radius:50%;
+                    background:linear-gradient(135deg,#6366f1,#06b6d4);
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:0.85rem;flex-shrink:0">&#x1F916;</div>
+                <span style="font-size:0.72rem;font-weight:800;color:#818cf8">AI Tutor</span>
+                <span id="aiTypingDots" style="font-size:0.72rem;color:#64748b"></span>
+            </div>
+            <p id="aiAnswerText" style="font-size:0.8rem;color:var(--text2);
+                line-height:1.65;margin-bottom:10px"></p>
+            <a href="ai-assistant.html" style="font-size:0.7rem;font-weight:700;color:#818cf8;
+                text-decoration:none;display:inline-flex;align-items:center;gap:5px">
+                &#x1F916; Ask a deeper question in AI Tutor &#x2192;
+            </a>
+        </div>
+
+    </section>
+    <!-- /AI SAMPLE QUESTIONS -->
+
     <!-- 9. CTA CARD — at the bottom, just above footer -->
     <div class="cta-card" onclick="handleCtaClick()">
         <div class="cta-ico">&#x1F680;</div>
@@ -1005,6 +1205,54 @@ function doSearch() {
         }
     } catch(e) {}
 })();
+
+// ── AI Sample Questions ───────────────────────────────────────────────────────
+var AI_ANSWERS = {
+    "What is Newton's Second Law of Motion?":
+        "Newton's Second Law states that Force = Mass × Acceleration (F = ma). This means the net force on an object equals the product of its mass and the acceleration produced. A larger force on the same mass produces greater acceleration, while a heavier object requires more force to achieve the same acceleration.",
+    "Explain the process of photosynthesis in plants.":
+        "Photosynthesis is the process by which plants convert light energy (sunlight) into chemical energy (glucose). Using chlorophyll in chloroplasts, plants absorb CO₂ from air and H₂O from soil. The light-dependent reactions produce ATP and NADPH, while the Calvin cycle uses these to synthesize glucose: 6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂.",
+    "What is the difference between acids and bases?":
+        "Acids donate H⁺ ions (protons) in solution — they have a pH below 7, taste sour, and turn litmus paper red (e.g., HCl, H₂SO₄). Bases accept H⁺ ions — they have a pH above 7, feel slippery, and turn litmus blue (e.g., NaOH, NH₃). When combined they neutralize each other to form water and a salt.",
+    "Solve: find the derivative of f(x) = 3x² + 2x - 5":
+        "Using the power rule d/dx[xⁿ] = nxⁿ⁻¹: f'(x) = d/dx[3x²] + d/dx[2x] + d/dx[-5] = 3(2x¹) + 2(1) + 0 = 6x + 2. So the derivative is f'(x) = 6x + 2. At x = 0, f'(0) = 2 (slope of tangent at origin).",
+    "What are the main causes of the Ethiopian Student Movement?":
+        "The Ethiopian Student Movement (1960s–70s) was driven by: (1) Land feudalism — students demanded 'Land to the Tiller'; (2) Haile Selassie's autocratic rule and lack of democratic freedoms; (3) Marxist ideology spreading through universities; (4) Regional inequalities and ethnic marginalization; (5) Influence of global liberation movements and the 1960 coup attempt."
+};
+
+function askSampleQuestion(card) {
+    var q = card.getAttribute('data-q');
+    var panel = document.getElementById('aiAnswerPanel');
+    var textEl = document.getElementById('aiAnswerText');
+    var dots   = document.getElementById('aiTypingDots');
+
+    // Visual feedback on card
+    document.querySelectorAll('[data-q]').forEach(function(c) {
+        c.style.borderColor = '';
+        c.style.background  = '';
+    });
+    card.style.borderColor = 'rgba(99,102,241,0.6)';
+    card.style.background  = 'rgba(99,102,241,0.07)';
+
+    // Show panel with typing effect
+    panel.style.display = 'block';
+    textEl.textContent  = '';
+    dots.textContent    = ' Thinking...';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    var answer = AI_ANSWERS[q] || 'This topic is covered in detail in our courses. Tap "Ask AI" for a full explanation!';
+
+    // Simulate typing
+    setTimeout(function() {
+        dots.textContent = '';
+        var i = 0;
+        var timer = setInterval(function() {
+            textEl.textContent += answer[i];
+            i++;
+            if (i >= answer.length) clearInterval(timer);
+        }, 18);
+    }, 900);
+}
 </script>
 <script src="/pwa.js" onerror="void 0"></script>
 </body>
