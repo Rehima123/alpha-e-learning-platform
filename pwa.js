@@ -2,13 +2,71 @@
 
 let deferredPrompt;
 
-// Register service worker
+// Register service worker + handle update notifications
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker Registered!', reg))
-            .catch(err => console.warn('Service Worker Registration Failed:', err));
+            .then(reg => {
+                console.log('[PWA] Service Worker Registered', reg);
+
+                // Check for updates every 60 seconds (catches deploys on mobile)
+                setInterval(() => reg.update(), 60 * 1000);
+
+                // New SW waiting to activate → show update banner
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showUpdateBanner(reg);
+                        }
+                    });
+                });
+            })
+            .catch(err => console.warn('[PWA] Service Worker Registration Failed:', err));
+
+        // When SW activates (after SKIP_WAITING), reload page to get fresh files
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+            }
+        });
     });
+}
+
+// ── Show "Update Available" banner ───────────────────────────────────────────
+function showUpdateBanner(reg) {
+    if (document.getElementById('sw-update-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'sw-update-banner';
+    banner.style.cssText = `
+        position:fixed;top:0;left:0;right:0;z-index:999999;
+        background:linear-gradient(135deg,#667eea,#764ba2);color:white;
+        padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+        gap:12px;font-family:'Segoe UI',sans-serif;font-size:0.9rem;
+        box-shadow:0 4px 20px rgba(102,126,234,0.5);`;
+    banner.innerHTML = `
+        <span>🔄 አዲስ ዝርዝር (update) አለ! ምርጥ ልምድ ለማግኘት አዙሩ።</span>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+            <button id="sw-update-btn"
+                style="background:white;color:#667eea;border:none;padding:7px 16px;
+                border-radius:20px;font-weight:700;cursor:pointer;font-size:0.85rem">
+                ✅ አዙር (Reload)
+            </button>
+            <button id="sw-dismiss-update"
+                style="background:rgba(255,255,255,0.2);border:none;color:white;
+                padding:7px 12px;border-radius:20px;cursor:pointer;font-size:0.85rem">
+                ✕
+            </button>
+        </div>`;
+    document.body.prepend(banner);
+
+    document.getElementById('sw-update-btn').onclick = () => {
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        banner.remove();
+    };
+    document.getElementById('sw-dismiss-update').onclick = () => banner.remove();
 }
 
 // ── Capture install prompt ────────────────────────────────────────────────────

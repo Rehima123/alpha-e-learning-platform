@@ -123,6 +123,14 @@ exports.approveEnrollment = async (req, res, next) => {
         // Increment course enrolled count
         await Course.findByIdAndUpdate(enrollment.course._id, { $inc: { enrolledStudents: 1 } });
 
+        // ── Assign package to student if provided ─────────────────────────────
+        const { enrolledPackage } = req.body;
+        const validPackages = ['None', '1st Semester Natural', '1st Semester Social',
+                               '2nd Semester Natural', '2nd Semester Social'];
+        if (enrolledPackage && validPackages.includes(enrolledPackage)) {
+            await User.findByIdAndUpdate(enrollment.student._id, { enrolledPackage });
+        }
+
         // Send approval email
         try {
             const emailData = templates.enrollmentApproved(enrollment.student, enrollment.course);

@@ -97,3 +97,8 @@ exports.isContentAdmin= exports.authorize('super_admin','content_admin');
 exports.isFinanceAdmin= exports.authorize('super_admin','finance_admin');
 exports.isSupportAdmin= exports.authorize('super_admin','support_admin');
 exports.isInstructor  = exports.authorize('super_admin','content_admin','instructor','admin');
+
+// Re-export verifyAdmin from authMiddleware for routes that use it directly
+const { verifyAdmin, verifyAnyAdmin } = require('./authMiddleware');
+exports.verifyAdmin    = verifyAdmin;
+exports.verifyAnyAdmin = verifyAnyAdmin;
