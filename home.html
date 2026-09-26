@@ -792,6 +792,26 @@ body {
                 Ethiopian Freshman &amp; Health Science
                 CoC Preparation &mdash; all in one place.
             </p>
+            <!-- Hero CTA button — clearly visible below title -->
+            <a href="auth-register.html"
+                onclick="(function(e){var u=null;try{u=JSON.parse(localStorage.getItem('currentUser'));}catch(x){}if(u&&u.id){e.preventDefault();window.location.href='payment.html?method=manual';}})(event)"
+                style="display:inline-flex;align-items:center;gap:7px;
+                    margin-top:14px;
+                    background:linear-gradient(135deg,#f59e0b,#f97316);
+                    color:#0a0f1e;font-weight:900;font-size:0.78rem;
+                    padding:9px 18px;border-radius:50px;
+                    text-decoration:none;width:fit-content;
+                    box-shadow:0 4px 18px rgba(245,158,11,0.45);
+                    -webkit-tap-highlight-color:transparent;
+                    transition:transform 0.15s,box-shadow 0.15s"
+                onmouseover="this.style.transform='scale(1.05)'"
+                onmouseout="this.style.transform='scale(1)'">
+                &#x1F680; Get Started
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </a>
         </div>
         <div class="hero-image">
             <div class="hero-student">

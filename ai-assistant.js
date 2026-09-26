@@ -230,7 +230,8 @@ class AIAssistant {
     position: fixed;
     bottom: 80px;
     right: 18px;
-    z-index: 9998;
+    /* above bottom nav (9999) and chat panel (9997) */
+    z-index: 10000;
     border: none;
     background: none;
     padding: 0;
@@ -295,7 +296,7 @@ class AIAssistant {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    z-index: 9997;
+    z-index: 9998;
     box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05);
     transform: scale(0.88) translateY(20px);
     opacity: 0;
@@ -312,7 +313,9 @@ class AIAssistant {
     #aiPanel {
         bottom: 0; right: 0;
         width: 100vw; max-width: 100vw;
-        height: 85vh; max-height: 85vh;
+        /* leave room for iOS home bar + bottom nav */
+        height: calc(100vh - 68px);
+        max-height: calc(100vh - 68px);
         border-radius: 22px 22px 0 0;
         transform: translateY(40px);
     }
@@ -373,6 +376,8 @@ class AIAssistant {
 /* ── MESSAGES ── */
 #aiMessages {
     flex: 1;
+    /* Critical: min-height:0 allows flex child to shrink below content size */
+    min-height: 0;
     overflow-y: auto;
     padding: 14px 14px 8px;
     display: flex;
@@ -446,12 +451,18 @@ class AIAssistant {
 /* ── CHIPS ── */
 .aiChips {
     display: flex;
-    flex-wrap: wrap;
+    /* scroll horizontally instead of wrapping — prevents overlap with input */
+    flex-wrap: nowrap;
+    overflow-x: auto;
     gap: 6px;
-    padding: 6px 14px 8px;
+    padding: 8px 14px 10px;
     border-top: 1px solid rgba(99,102,241,0.12);
     flex-shrink: 0;
+    /* hide scrollbar but keep scrolling */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
+.aiChips::-webkit-scrollbar { display: none; }
 .aiChip {
     font-size: 0.68rem; font-weight: 700;
     padding: 5px 12px; border-radius: 50px;
