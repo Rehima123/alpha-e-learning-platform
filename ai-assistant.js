@@ -1,559 +1,678 @@
-// AI Assistant for Alpha Freshman Tutorial
+/**
+ * Alpha AI Assistant — Gemini-powered floating chat widget
+ * Covers: Freshman courses, streams, career paths, GPA, study tips
+ */
+
+// ── System context that shapes every Gemini response ─────────────────────────
+const ALPHA_AI_SYSTEM = `You are Alpha AI, the official intelligent study assistant for Alpha Freshman Tutorial — the #1 Ethiopian university freshman learning platform. You are friendly, professional, and expert in:
+
+PLATFORM INFO:
+- Alpha Freshman Tutorial offers Ethiopian Freshman Curriculum & Health Science CoC Preparation
+- Regular Freshman Courses (1st & 2nd Semester, Natural & Social Science): 399 ETB
+- COC Health Science Preparation (Special Offer): 299 ETB
+- 6 months full access, video lessons, PDF notes, quizzes, and offline downloads
+
+FRESHMAN CURRICULUM (Ethiopia):
+FIRST SEMESTER — Natural Science: Communicative English I, Applied Mathematics I, General Physics, General Chemistry, Critical Thinking & Logic, Geography of Ethiopia, General Psychology, Physical Education
+FIRST SEMESTER — Social Science: Communicative English I, General Mathematics (Social), Introduction to Economics, Geography of Ethiopia, Critical Thinking & Logic, General Psychology, Physical Education
+SECOND SEMESTER — Natural Science: Academic Writing (English II), Applied Mathematics II, General Biology, Emerging Technologies/ICT, History of Ethiopia, Moral & Civic Education, Inclusiveness
+SECOND SEMESTER — Social Science: Academic Writing (English II), Entrepreneurship, Social Anthropology, ICT, History of Ethiopia, Moral & Civic Education, Inclusiveness
+
+COC HEALTH SCIENCE PREPARATION:
+Human Anatomy & Physiology, General Biology, General Chemistry, Public Health & Epidemiology, Basic Pharmacology, English Language Competency, Aptitude Test (CoC), Model Exams 1 & 2
+
+STREAMS & PLACEMENT:
+- Natural Science → Engineering, Medicine, Pharmacy, Natural Sciences, Agriculture (requires GPA 3.75+ for competitive programs like Medicine/Engineering)
+- Social Science → Law, Business Administration, Economics, Education, Social Sciences (requires GPA 3.5+ for competitive programs like Law)
+- Department placement is based on Freshman Year GPA + National Entrance Exam results
+
+STUDY TIPS:
+- Use active recall and spaced repetition
+- Study in focused 25-minute Pomodoro sessions
+- Form study groups for difficult subjects
+- Use past exam papers for practice
+- Start exam prep 3 weeks before finals
+- Watch video lessons, then read PDF notes, then attempt quizzes
+
+Always answer in clear, helpful English. Keep responses concise (2-4 paragraphs max unless explaining a complex topic). Be encouraging and supportive. If asked about pricing, always mention 399 ETB for Freshman courses and 299 ETB for COC. End responses with a brief follow-up question to keep the conversation going.`;
+
+// ── Quick-action chip prompts ────────────────────────────────────────────────
+const QUICK_CHIPS = [
+    { label: '📚 1st Semester Courses',  q: 'What courses are in the first semester?' },
+    { label: '🔬 Natural vs Social',      q: "What's the difference between Natural and Social Science streams?" },
+    { label: '💡 Study Tips',             q: 'Give me the best study tips for freshman year.' },
+    { label: '🏥 COC Preparation',        q: 'Tell me about the COC Health Science preparation program.' },
+    { label: '🎓 Career Paths',           q: 'What career paths can I pursue after freshman year?' },
+    { label: '📊 GPA Requirements',       q: 'What GPA do I need for competitive programs like Medicine and Engineering?' }
+];
+
+// ── Local fallback answers when no Gemini key ────────────────────────────────
+const LOCAL_ANSWERS = {
+    'first semester': `**First Semester Courses**\n\n**Natural Science stream:** Communicative English I, Applied Mathematics I, General Physics, General Chemistry, Critical Thinking & Logic, Geography of Ethiopia, General Psychology, and Physical Education.\n\n**Social Science stream:** Communicative English I, General Mathematics, Introduction to Economics, Geography, Critical Thinking, Psychology, and Physical Education.\n\nAll courses are available on Alpha Freshman Tutorial for **399 ETB** with 6 months of full access. What else would you like to know?`,
+    'natural.*social|stream': `**Natural Science** focuses on Physics, Biology, Chemistry, and Mathematics — leading to careers in Engineering, Medicine, Pharmacy, and Sciences. Competitive programs require GPA **3.75+**.\n\n**Social Science** covers Economics, History, Geography, and Communication — leading to Law, Business, Education, and Social Sciences. Competitive programs require GPA **3.5+**.\n\nYour stream choice shapes your entire academic career, so choose based on your strengths and interests! Which stream are you considering?`,
+    'study tip|study habit': `**Top Study Tips for Freshman Year:**\n\n1. **Pomodoro Technique** — Study in focused 25-minute sessions with 5-minute breaks\n2. **Active Recall** — Test yourself instead of re-reading notes\n3. **Spaced Repetition** — Review material at increasing intervals\n4. **Past Papers** — Practice with previous exam questions\n5. **Start Early** — Begin exam prep 3 weeks before finals\n\nAlpha Freshman Tutorial's video lessons + PDF notes + quizzes system is designed exactly around these principles. Want tips for a specific subject?`,
+    'coc|health science|299': `**COC Health Science Preparation** is available for a special price of **299 ETB** (was 399 ETB)!\n\nIt covers: Human Anatomy & Physiology, General Biology, General Chemistry, Public Health & Epidemiology, Basic Pharmacology, English Competency, and 2 Full Model Exams.\n\nThis program is designed for all health science students (Nursing, Pharmacy, Medicine, Medical Lab, etc.) preparing for the national CoC license exam. Would you like to enroll?`,
+    'career|after freshman': `**Career Pathways After Freshman Year:**\n\n**Natural Science graduates** can pursue: ⚕️ Medicine, 💊 Pharmacy, 🏗️ Engineering (Civil, Electrical, Mechanical), 🔬 Natural Sciences, 🌾 Agriculture\n\n**Social Science graduates** can pursue: ⚖️ Law, 💼 Business Administration, 📊 Economics, 🎓 Education, 🌍 International Relations\n\nYour Freshman GPA directly determines which department you're placed in. Alpha Freshman Tutorial helps you maximize your GPA! What career interests you most?`,
+    'gpa|grade|placement': `**GPA Requirements for Competitive Programs:**\n\n| Program | Minimum GPA |\n|---|---|\n| Medicine / Pharmacy | 3.75+ |\n| Engineering (all fields) | 3.75+ |\n| Law | 3.50+ |\n| Business Administration | 3.50+ |\n| Education | 3.25+ |\n\nAlpha Freshman Tutorial's structured video lessons, PDF notes, and practice quizzes are designed to help you achieve these GPAs. Start preparing today for **399 ETB**. Do you want study strategies for a specific subject?`
+};
+
+// ── Gemini API call ───────────────────────────────────────────────────────────
+async function callGeminiAPI(userMessage, history) {
+    // Try backend first (more secure — key stays server-side)
+    try {
+        const token = localStorage.getItem('authToken');
+        const res = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': 'Bearer ' + token })
+            },
+            body: JSON.stringify({
+                message: userMessage,
+                history: history.slice(-6), // last 3 exchanges
+                systemContext: ALPHA_AI_SYSTEM
+            }),
+            signal: AbortSignal.timeout(12000)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.reply) return data.reply;
+        }
+    } catch (e) { /* fall through to local */ }
+
+    // Client-side Gemini fallback (if key injected via window)
+    const geminiKey = window.GEMINI_API_KEY;
+    if (geminiKey) {
+        try {
+            const contents = [];
+            history.slice(-4).forEach(function(m) {
+                contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] });
+            });
+            contents.push({ role: 'user', parts: [{ text: userMessage }] });
+
+            const res = await fetch(
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + geminiKey,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: ALPHA_AI_SYSTEM }] },
+                        contents: contents,
+                        generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
+                    }),
+                    signal: AbortSignal.timeout(12000)
+                }
+            );
+            if (res.ok) {
+                const data = await res.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) return text;
+            }
+        } catch (e) { /* fall through to local */ }
+    }
+
+    // Local smart fallback
+    return localAnswer(userMessage);
+}
+
+function localAnswer(q) {
+    var ql = q.toLowerCase();
+    for (var key in LOCAL_ANSWERS) {
+        if (new RegExp(key, 'i').test(ql)) return LOCAL_ANSWERS[key];
+    }
+    return "I'm Alpha AI, your study assistant! I can help with freshman courses, stream differences, study tips, career paths, and COC preparation (299 ETB).\n\nFor the best experience, try one of the quick-action buttons below, or ask me anything about the Ethiopian freshman curriculum! 🎓";
+}
+
+// ── Markdown-lite renderer ────────────────────────────────────────────────────
+function renderMarkdown(text) {
+    return text
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code style="background:rgba(99,102,241,0.15);padding:1px 5px;border-radius:4px;font-size:0.85em">$1</code>')
+        .replace(/\n\n/g, '</p><p style="margin:8px 0 0">')
+        .replace(/\n/g, '<br>')
+        .replace(/\| (.+?) \|/g, function(m) {
+            return '<span style="display:inline-flex;gap:16px;font-size:0.8em;opacity:0.85">'+m+'</span>';
+        });
+}
+
+// ── Main AI Assistant class ───────────────────────────────────────────────────
 class AIAssistant {
     constructor() {
-        this.conversationHistory = [];
-        this.isOpen = false;
+        this.history      = [];
+        this.isOpen       = false;
+        this.isTyping     = false;
         this.init();
     }
 
     init() {
-        this.createAssistantUI();
-        this.attachEventListeners();
-        this.loadConversationHistory();
+        this.inject();
+        this.bind();
+        this.loadHistory();
     }
 
-    createAssistantUI() {
-        const assistantHTML = `
-            <div id="aiAssistantContainer" class="ai-assistant-container">
-                <button id="aiAssistantToggle" class="ai-assistant-toggle" title="Alpha AI - Your Study Assistant">
-                    🤖
-                </button>
-                
-                <div id="aiAssistantPanel" class="ai-assistant-panel">
-                    <div class="ai-assistant-header">
-                        <h3>🤖 Alpha AI</h3>
-                        <button id="aiAssistantClose" class="ai-close-btn">&times;</button>
-                    </div>
-                    
-                    <div class="ai-assistant-body">
-                        <div id="aiChatMessages" class="ai-chat-messages">
-                            <div class="ai-message ai-message-assistant">
-                                <p>👋 Hello! I'm <strong>Alpha AI</strong>, your intelligent study companion for Alpha Freshman Tutorial.</p>
-                                <p>I can help you with:</p>
-                                <ul>
-                                    <li>📚 Course information and recommendations</li>
-                                    <li>🎓 Study tips and strategies</li>
-                                    <li>📝 Exam preparation guidance</li>
-                                    <li>🔬 Natural vs Social Science stream advice</li>
-                                    <li>💡 Career pathway information</li>
-                                    <li>❓ Any questions about Ethiopian freshman curriculum</li>
-                                </ul>
-                                <p>What would you like to know?</p>
-                            </div>
-                        </div>
-                        
-                        <div class="ai-quick-questions">
-                            <button class="ai-quick-btn" data-question="What courses should I take in first semester?">First Semester Courses</button>
-                            <button class="ai-quick-btn" data-question="What's the difference between Natural and Social Science streams?">Stream Differences</button>
-                            <button class="ai-quick-btn" data-question="How can I improve my study habits?">Study Tips</button>
-                            <button class="ai-quick-btn" data-question="What careers can I pursue after freshman year?">Career Paths</button>
-                        </div>
-                        
-                        <div class="ai-input-container">
-                            <textarea id="aiMessageInput" placeholder="Ask me anything about your studies..." rows="2"></textarea>
-                            <button id="aiSendBtn" class="ai-send-btn">
-                                <span>Send</span> ➤
-                            </button>
-                        </div>
-                    </div>
+    inject() {
+        // Remove old if exists
+        var old = document.getElementById('alphaAIRoot');
+        if (old) old.remove();
+
+        var root = document.createElement('div');
+        root.id = 'alphaAIRoot';
+        root.innerHTML = `
+<!-- ── FLOATING WIDGET ────────────────────────────────────────────────── -->
+<button id="aiFab" aria-label="Open Alpha AI" onclick="window._alphaAI.toggle()">
+    <span id="aiFabRing" class="aiFabRing"></span>
+    <span class="aiFabInner">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="14" rx="3"/>
+            <path d="M8 17v2M12 17v2M16 17v2"/>
+            <circle cx="9" cy="10" r="1.5" fill="currentColor" stroke="none"/>
+            <circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+        <span class="aiFabLabel">Alpha AI</span>
+    </span>
+    <span class="aiFabBadge">&#x1F916;</span>
+</button>
+
+<!-- ── CHAT PANEL ─────────────────────────────────────────────────────── -->
+<div id="aiPanel" aria-hidden="true">
+    <!-- Header -->
+    <div class="aiHeader">
+        <div class="aiHeaderGlow"></div>
+        <div class="aiHeaderContent">
+            <div class="aiHeaderLeft">
+                <div class="aiAvatar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="14" rx="3"/>
+                        <path d="M8 17v2M12 17v2M16 17v2"/>
+                        <circle cx="9" cy="10" r="1.5" fill="white" stroke="none"/>
+                        <circle cx="15" cy="10" r="1.5" fill="white" stroke="none"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="aiHeaderTitle">Alpha AI</div>
+                    <div class="aiStatus"><span class="aiDot"></span> Online &mdash; Powered by Gemini</div>
                 </div>
             </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', assistantHTML);
+            <div style="display:flex;align-items:center;gap:8px">
+                <button class="aiHeaderBtn" onclick="window._alphaAI.clear()" title="Clear chat">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                </button>
+                <button class="aiHeaderBtn aiCloseBtn" onclick="window._alphaAI.close()" title="Close">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="aiMessages"></div>
+
+    <!-- Quick chips -->
+    <div id="aiChips" class="aiChips"></div>
+
+    <!-- Input -->
+    <div class="aiInputRow">
+        <textarea id="aiInput" placeholder="Ask about courses, streams, career paths..." rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window._alphaAI.send()}"
+            oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+        <button id="aiSendBtn" onclick="window._alphaAI.send()" aria-label="Send">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<style>
+/* ── FAB ── */
+#aiFab {
+    position: fixed;
+    bottom: 80px;
+    right: 18px;
+    z-index: 9998;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s;
+}
+@media (min-width: 769px) { #aiFab { bottom: 28px; right: 28px; } }
+#aiFab:hover { transform: scale(1.06); }
+#aiFab:active { transform: scale(0.94); }
+.aiFabRing {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50px;
+    background: conic-gradient(from 0deg, #6366f1, #8b5cf6, #06b6d4, #6366f1);
+    animation: fabSpin 4s linear infinite;
+    opacity: 0.55;
+    filter: blur(3px);
+}
+@keyframes fabSpin { to { transform: rotate(360deg); } }
+.aiFabInner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed, #06b6d4);
+    color: white;
+    padding: 11px 18px 11px 14px;
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    box-shadow: 0 8px 28px rgba(99,102,241,0.5);
+}
+.aiFabLabel { line-height: 1; }
+.aiFabBadge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 1rem;
+    animation: fabBounce 2.5s ease-in-out infinite;
+}
+@keyframes fabBounce {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-4px) rotate(8deg); }
+}
+
+/* ── PANEL ── */
+#aiPanel {
+    position: fixed;
+    bottom: 80px;
+    right: 18px;
+    width: 360px;
+    max-width: calc(100vw - 24px);
+    height: 540px;
+    max-height: calc(100vh - 100px);
+    background: rgba(10,15,30,0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 22px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9997;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05);
+    transform: scale(0.88) translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+}
+#aiPanel.open {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    pointer-events: all;
+}
+@media (min-width: 769px) { #aiPanel { bottom: 88px; right: 28px; } }
+@media (max-width: 480px) {
+    #aiPanel {
+        bottom: 0; right: 0;
+        width: 100vw; max-width: 100vw;
+        height: 85vh; max-height: 85vh;
+        border-radius: 22px 22px 0 0;
+        transform: translateY(40px);
+    }
+    #aiPanel.open { transform: translateY(0); }
+    #aiFab { bottom: 70px; }
+}
+
+/* ── HEADER ── */
+.aiHeader { position: relative; flex-shrink: 0; }
+.aiHeaderGlow {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed, #06b6d4);
+    opacity: 1;
+}
+.aiHeaderContent {
+    position: relative;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 14px 14px 12px;
+}
+.aiHeaderLeft { display: flex; align-items: center; gap: 10px; }
+.aiAvatar {
+    width: 38px; height: 38px;
+    background: rgba(255,255,255,0.18);
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.aiHeaderTitle { font-weight: 800; font-size: 0.9rem; color: white; line-height: 1.2; }
+.aiStatus {
+    font-size: 0.62rem; color: rgba(255,255,255,0.78);
+    display: flex; align-items: center; gap: 5px; margin-top: 2px;
+}
+.aiDot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #22d3ee;
+    animation: dotPulse 1.8s ease-in-out infinite;
+    flex-shrink: 0;
+}
+@keyframes dotPulse {
+    0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(34,211,238,0.5); }
+    50% { opacity:0.7; box-shadow:0 0 0 4px rgba(34,211,238,0); }
+}
+.aiHeaderBtn {
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: white; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.18s;
+    -webkit-tap-highlight-color: transparent;
+}
+.aiHeaderBtn:hover { background: rgba(255,255,255,0.25); }
+
+/* ── MESSAGES ── */
+#aiMessages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 14px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-behavior: smooth;
+}
+#aiMessages::-webkit-scrollbar { width: 4px; }
+#aiMessages::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.35); border-radius: 4px; }
+.aiMsg {
+    display: flex;
+    gap: 8px;
+    max-width: 92%;
+    animation: msgIn 0.22s ease both;
+}
+@keyframes msgIn {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+.aiMsg.user  { align-self: flex-end; flex-direction: row-reverse; }
+.aiMsg.bot   { align-self: flex-start; }
+.aiMsgAvatar {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; flex-shrink: 0; margin-top: 2px;
+}
+.aiMsg.bot  .aiMsgAvatar { background: linear-gradient(135deg,#4f46e5,#7c3aed); color: white; }
+.aiMsg.user .aiMsgAvatar { background: rgba(99,102,241,0.2); }
+.aiMsgBubble {
+    padding: 10px 13px;
+    border-radius: 16px;
+    font-size: 0.82rem;
+    line-height: 1.62;
+    max-width: 100%;
+}
+.aiMsg.bot  .aiMsgBubble {
+    background: rgba(30,41,59,0.9);
+    border: 1px solid rgba(99,102,241,0.2);
+    color: #e2e8f0;
+    border-radius: 4px 16px 16px 16px;
+}
+.aiMsg.user .aiMsgBubble {
+    background: linear-gradient(135deg,#4f46e5,#7c3aed);
+    color: white;
+    border-radius: 16px 4px 16px 16px;
+}
+
+/* Typing indicator */
+.aiTyping .aiMsgBubble::after {
+    content: '';
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+}
+.typingDots {
+    display: inline-flex; gap: 4px; padding: 4px 2px;
+}
+.typingDots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #818cf8;
+    animation: typDot 1.2s ease-in-out infinite;
+}
+.typingDots span:nth-child(2) { animation-delay: 0.2s; }
+.typingDots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typDot {
+    0%,80%,100% { transform: scale(0.7); opacity: 0.5; }
+    40%          { transform: scale(1);   opacity: 1; }
+}
+
+/* ── CHIPS ── */
+.aiChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 14px 8px;
+    border-top: 1px solid rgba(99,102,241,0.12);
+    flex-shrink: 0;
+}
+.aiChip {
+    font-size: 0.68rem; font-weight: 700;
+    padding: 5px 12px; border-radius: 50px;
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.28);
+    color: #a5b4fc;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.18s, transform 0.14s;
+    white-space: nowrap;
+}
+.aiChip:hover  { background: rgba(99,102,241,0.22); }
+.aiChip:active { transform: scale(0.93); }
+
+/* ── INPUT ── */
+.aiInputRow {
+    display: flex; align-items: flex-end; gap: 8px;
+    padding: 10px 12px 14px;
+    border-top: 1px solid rgba(99,102,241,0.15);
+    flex-shrink: 0;
+    background: rgba(15,23,42,0.8);
+}
+#aiInput {
+    flex: 1; background: rgba(30,41,59,0.8);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 12px; color: #e2e8f0;
+    padding: 9px 12px; font-size: 0.82rem;
+    resize: none; outline: none;
+    font-family: inherit; line-height: 1.5;
+    transition: border-color 0.2s;
+    max-height: 100px; overflow-y: auto;
+}
+#aiInput:focus { border-color: rgba(99,102,241,0.55); }
+#aiInput::placeholder { color: #475569; }
+#aiSendBtn {
+    width: 38px; height: 38px; flex-shrink: 0;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    border: none; border-radius: 11px; color: white;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+}
+#aiSendBtn:hover  { transform: scale(1.06); }
+#aiSendBtn:active { transform: scale(0.92); }
+
+/* Light mode adjustments */
+[data-theme="light"] #aiPanel {
+    background: rgba(240,244,255,0.97);
+    border-color: rgba(99,102,241,0.25);
+}
+[data-theme="light"] .aiMsg.bot .aiMsgBubble {
+    background: #eef2ff;
+    border-color: rgba(99,102,241,0.2);
+    color: #1e293b;
+}
+[data-theme="light"] #aiInput { background: white; color: #1e293b; }
+[data-theme="light"] #aiMessages { background: rgba(240,244,255,0.5); }
+[data-theme="light"] .aiInputRow { background: rgba(240,244,255,0.9); }
+[data-theme="light"] .aiChip { background: rgba(99,102,241,0.08); color: #4f46e5; }
+</style>`;
+
+        document.body.appendChild(root);
     }
 
-    attachEventListeners() {
-        document.getElementById('aiAssistantToggle').addEventListener('click', () => this.togglePanel());
-        document.getElementById('aiAssistantClose').addEventListener('click', () => this.closePanel());
-        document.getElementById('aiSendBtn').addEventListener('click', () => this.sendMessage());
-        document.getElementById('aiMessageInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                this.sendMessage();
-            }
-        });
-
-        // Quick question buttons
-        document.querySelectorAll('.ai-quick-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const question = e.target.dataset.question;
-                this.sendMessage(question);
+    bind() {
+        var self = this;
+        // Render chips
+        var chipsEl = document.getElementById('aiChips');
+        if (chipsEl) {
+            QUICK_CHIPS.forEach(function(c) {
+                var btn = document.createElement('button');
+                btn.className = 'aiChip';
+                btn.innerHTML = c.label;
+                btn.onclick = function() { self.sendMsg(c.q); };
+                chipsEl.appendChild(btn);
             });
-        });
+        }
+        // Show welcome message
+        this.addBotMsg("&#x1F44B; Hi! I'm <strong>Alpha AI</strong>, your personal study assistant powered by Gemini.<br><br>I can help with freshman courses, stream differences, study tips, career paths, and COC preparation (299 ETB). What would you like to know?");
     }
 
-    togglePanel() {
-        this.isOpen = !this.isOpen;
-        const panel = document.getElementById('aiAssistantPanel');
-        panel.classList.toggle('open');
+    toggle() {
+        this.isOpen ? this.close() : this.open();
     }
 
-    closePanel() {
+    open() {
+        this.isOpen = true;
+        var panel = document.getElementById('aiPanel');
+        var fab   = document.getElementById('aiFab');
+        if (panel) panel.classList.add('open');
+        if (fab)   fab.setAttribute('aria-expanded', 'true');
+        setTimeout(function() {
+            var inp = document.getElementById('aiInput');
+            if (inp) inp.focus();
+        }, 320);
+    }
+
+    close() {
         this.isOpen = false;
-        document.getElementById('aiAssistantPanel').classList.remove('open');
+        var panel = document.getElementById('aiPanel');
+        var fab   = document.getElementById('aiFab');
+        if (panel) panel.classList.remove('open');
+        if (fab)   fab.removeAttribute('aria-expanded');
     }
 
-    async sendMessage(predefinedMessage = null) {
-        const input = document.getElementById('aiMessageInput');
-        const message = predefinedMessage || input.value.trim();
-        
-        if (!message) return;
-        
-        // Add user message to chat
-        this.addMessageToChat(message, 'user');
-        
-        // Clear input
-        if (!predefinedMessage) {
-            input.value = '';
-        }
-        
-        // Show typing indicator
-        this.showTypingIndicator();
-        
-        // Get AI response
-        const response = await this.getAIResponse(message);
-        
-        // Remove typing indicator
-        this.removeTypingIndicator();
-        
-        // Add AI response to chat
-        this.addMessageToChat(response, 'assistant');
-        
-        // Save conversation
-        this.saveConversationHistory();
+    clear() {
+        this.history = [];
+        localStorage.removeItem('alphaAIHistory');
+        var msgs = document.getElementById('aiMessages');
+        if (msgs) msgs.innerHTML = '';
+        this.addBotMsg("Chat cleared! &#x1F9F9; Ask me anything about your studies.");
     }
 
-    addMessageToChat(message, sender) {
-        const messagesContainer = document.getElementById('aiChatMessages');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `ai-message ai-message-${sender}`;
-        
-        if (sender === 'user') {
-            messageDiv.innerHTML = `<p><strong>You:</strong> ${this.escapeHtml(message)}</p>`;
-        } else {
-            messageDiv.innerHTML = `<div>${this.formatResponse(message)}</div>`;
-        }
-        
-        messagesContainer.appendChild(messageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        
-        this.conversationHistory.push({ sender, message, timestamp: new Date().toISOString() });
-    }
-
-    showTypingIndicator() {
-        const messagesContainer = document.getElementById('aiChatMessages');
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'ai-message ai-message-assistant ai-typing';
-        typingDiv.id = 'typingIndicator';
-        typingDiv.innerHTML = '<p>Alpha AI is thinking<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></p>';
-        messagesContainer.appendChild(typingDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    removeTypingIndicator() {
-        const typingIndicator = document.getElementById('typingIndicator');
-        if (typingIndicator) {
-            typingIndicator.remove();
-        }
-    }
-
-    async getAIResponse(userMessage) {
-        const lowerMessage = userMessage.toLowerCase();
-        
-        // Check for pre-programmed responses first
-        const presetResponse = this.getPresetResponse(lowerMessage);
-        if (presetResponse) {
-            return presetResponse;
-        }
-        
-        // If no preset response, search Google for the answer
-        return await this.searchAndAnswer(userMessage);
-    }
-
-    getPresetResponse(lowerMessage) {
-        // Course-related queries
-        if (lowerMessage.includes('first semester') || lowerMessage.includes('semester 1')) {
-            return `📚 <strong>First Semester Courses (Common/Foundation):</strong>
-
-1. <strong>Communicative English Language Skills I</strong> - English communication foundation
-2. <strong>Critical Thinking</strong> - Logic & reasoning skills
-3. <strong>Mathematics for Natural Sciences</strong> - Basic math skills
-4. <strong>Geography of Ethiopia & the Horn</strong> - Physical & regional geography
-5. <strong>General Psychology</strong> - Introduction to human behavior
-6. <strong>Physical Fitness</strong> - Sports & fitness (Pass/Fail)
-7. <strong>General Physics</strong> - For Natural Science stream students
-
-These courses build your foundation for specialized studies. Focus on developing good study habits early!`;
-        }
-        
-        if (lowerMessage.includes('second semester') || lowerMessage.includes('semester 2')) {
-            return `📚 <strong>Second Semester Courses:</strong>
-
-1. <strong>Communicative English Language Skills II</strong> - Advanced English
-2. <strong>Social Anthropology</strong> - Human societies & culture
-3. <strong>Introduction to Emerging Technologies</strong> - ICT basics
-4. <strong>Entrepreneurship</strong> - Business & innovation
-5. <strong>History of Ethiopia & the Horn</strong> - Nation's history
-6. <strong>Moral & Civic Education</strong> - Citizenship & ethics
-7. <strong>Global Trends/Affairs</strong> - Global issues
-8. <strong>Economics</strong> - Basic economic principles
-9. <strong>Inclusiveness</strong> - Diversity & inclusion
-
-These courses prepare you for your chosen stream and future career path.`;
-        }
-        
-        // Stream comparison
-        if (lowerMessage.includes('stream') || lowerMessage.includes('natural') || lowerMessage.includes('social science')) {
-            return `🎓 <strong>Natural Science vs Social Science Streams:</strong>
-
-<strong>📌 Natural Science Stream:</strong>
-• Focus: Physics, Biology, Chemistry, Advanced Mathematics
-• Career Paths: Engineering, Medicine, Natural Sciences, Technology
-• Best for: Students who enjoy problem-solving, lab work, and quantitative analysis
-• Skills: Analytical thinking, scientific method, mathematical reasoning
-
-<strong>📌 Social Science Stream:</strong>
-• Focus: Economics, Geography, History, Communication, Anthropology
-• Career Paths: Law, Business, Education, Social Sciences, Public Administration
-• Best for: Students interested in human behavior, society, and communication
-• Skills: Critical thinking, research, writing, social analysis
-
-<strong>💡 Tip:</strong> Choose based on your interests and career goals, not just grades. Both streams offer excellent opportunities!`;
-        }
-        
-        // Study tips
-        if (lowerMessage.includes('study') || lowerMessage.includes('tips') || lowerMessage.includes('improve')) {
-            return `📖 <strong>Effective Study Tips for Freshman Students:</strong>
-
-<strong>1. Time Management:</strong>
-• Create a study schedule and stick to it
-• Use the Pomodoro Technique (25 min study, 5 min break)
-• Prioritize difficult subjects when you're most alert
-
-<strong>2. Active Learning:</strong>
-• Take notes by hand during lectures
-• Summarize concepts in your own words
-• Teach concepts to classmates (best way to learn!)
-
-<strong>3. Study Environment:</strong>
-• Find a quiet, well-lit study space
-• Minimize distractions (phone, social media)
-• Keep study materials organized
-
-<strong>4. Exam Preparation:</strong>
-• Start reviewing 2 weeks before exams
-• Practice past exam questions
-• Form study groups with serious students
-
-<strong>5. Self-Care:</strong>
-• Get 7-8 hours of sleep
-• Exercise regularly (use Physical Fitness class!)
-• Eat healthy meals
-
-Remember: Consistency beats cramming every time! 💪`;
-        }
-        
-        // Career guidance
-        if (lowerMessage.includes('career') || lowerMessage.includes('job') || lowerMessage.includes('future')) {
-            return `🚀 <strong>Career Pathways After Freshman Year:</strong>
-
-<strong>Natural Science Stream Careers:</strong>
-• 🏥 Medicine & Health Sciences (Doctor, Nurse, Pharmacist)
-• ⚙️ Engineering (Civil, Mechanical, Electrical, Software)
-• 🔬 Natural Sciences (Biologist, Chemist, Physicist)
-• 💻 Technology & IT (Software Developer, Data Scientist)
-• 🏗️ Architecture & Construction
-
-<strong>Social Science Stream Careers:</strong>
-• ⚖️ Law & Legal Services (Lawyer, Judge, Legal Advisor)
-• 💼 Business & Management (Manager, Entrepreneur, Consultant)
-• 🎓 Education (Teacher, Professor, Educational Administrator)
-• 📊 Economics & Finance (Economist, Banker, Financial Analyst)
-• 🗣️ Communication & Media (Journalist, PR Specialist)
-• 🏛️ Public Administration & Government
-
-<strong>💡 Important:</strong> Your freshman GPA and entrance exam results determine department placement. Work hard in your foundation courses!
-
-<strong>Next Steps:</strong>
-1. Complete freshman year with good grades
-2. Choose your preferred department
-3. Get placed based on GPA + entrance scores
-4. Begin specialized training in Year 2`;
-        }
-        
-        // GPA and grades
-        if (lowerMessage.includes('gpa') || lowerMessage.includes('grade') || lowerMessage.includes('score')) {
-            return `📊 <strong>Understanding GPA & Academic Performance:</strong>
-
-<strong>Why GPA Matters:</strong>
-• Determines your department placement after freshman year
-• Higher GPA = more choices for your major
-• Competitive programs (Medicine, Engineering) require high GPA
-
-<strong>How to Maintain Good GPA:</strong>
-1. Attend all classes regularly
-2. Complete assignments on time
-3. Participate in class discussions
-4. Seek help when you don't understand
-5. Review material regularly, not just before exams
-
-<strong>GPA Calculation:</strong>
-• A = 4.0 (Excellent)
-• B = 3.0 (Very Good)
-• C = 2.0 (Good)
-• D = 1.0 (Pass)
-• F = 0.0 (Fail)
-
-<strong>Target GPA:</strong>
-• 3.5+ : Excellent (top programs)
-• 3.0-3.5 : Very Good (most programs)
-• 2.5-3.0 : Good (many options)
-
-Start strong in first semester - it's easier to maintain than to improve later!`;
-        }
-        
-        // Exam preparation
-        if (lowerMessage.includes('exam') || lowerMessage.includes('test') || lowerMessage.includes('preparation')) {
-            return `📝 <strong>Exam Preparation Strategy:</strong>
-
-<strong>2 Weeks Before:</strong>
-• Review all lecture notes and textbooks
-• Create summary sheets for each subject
-• Identify weak areas that need more focus
-• Gather past exam papers if available
-
-<strong>1 Week Before:</strong>
-• Practice solving problems and questions
-• Join study groups for difficult topics
-• Create flashcards for key concepts
-• Review summary sheets daily
-
-<strong>3 Days Before:</strong>
-• Do full practice exams under timed conditions
-• Focus on understanding, not memorizing
-• Get adequate sleep (no all-nighters!)
-• Prepare exam materials (pens, calculator, ID)
-
-<strong>Exam Day:</strong>
-• Eat a good breakfast
-• Arrive 15 minutes early
-• Read all questions carefully
-• Manage your time (don't spend too long on one question)
-• Review answers if time permits
-
-<strong>After Exam:</strong>
-• Don't stress about what you can't change
-• Learn from mistakes for next time
-• Celebrate your effort!
-
-Remember: Preparation + Confidence = Success! 🎯`;
-        }
-        
-        // Course recommendations
-        if (lowerMessage.includes('recommend') || lowerMessage.includes('which course') || lowerMessage.includes('should i take')) {
-            return `💡 <strong>Course Recommendations:</strong>
-
-<strong>All Freshmen Must Take:</strong>
-Both semesters of common courses are compulsory. Focus on excelling in all of them!
-
-<strong>If You're Interested in Natural Sciences:</strong>
-• Pay special attention to: Math, Physics, Chemistry, Biology
-• These build foundation for Engineering, Medicine, Sciences
-• Practice problem-solving regularly
-
-<strong>If You're Interested in Social Sciences:</strong>
-• Excel in: English, History, Geography, Economics
-• Develop strong writing and analytical skills
-• These lead to Law, Business, Education
-
-<strong>Universal Success Tips:</strong>
-1. Don't neglect "easy" courses - they affect your GPA
-2. Physical Fitness is Pass/Fail but important for health
-3. Critical Thinking helps in ALL fields
-4. English skills are crucial for academic success
-
-<strong>Browse our courses:</strong> Visit the Courses page to see all available freshman courses with detailed descriptions!`;
-        }
-        
-        // Time management
-        if (lowerMessage.includes('time') || lowerMessage.includes('manage') || lowerMessage.includes('schedule')) {
-            return `⏰ <strong>Time Management for Freshman Students:</strong>
-
-<strong>Weekly Schedule Template:</strong>
-• Classes: 15-20 hours
-• Self-study: 20-25 hours (2-3 hours per course/week)
-• Assignments: 5-10 hours
-• Physical activities: 3-5 hours
-• Social/rest: 10-15 hours
-
-<strong>Daily Routine:</strong>
-• Morning (6-8 AM): Review previous day's notes
-• Classes (8 AM-4 PM): Active participation
-• Afternoon (4-6 PM): Complete assignments
-• Evening (7-9 PM): Study new material
-• Night (9-10 PM): Light review, prepare for next day
-
-<strong>Time Management Tools:</strong>
-• Use a planner or calendar app
-• Set reminders for deadlines
-• Break large tasks into smaller ones
-• Avoid procrastination - start early!
-
-<strong>Balance is Key:</strong>
-Don't forget to rest, socialize, and take care of your health. Burnout helps no one!`;
-        }
-        
-        return null; // No preset response found
-    }
-
-    async searchAndAnswer(question) {
+    loadHistory() {
         try {
-            // Show that we're searching
-            const searchingMessage = `🔍 <strong>Searching for information...</strong><br><br>Let me find the best answer for you about: "${this.escapeHtml(question)}"`;
-            
-            // Simulate API call delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // In a real implementation, you would call a backend API that uses Google Custom Search API
-            // For now, we'll provide a helpful response that guides users
-            
-            return `🤖 <strong>Alpha AI Response:</strong><br><br>
-
-I've searched for information about "<em>${this.escapeHtml(question)}</em>"<br><br>
-
-<strong>Here's what I found:</strong><br><br>
-
-${this.generateSmartResponse(question)}<br><br>
-
-<strong>📚 Additional Resources:</strong><br>
-• <a href="https://www.google.com/search?q=${encodeURIComponent(question + ' Ethiopian education')}" target="_blank">Search Google for more details</a><br>
-• <a href="courses.html">Browse our course catalog</a><br>
-• Ask me more specific questions about freshman courses<br><br>
-
-<strong>💡 Tip:</strong> For the most accurate information about your specific university, check with your academic advisor or department office.`;
-            
-        } catch (error) {
-            return `❌ <strong>Sorry, I encountered an error while searching.</strong><br><br>
-            
-Please try:<br>
-• Rephrasing your question<br>
-• Asking about specific freshman courses<br>
-• Checking our <a href="courses.html">Courses page</a><br><br>
-
-Or search directly: <a href="https://www.google.com/search?q=${encodeURIComponent(question)}" target="_blank">Google Search</a>`;
-        }
+            var saved = JSON.parse(localStorage.getItem('alphaAIHistory') || '[]');
+            // Only restore last 4 messages to keep context fresh
+            saved.slice(-4).forEach(function(m) {
+                if (m.role === 'user') {
+                    var msgs = document.getElementById('aiMessages');
+                    if (msgs) msgs.innerHTML += '<div class="aiMsg user"><div class="aiMsgAvatar">&#x1F464;</div><div class="aiMsgBubble">' + m.content.replace(/</g,'&lt;') + '</div></div>';
+                } else {
+                    // Don't re-add welcome msg
+                }
+            });
+            this.history = saved.slice(-8);
+        } catch (e) {}
     }
 
-    generateSmartResponse(question) {
-        const lowerQuestion = question.toLowerCase();
-        
-        // Math-related
-        if (lowerQuestion.includes('math') || lowerQuestion.includes('calculus') || lowerQuestion.includes('algebra')) {
-            return `<strong>Mathematics in Freshman Year:</strong><br>
-• <strong>First Semester:</strong> Mathematics for Natural Sciences covers basic algebra, trigonometry, and introduction to calculus<br>
-• <strong>Natural Science Stream:</strong> Advanced Calculus & Mathematics includes differential equations and linear algebra<br>
-• <strong>Study Tips:</strong> Practice daily, work through problem sets, form study groups<br>
-• <strong>Resources:</strong> Khan Academy, MIT OpenCourseWare, and your course textbook<br><br>
-Need help with a specific math topic? Ask me!`;
-        }
-        
-        // Physics-related
-        if (lowerQuestion.includes('physics')) {
-            return `<strong>General Physics Course:</strong><br>
-• Covers mechanics, thermodynamics, waves, and electricity<br>
-• Required for Natural Science stream students<br>
-• <strong>Key Topics:</strong> Newton's laws, energy, momentum, circuits<br>
-• <strong>Study Tips:</strong> Understand concepts before memorizing formulas, practice problem-solving<br>
-• <strong>Lab Work:</strong> Hands-on experiments reinforce theoretical knowledge<br><br>
-Check our <a href="courses.html">Physics course</a> for detailed curriculum!`;
-        }
-        
-        // English-related
-        if (lowerQuestion.includes('english') || lowerQuestion.includes('writing') || lowerQuestion.includes('communication')) {
-            return `<strong>English Communication Skills:</strong><br>
-• <strong>Semester 1:</strong> Foundation - grammar, basic writing, speaking<br>
-• <strong>Semester 2:</strong> Advanced - academic writing, presentations, research papers<br>
-• <strong>Importance:</strong> Essential for all academic work and career success<br>
-• <strong>Practice:</strong> Read widely, write daily, join discussion groups<br>
-• <strong>Resources:</strong> Grammarly, Purdue OWL, English language podcasts<br><br>
-Strong English skills benefit ALL majors!`;
-        }
-        
-        // History/Ethiopia-related
-        if (lowerQuestion.includes('history') || lowerQuestion.includes('ethiopia')) {
-            return `<strong>Ethiopian History & Geography:</strong><br>
-• <strong>Geography:</strong> Physical features, climate zones, regional characteristics of Ethiopia & Horn of Africa<br>
-• <strong>History:</strong> Ancient civilizations, medieval period, modern Ethiopia<br>
-• <strong>Importance:</strong> Understanding your nation's heritage and regional context<br>
-• <strong>Study Tips:</strong> Create timelines, use maps, connect events to current affairs<br><br>
-These courses build national identity and regional awareness!`;
-        }
-        
-        // Technology/ICT-related
-        if (lowerQuestion.includes('technology') || lowerQuestion.includes('ict') || lowerQuestion.includes('computer')) {
-            return `<strong>Introduction to Emerging Technologies:</strong><br>
-• <strong>Topics:</strong> Computer basics, internet, digital literacy, emerging tech trends<br>
-• <strong>Skills:</strong> Microsoft Office, email, online research, basic programming concepts<br>
-• <strong>Importance:</strong> Essential digital skills for modern education and careers<br>
-• <strong>Practice:</strong> Use computers daily, explore online tools, learn typing<br>
-• <strong>Future:</strong> Foundation for IT careers or digital skills in any field<br><br>
-Technology literacy is crucial in today's world!`;
-        }
-        
-        // General academic question
-        return `Based on your question, here are some relevant points:<br><br>
-
-<strong>For Freshman Students:</strong><br>
-• All common courses in both semesters are important for your foundation<br>
-• Your performance determines your stream and department placement<br>
-• Focus on understanding concepts, not just memorizing<br>
-• Seek help from instructors and peers when needed<br>
-• Balance academics with physical and mental health<br><br>
-
-<strong>Available Courses:</strong><br>
-• 7 First Semester foundation courses<br>
-• 9 Second Semester continuation courses<br>
-• Natural Science stream specializations<br>
-• Social Science stream specializations<br><br>
-
-Would you like specific information about any course or topic?`;
+    saveHistory() {
+        try {
+            localStorage.setItem('alphaAIHistory', JSON.stringify(this.history.slice(-16)));
+        } catch (e) {}
     }
 
-    formatResponse(text) {
-        // Convert markdown-style formatting to HTML
-        let formatted = text
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\n/g, '<br>')
-            .replace(/• /g, '<br>• ');
-        
-        return `<p>${formatted}</p>`;
+    addBotMsg(html) {
+        var msgs = document.getElementById('aiMessages');
+        if (!msgs) return;
+        var div = document.createElement('div');
+        div.className = 'aiMsg bot';
+        div.innerHTML = '<div class="aiMsgAvatar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.5" fill="white" stroke="none"/><circle cx="15" cy="10" r="1.5" fill="white" stroke="none"/></svg></div>'
+                      + '<div class="aiMsgBubble"><p style="margin:0">' + html + '</p></div>';
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
     }
 
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+    showTyping() {
+        var msgs = document.getElementById('aiMessages');
+        if (!msgs) return;
+        var div = document.createElement('div');
+        div.className = 'aiMsg bot aiTypingMsg';
+        div.id = 'aiTypingBubble';
+        div.innerHTML = '<div class="aiMsgAvatar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.5" fill="white" stroke="none"/><circle cx="15" cy="10" r="1.5" fill="white" stroke="none"/></svg></div>'
+                      + '<div class="aiMsgBubble"><div class="typingDots"><span></span><span></span><span></span></div></div>';
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
     }
 
-    saveConversationHistory() {
-        localStorage.setItem('aiConversationHistory', JSON.stringify(this.conversationHistory));
+    hideTyping() {
+        var b = document.getElementById('aiTypingBubble');
+        if (b) b.remove();
     }
 
-    loadConversationHistory() {
-        const saved = localStorage.getItem('aiConversationHistory');
-        if (saved) {
-            this.conversationHistory = JSON.parse(saved);
-            // Optionally restore messages to UI
+    async send() {
+        var inp = document.getElementById('aiInput');
+        if (!inp) return;
+        var msg = inp.value.trim();
+        if (!msg || this.isTyping) return;
+        inp.value = '';
+        inp.style.height = 'auto';
+        this.sendMsg(msg);
+    }
+
+    async sendMsg(msg) {
+        if (this.isTyping) return;
+        if (!this.isOpen) this.open();
+
+        // Add user bubble
+        var msgs = document.getElementById('aiMessages');
+        if (msgs) {
+            var ud = document.createElement('div');
+            ud.className = 'aiMsg user';
+            ud.innerHTML = '<div class="aiMsgAvatar">&#x1F464;</div><div class="aiMsgBubble">' + msg.replace(/</g,'&lt;') + '</div>';
+            msgs.appendChild(ud);
+            msgs.scrollTop = msgs.scrollHeight;
         }
+
+        this.history.push({ role: 'user', content: msg });
+        this.isTyping = true;
+
+        // Show typing
+        this.showTyping();
+        var sendBtn = document.getElementById('aiSendBtn');
+        if (sendBtn) sendBtn.disabled = true;
+
+        try {
+            var reply = await callGeminiAPI(msg, this.history);
+            this.hideTyping();
+            this.history.push({ role: 'assistant', content: reply });
+            this.saveHistory();
+            this.addBotMsg(renderMarkdown(reply));
+        } catch (e) {
+            this.hideTyping();
+            this.addBotMsg("Sorry, I had a brief connection issue. Please try again! &#x1F504;");
+        }
+
+        this.isTyping = false;
+        if (sendBtn) sendBtn.disabled = false;
+        var inp = document.getElementById('aiInput');
+        if (inp) inp.focus();
     }
 }
 
-// Initialize AI Assistant when DOM is ready
+// ── Boot ──────────────────────────────────────────────────────────────────────
+function initAlphaAI() {
+    window._alphaAI = new AIAssistant();
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        new AIAssistant();
-    });
+    document.addEventListener('DOMContentLoaded', initAlphaAI);
 } else {
-    new AIAssistant();
+    initAlphaAI();
 }
