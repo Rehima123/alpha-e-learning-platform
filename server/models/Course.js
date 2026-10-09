@@ -1,16 +1,46 @@
 const mongoose = require('mongoose');
 
+const videoSchema = new mongoose.Schema({
+    title:       { type: String, required: true },
+    chapter:     { type: String, default: '' },
+    youtubeUrl:  { type: String, default: '' },
+    youtubeId:   { type: String, default: '' },
+    duration:    { type: String, default: '' },
+    pdfNoteUrl:  { type: String, default: '' }
+}, { _id: false });
+
 const courseSchema = new mongoose.Schema({
+    courseCode: {
+        type: String,
+        trim: true,
+        unique: true,
+        sparse: true,   // allows multiple docs with no courseCode (legacy)
+        uppercase: true
+    },
     title: {
         type: String,
         required: [true, 'Please provide course title'],
         trim: true,
         maxlength: [200, 'Title cannot exceed 200 characters']
     },
+    stream: {
+        type: String,
+        enum: ['Common', 'Natural', 'Social'],
+        default: null
+    },
+    semester: {
+        type: Number,
+        enum: [1, 2],
+        default: null
+    },
     description: {
         type: String,
         required: [true, 'Please provide course description'],
         maxlength: [2000, 'Description cannot exceed 2000 characters']
+    },
+    videos: {
+        type: [videoSchema],
+        default: []
     },
     icon: {
         type: String,
@@ -22,8 +52,8 @@ const courseSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        required: true,
-        enum: ['semester1', 'semester2', 'natural', 'social']
+        enum: ['semester1', 'semester2', 'natural', 'social'],
+        default: 'semester1'
     },
     level: {
         type: String,

@@ -15,6 +15,7 @@ import InstructorDashboard    from './pages/InstructorDashboard'
 import AdminDashboard         from './pages/AdminDashboard'
 import OfflineVideos          from './pages/OfflineVideos'
 import ProtectedRoute         from './components/ProtectedRoute'
+import ProtectedAdminRoute    from './components/ProtectedAdminRoute'
 import AdminApproval          from './components/AdminApproval'
 import Navbar                 from './components/Navbar'
 
@@ -46,10 +47,10 @@ function App() {
                 <ProtectedRoute role="instructor"><InstructorDashboard /></ProtectedRoute>
               } />
               <Route path="/admin" element={
-                <ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>
+                <ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>
               } />
               <Route path="/admin/approvals" element={
-                <ProtectedRoute role="admin"><AdminApproval /></ProtectedRoute>
+                <ProtectedAdminRoute><AdminApproval /></ProtectedAdminRoute>
               } />
             </Routes>
           </NavHistoryProvider>

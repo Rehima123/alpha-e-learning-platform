@@ -51,10 +51,20 @@ class APIService {
                     setTimeout(() => window.location.href = 'auth-login.html', 1500);
                     throw new Error(data.message);
                 }
-                throw new Error(data.message || 'API request failed');
+                // ── Device mismatch — account bound to different device ────────
+                if (response.status === 403 && data.code === 'DEVICE_MISMATCH') {
+                    if (typeof toast !== 'undefined') {
+                        toast.error('📵 ' + data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                    throw new Error(data.message);
+                }
+                throw new Error(data.message || 'Server error. Please try again.');
             }
 
             this.offlineMode = false;
+            this._hideOfflineBanner();
             return data;
         } catch (error) {
             if (!navigator.onLine || error instanceof TypeError) {
@@ -63,6 +73,7 @@ class APIService {
                 this._showOfflineBanner();
                 return this._offlineFallback(endpoint, options);
             }
+            // Server error — re-throw with clean message
             throw error;
         }
     }
@@ -254,17 +265,70 @@ class APIService {
         return { success: false, offline: true, message: 'Offline — feature unavailable', courses: [], enrollments: [], users: [] };
     }
 
-    // ── Auth endpoints ──────────────────────────────────────────────────────────
+    // ── Offline banner ─────────────────────────────────────────────────────────
+    _showOfflineBanner() {
+        if (document.getElementById('api-offline-banner')) return; // already showing
+
+        const banner = document.createElement('div');
+        banner.id   = 'api-offline-banner';
+        banner.role = 'alert';
+        banner.setAttribute('aria-live', 'polite');
+        banner.style.cssText = [
+            'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:999998',
+            'background:#dc2626', 'color:white',
+            'padding:10px 20px',
+            'display:flex', 'align-items:center', 'justify-content:center', 'gap:12px',
+            "font-family:'Segoe UI',Tahoma,sans-serif", 'font-size:0.88rem', 'font-weight:600',
+            'box-shadow:0 4px 16px rgba(220,38,38,0.5)',
+            'animation:slideDown 0.25s ease',
+        ].join(';');
+        banner.innerHTML = `
+            <span style="font-size:1rem">📵</span>
+            <span>ኢንተርኔት ግኑኝነት የለም — cached data እያሳዩ ነን።</span>
+            <span style="font-size:0.78rem;opacity:0.8;margin-left:4px">(Offline mode)</span>
+            <button
+                onclick="this.closest('#api-offline-banner')?.remove()"
+                aria-label="Dismiss"
+                style="margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:white;
+                       width:26px;height:26px;border-radius:50%;cursor:pointer;
+                       font-size:0.9rem;display:flex;align-items:center;justify-content:center;
+                       flex-shrink:0;transition:background 0.2s">✕</button>`;
+
+        // Push page content down so banner doesn't overlap navbar
+        document.body.style.marginTop = '44px';
+        document.body.prepend(banner);
+    }
+
+    _hideOfflineBanner() {
+        const banner = document.getElementById('api-offline-banner');
+        if (!banner) return;
+        banner.style.animation = 'slideUp 0.2s ease forwards';
+        setTimeout(() => {
+            banner?.remove();
+            document.body.style.marginTop = '';
+        }, 200);
+    }
+
+
     async register(userData) {
         return this.request('/auth/register', { method: 'POST', body: JSON.stringify(userData) });
     }
 
     async login(credentials) {
-        return this.request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
+        // Attach a stable deviceId so the server can enforce 1-account-1-device
+        const deviceId = _getOrCreateDeviceId();
+        return this.request('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ ...credentials, deviceId })
+        });
     }
 
     async getMe() {
         return this.request('/auth/me');
+    }
+
+    async getPaymentStatus() {
+        return this.request('/auth/payment-status');
     }
 
     async logout() {
@@ -325,10 +389,34 @@ class APIService {
     async getInstructorCourses()     { return this.request('/instructor/courses'); }
     async getInstructorPayments(status='all') { return this.request(`/instructor/payments?status=${status}`); }
     async getInstructorStudents(search='')    { return this.request(`/instructor/students${search ? '?search='+encodeURIComponent(search) : ''}`); }
-    async approveEnrollment(id)      { return this.request(`/enrollments/${id}/approve`, { method: 'PUT' }); }
+    async approveEnrollment(id, enrolledPackage = null) {
+        const body = enrolledPackage ? { enrolledPackage } : {};
+        return this.request(`/enrollments/${id}/approve`, { method: 'PUT', body: JSON.stringify(body) });
+    }
     async rejectEnrollment(id, reason = '') {
         return this.request(`/enrollments/${id}/reject`, { method: 'PUT', body: JSON.stringify({ reason }) });
     }
+    async assignPackage(userId, enrolledPackage) {
+        return this.request(`/admin/users/${userId}/package`, { method: 'PUT', body: JSON.stringify({ enrolledPackage }) });
+    }
+    async sendBulkSMS(message) {
+        return this.request('/admin/send-bulk-sms', { method: 'POST', body: JSON.stringify({ message }) });
+    }
+
+    // ── Device binding (admin) ──────────────────────────────────────────────────
+    async resetDeviceBinding(userId) {
+        return this.request(`/admin/users/${userId}/reset-device`, { method: 'PUT' });
+    }
+
+    // ── Google Drive Video Link endpoints ───────────────────────────────────────
+    async saveDriveVideoLink(data) {
+        // data: { courseId, chapterIdx?, lessonIdx?, driveFileId, lessonTitle? }
+        return this.request('/admin/videos/link', { method: 'POST', body: JSON.stringify(data) });
+    }
+    async getCourseVideoLinks(courseId) {
+        return this.request(`/admin/videos/${courseId}`);
+    }
+
     async updateProgress(enrollmentId, progressData) {
         return this.request(`/enrollments/${enrollmentId}/progress`, { method: 'PUT', body: JSON.stringify(progressData) });
     }
@@ -371,6 +459,59 @@ class APIService {
 }
 
 const api = new APIService();
+
+// ── Stable device fingerprint (persisted in localStorage) ────────────────────
+// Used by login() to enforce 1-account-1-device binding on the server.
+function _getOrCreateDeviceId() {
+    let id = localStorage.getItem('_deviceId');
+    if (!id) {
+        // Generate a random 32-char hex ID and persist it
+        const arr = new Uint8Array(16);
+        crypto.getRandomValues(arr);
+        id = Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+        localStorage.setItem('_deviceId', id);
+    }
+    return id;
+}
+
+// ── Auto-dismiss offline banner when network returns ──────────────────────────
+window.addEventListener('online', () => {
+    api.offlineMode = false;
+    api._hideOfflineBanner();
+    // Show brief "back online" green toast if toast is available
+    setTimeout(() => {
+        if (typeof toast !== 'undefined') {
+            toast.success('🟢 ኢንተርኔት ተመልሷል — reconnected');
+        }
+    }, 300);
+});
+
+// Auto-show banner immediately if page loads while already offline
+window.addEventListener('offline', () => {
+    api.offlineMode = true;
+    api._showOfflineBanner();
+});
+
+// Inject slide animations for the offline banner
+(function injectBannerStyles() {
+    if (document.getElementById('_offline-banner-styles')) return;
+    const style = document.createElement('style');
+    style.id = '_offline-banner-styles';
+    style.textContent = `
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(0);     opacity: 1; }
+            to   { transform: translateY(-100%); opacity: 0; }
+        }
+        #api-offline-banner button:hover {
+            background: rgba(255,255,255,0.35) !important;
+        }
+    `;
+    document.head.appendChild(style);
+})();
 
 // ── API Warm-up: ping backend immediately on page load to eliminate cold start ─
 // This fires silently in background — first real request will be fast

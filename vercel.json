@@ -34,6 +34,10 @@
       "use": "@vercel/static"
     },
     {
+      "src": ".well-known/assetlinks.json",
+      "use": "@vercel/static"
+    },
+    {
       "src": "sw.js",
       "use": "@vercel/static"
     }
@@ -60,11 +64,52 @@
       },
       "dest": "/manifest.json"
     },
+    {
+      "src": "/.well-known/assetlinks.json",
+      "headers": {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Access-Control-Allow-Origin": "*"
+      },
+      "dest": "/.well-known/assetlinks.json"
+    },
+    {
+      "src": "/(.*\\.html)",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache"
+      }
+    },
+    {
+      "src": "/(.*\\.js)",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "src": "/(.*\\.css)",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
     { "src": "/download",        "dest": "/download.html" },
+    {
+      "src": "/home\\.html",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache"
+      },
+      "dest": "/home.html"
+    },
     { "src": "/home",            "dest": "/home.html" },
     { "src": "/courses",         "dest": "/courses.html" },
     { "src": "/login",           "dest": "/auth-login.html" },
     { "src": "/register",        "dest": "/auth-register.html" },
+    { "src": "/forgot-password", "dest": "/forgot-password.html" },
+    {
+      "src": "/reset-password/?(.*)",
+      "dest": "/reset-password.html"
+    },
     { "src": "/dashboard",       "dest": "/dashboard.html" },
     { "src": "/course-detail",   "dest": "/course-detail.html" },
     { "src": "/course-payment",  "dest": "/course-payment.html" },

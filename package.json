@@ -4,7 +4,7 @@
   "description": "E-Learning Platform — Frontend + Backend on Vercel",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node -e \"const fs=require('fs');const path=require('path');['home','courses','auth-login','auth-register','payment','course-detail','dashboard','admin-dashboard','instructor-dashboard','ai-assistant','ai-study','study-hub','department-guide','offline','download','forgot-password','reset-password','payment-success','subscription','course-payment'].forEach(f=>{try{fs.copyFileSync(f+'.html',path.join('dist',f+'.html'));console.log('Copied',f+'.html');}catch(e){}});\"",
     "preview": "vite preview",
     "server": "node server/server.js"
   },

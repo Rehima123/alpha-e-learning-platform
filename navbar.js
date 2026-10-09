@@ -52,11 +52,11 @@
                     ${user.role || 'student'}
                 </div>
             </div>
-            <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;
+            <a href="student-dashboard.html" style="display:flex;align-items:center;gap:10px;
                 padding:11px 16px;text-decoration:none;color:inherit;font-size:0.88rem;
                 transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'"
                 onmouseout="this.style.background='transparent'">
-                📊 My Dashboard
+                👤 My Profile
             </a>
             <a href="courses.html" style="display:flex;align-items:center;gap:10px;
                 padding:11px 16px;text-decoration:none;color:inherit;font-size:0.88rem;
@@ -111,3 +111,19 @@ function logoutUser() {
     localStorage.removeItem('authToken');
     window.location.href = 'auth-login.html';
 }
+
+// ─── Mobile Bottom Nav: Profile guard ────────────────────────────────────────
+// Intercept "Profile" tab click — send non-logged-in users to auth-login.html
+document.addEventListener('DOMContentLoaded', () => {
+    const profileTab = document.getElementById('mbn-dashboard');
+    if (!profileTab) return;
+
+    profileTab.addEventListener('click', (e) => {
+        const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        if (!user) {
+            e.preventDefault();
+            window.location.href = 'auth-login.html?redirect=student-dashboard.html';
+        }
+        // Logged in — let the href="student-dashboard.html" navigate normally
+    });
+});

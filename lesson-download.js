@@ -1,4 +1,114 @@
 // ─── Lesson Download & Offline Storage ───────────────────────────────────────
+// Saves lesson notes, quiz, and video metadata to IndexedDB.
+// Videos are YouTube embeds — raw video bytes cannot be fetched due to CORS.
+// Instead we store the YouTube ID and play it offline via cached embed.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ALPHA_OFFLINE_DB   = 'AlphaOfflineDB';
+const ALPHA_OFFLINE_VER  = 3;  // v3 adds downloaded_files store
+
+// ── Open the shared IndexedDB ─────────────────────────────────────────────────
+function _openAlphaDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(ALPHA_OFFLINE_DB, ALPHA_OFFLINE_VER);
+        req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('videos'))
+                db.createObjectStore('videos');
+            if (!db.objectStoreNames.contains('lessons'))
+                db.createObjectStore('lessons');
+            // v3: React db.js compatible store with semester + courseId indexes
+            if (!db.objectStoreNames.contains('downloaded_files')) {
+                const store = db.createObjectStore('downloaded_files', { keyPath: 'id' });
+                store.createIndex('courseId', 'courseId', { unique: false });
+                store.createIndex('semester', 'semester', { unique: false });
+            }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror   = () => reject(req.error);
+    });
+}
+
+// ── Save video metadata offline (not raw bytes — YouTube CORS prevents that) ──
+async function downloadVideoForOffline(videoUrl, lessonId, lessonTitle) {
+    try {
+        const db  = await _openAlphaDB();
+        const ytId = _extractYTId(videoUrl);
+        // Also handle Google Drive video URLs
+        const isDrive  = videoUrl.includes('drive.google.com');
+        const driveId  = isDrive ? (videoUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1] || null) : null;
+
+        const record = {
+            lessonId,
+            lessonTitle: lessonTitle || lessonId,
+            youtubeId:   ytId,
+            youtubeUrl:  videoUrl,
+            driveFileId: driveId,
+            isDriveVideo: isDrive,
+            savedAt:     Date.now(),
+            type:        isDrive ? 'google-drive' : 'youtube-embed'
+        };
+
+        await new Promise((res, rej) => {
+            const tx    = db.transaction('videos', 'readwrite');
+            const store = tx.objectStore('videos');
+            store.put(record, lessonId);
+            tx.oncomplete = res;
+            tx.onerror    = () => rej(tx.error);
+        });
+
+        if (typeof toast !== 'undefined') {
+            toast.success(`✅ "${lessonTitle || lessonId}" ለ Offline እይታ በተሳካ ሁኔታ ተቀምጧል!`);
+        } else {
+            alert('ትምህርቱ ለ Offline እይታ በተሳካ ሁኔታ ተቀምጧል!');
+        }
+        return { success: true };
+    } catch (error) {
+        console.error('[Offline] Download failed:', error);
+        if (typeof toast !== 'undefined') toast.error('Offline save failed: ' + error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+// ── Check if video is saved offline ──────────────────────────────────────────
+async function isVideoSavedOffline(lessonId) {
+    try {
+        const db  = await _openAlphaDB();
+        const rec = await new Promise((res, rej) => {
+            const tx = db.transaction('videos', 'readonly');
+            const req = tx.objectStore('videos').get(lessonId);
+            req.onsuccess = () => res(req.result);
+            req.onerror   = () => rej(req.error);
+        });
+        return !!rec;
+    } catch { return false; }
+}
+
+// ── Remove offline video ──────────────────────────────────────────────────────
+async function removeVideoOffline(lessonId) {
+    try {
+        const db = await _openAlphaDB();
+        await new Promise((res, rej) => {
+            const tx = db.transaction('videos', 'readwrite');
+            tx.objectStore('videos').delete(lessonId);
+            tx.oncomplete = res;
+            tx.onerror    = () => rej(tx.error);
+        });
+        return true;
+    } catch { return false; }
+}
+
+// ── Extract YouTube ID helper (shared with secure-player.js) ─────────────────
+function _extractYTId(url) {
+    if (!url) return null;
+    const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+    return m ? m[1] : null;
+}
+
+// Expose globally
+window.downloadVideoForOffline = downloadVideoForOffline;
+window.isVideoSavedOffline     = isVideoSavedOffline;
+window.removeVideoOffline      = removeVideoOffline;
 
 class LessonDownloader {
 
@@ -44,14 +154,21 @@ class LessonDownloader {
                 lessonTitle:  lesson.title,
                 notes:        lesson.notes || lesson.description || '',
                 duration:     lesson.duration || '',
+                videoUrl:     lesson.videoUrl || '',
+                youtubeId:    _extractYTId(lesson.videoUrl || ''),
                 questions,
                 downloadedAt: new Date().toISOString(),
                 version:      1
             };
 
-            // Save to IndexedDB
+            // Save to IndexedDB (lessons store)
             if (typeof offlineDB !== 'undefined') {
                 await offlineDB.put('downloadedLessons', pkg);
+            }
+
+            // Also save video metadata to AlphaOfflineDB videos store
+            if (lesson.videoUrl) {
+                await downloadVideoForOffline(lesson.videoUrl, pkg._id, lesson.title);
             }
 
             // Also save to localStorage index
