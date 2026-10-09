@@ -831,51 +831,380 @@ body {
 <!-- ── PAGE CONTENT ──────────────────────────────────────────────────── -->
 <div class="page-content">
 
-    <!-- 1. HERO CARD with student imagery -->
-    <div class="hero-card">
-        <div class="hero-text">
-            <div class="hero-badge">
-                <i class="fa-solid fa-graduation-cap"></i> #1 Freshman Platform
+    <!-- 1. HERO CARD with student imagery — NEW DESIGN matching screenshot -->
+    <style>
+    /* ── New Hero Redesign ── */
+    .hero-new {
+        position: relative;
+        margin: 0 0 20px;
+        background: linear-gradient(135deg, #0d1235 0%, #1a0a3e 50%, #0d1235 100%);
+        border-radius: 20px;
+        overflow: hidden;
+        min-height: 320px;
+        display: flex;
+        align-items: stretch;
+    }
+    .hero-new::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 260px; height: 260px;
+        background: radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .hero-new::after {
+        content: '';
+        position: absolute;
+        bottom: -40px; left: -40px;
+        width: 200px; height: 200px;
+        background: radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .hero-new-left {
+        flex: 1;
+        padding: 22px 12px 22px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        z-index: 1;
+        min-width: 0;
+    }
+    .hero-new-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(99,102,241,0.2);
+        border: 1px solid rgba(99,102,241,0.4);
+        color: #a5b4fc;
+        font-size: 0.62rem;
+        font-weight: 800;
+        padding: 4px 12px;
+        border-radius: 50px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        width: fit-content;
+        backdrop-filter: blur(4px);
+    }
+    .hero-new-h1 {
+        font-size: clamp(1.1rem, 5vw, 1.45rem);
+        font-weight: 900;
+        color: white;
+        line-height: 1.15;
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+    }
+    .hero-new-h1 .hero-accent {
+        background: linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #38bdf8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .hero-new-desc {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.6);
+        line-height: 1.55;
+        margin-bottom: 16px;
+        max-width: 240px;
+    }
+    .hero-new-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 16px;
+    }
+    .hero-new-feat {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 5px 9px;
+        font-size: 0.65rem;
+        color: rgba(255,255,255,0.85);
+        font-weight: 600;
+        text-decoration: none;
+        backdrop-filter: blur(4px);
+        transition: background 0.2s;
+    }
+    .hero-new-feat:hover { background: rgba(255,255,255,0.12); }
+    .hero-new-feat .feat-dot {
+        width: 22px; height: 22px;
+        border-radius: 7px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.7rem;
+        flex-shrink: 0;
+    }
+    .hero-new-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #f59e0b, #f97316);
+        color: #0a0f1e;
+        font-weight: 900;
+        font-size: 0.8rem;
+        padding: 10px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        width: fit-content;
+        box-shadow: 0 4px 20px rgba(245,158,11,0.45);
+        transition: transform 0.15s, box-shadow 0.15s;
+        letter-spacing: 0.01em;
+    }
+    .hero-new-cta:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(245,158,11,0.65); }
+    .hero-new-right {
+        width: 130px;
+        flex-shrink: 0;
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        overflow: hidden;
+    }
+    /* Student illustration using CSS + emoji */
+    .hero-student-wrap {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 0;
+    }
+    .hero-student-img {
+        font-size: 5.5rem;
+        line-height: 1;
+        filter: drop-shadow(0 0 24px rgba(168,85,247,0.5));
+        position: relative;
+        z-index: 1;
+        animation: heroFloat 3s ease-in-out infinite;
+    }
+    @keyframes heroFloat {
+        0%, 100% { transform: translateY(0); }
+        50%       { transform: translateY(-8px); }
+    }
+    .hero-glow-circle {
+        position: absolute;
+        bottom: -20px;
+        width: 120px; height: 120px;
+        background: radial-gradient(circle, rgba(168,85,247,0.4), transparent 70%);
+        border-radius: 50%;
+    }
+    /* Book accent */
+    .hero-book-accent {
+        position: absolute;
+        top: 20px; right: 8px;
+        font-size: 1.4rem;
+        animation: spin3d 8s linear infinite;
+        filter: drop-shadow(0 0 8px rgba(99,102,241,0.6));
+        z-index: 2;
+    }
+    @keyframes spin3d {
+        0%   { transform: rotate(0deg) scale(1); }
+        50%  { transform: rotate(180deg) scale(1.15); }
+        100% { transform: rotate(360deg) scale(1); }
+    }
+    /* "Better Skills" notebook text */
+    .hero-notebook {
+        position: absolute;
+        bottom: 55px; right: 4px;
+        background: rgba(255,255,255,0.92);
+        color: #1a1a2e;
+        font-size: 0.45rem;
+        font-weight: 700;
+        padding: 5px 7px;
+        border-radius: 7px;
+        line-height: 1.6;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 3;
+    }
+
+    /* ── New Stats Row ── */
+    .stats-new {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin: 0 0 16px;
+    }
+    .stat-new {
+        background: rgba(15,23,42,0.8);
+        border: 1px solid rgba(51,65,85,0.6);
+        border-radius: 14px;
+        padding: 12px 8px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    .stat-new-ico {
+        width: 32px; height: 32px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem;
+        margin-bottom: 2px;
+    }
+    .stat-new-val {
+        font-size: 1rem;
+        font-weight: 900;
+        color: white;
+        line-height: 1;
+    }
+    .stat-new-lbl {
+        font-size: 0.6rem;
+        color: var(--text3);
+        font-weight: 600;
+    }
+
+    /* ── CTA Banner (bottom of hero area) ── */
+    .hero-cta-banner {
+        background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #0ea5e9 100%);
+        border-radius: 16px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0 0 20px;
+        box-shadow: 0 4px 24px rgba(79,70,229,0.35);
+    }
+    .cta-banner-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+    .cta-banner-icon {
+        font-size: 1.6rem;
+        flex-shrink: 0;
+    }
+    .cta-banner-title {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: white;
+        line-height: 1.3;
+    }
+    .cta-banner-sub {
+        font-size: 0.65rem;
+        color: rgba(255,255,255,0.75);
+        margin-top: 2px;
+    }
+    .cta-banner-btn {
+        flex-shrink: 0;
+        background: white;
+        color: #4f46e5;
+        font-weight: 900;
+        font-size: 0.75rem;
+        padding: 9px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: transform 0.15s;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .cta-banner-btn:hover { transform: scale(1.03); }
+    </style>
+
+    <div class="hero-new">
+        <div class="hero-new-left">
+            <div class="hero-new-badge">
+                <i class="fa-solid fa-graduation-cap"></i>
+                THE #1 FRESHMAN LEARNING PLATFORM
             </div>
-            <h1 class="hero-h1">
+            <h1 class="hero-new-h1">
                 Your Gateway to<br>
-                <em>Academic Success</em>
+                <span class="hero-accent">Academic Success</span>
             </h1>
-            <p class="hero-sub">
-                Ethiopian Freshman &amp; Health Science
-                CoC Preparation &mdash; all in one place.
+            <p class="hero-new-desc">
+                Complete Ethiopian Freshman Curriculum &amp;
+                Health Science CoC Preparation with top-tier materials,
+                video lessons, quizzes, and more &mdash; all in one place.
             </p>
-            <!-- Hero CTA button — clearly visible below title -->
-            <a href="auth-register.html"
-                onclick="(function(e){var u=null;try{u=JSON.parse(localStorage.getItem('currentUser'));}catch(x){}if(u&&u.id){e.preventDefault();window.location.href='payment.html?method=manual';}})(event)"
-                style="display:inline-flex;align-items:center;gap:8px;
-                    margin-top:16px;
-                    background:linear-gradient(135deg,#f59e0b,#f97316);
-                    color:#0a0f1e;font-weight:900;font-size:0.8rem;
-                    padding:10px 20px;border-radius:50px;
-                    text-decoration:none;width:fit-content;
-                    box-shadow:0 4px 20px rgba(245,158,11,0.5),0 0 0 2px rgba(245,158,11,0.2);
-                    -webkit-tap-highlight-color:transparent;
-                    letter-spacing:0.01em;
-                    transition:transform 0.15s,box-shadow 0.15s"
-                onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 6px 28px rgba(245,158,11,0.65)'"
-                onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(245,158,11,0.5),0 0 0 2px rgba(245,158,11,0.2)'">
-                &#x1F680;&nbsp;Get Started
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round">
-                    <polyline points="9 18 15 12 9 6"/>
-                </svg>
-            </a>
-        </div>
-        <div class="hero-image">
-            <div class="hero-student">
-                <div class="hero-student-fig">
-                    <span class="s-cap">&#x1F393;</span>
-                    <span class="s-body">&#x1F9D1;&#x200D;&#x1F4BB;</span>
-                    <span class="s-books">&#x1F4DA;</span>
-                </div>
+            <div class="hero-new-features">
+                <a href="courses.html" class="hero-new-feat">
+                    <span class="feat-dot" style="background:rgba(99,102,241,0.2)"><i class="fa-solid fa-play" style="color:#818cf8"></i></span>
+                    Video Lessons
+                </a>
+                <a href="courses.html" class="hero-new-feat">
+                    <span class="feat-dot" style="background:rgba(244,63,94,0.15)"><i class="fa-solid fa-file-pdf" style="color:#f87171"></i></span>
+                    PDF Notes
+                </a>
+                <a href="courses.html" class="hero-new-feat">
+                    <span class="feat-dot" style="background:rgba(245,158,11,0.15)"><i class="fa-solid fa-circle-question" style="color:#fbbf24"></i></span>
+                    Quizzes &amp; Exams
+                </a>
+                <a href="offline.html" class="hero-new-feat">
+                    <span class="feat-dot" style="background:rgba(16,185,129,0.15)"><i class="fa-solid fa-cloud-arrow-down" style="color:#34d399"></i></span>
+                    Offline Access
+                </a>
+            </div>
+            <!-- Search bar -->
+            <div class="search-bar" style="margin:0">
+                <i class="fa-solid fa-magnifying-glass" style="color:var(--text3);font-size:0.88rem;flex-shrink:0"></i>
+                <input type="text" id="heroSearch"
+                    placeholder="Search courses, topics, instructors..."
+                    onkeydown="if(event.key==='Enter')doSearch()">
+                <button onclick="doSearch()">Search &#x2192;</button>
             </div>
         </div>
+        <div class="hero-new-right">
+            <div class="hero-student-wrap">
+                <div class="hero-glow-circle"></div>
+                <span class="hero-book-accent">&#x1F4D6;</span>
+                <div class="hero-notebook">Better<br>Skills<br>Brighter<br>Future &#x2665;</div>
+                <span class="hero-student-img">&#x1F9D1;&#x200D;&#x1F4BB;</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS ROW (below hero) -->
+    <div class="stats-new">
+        <div class="stat-new">
+            <div class="stat-new-ico" style="background:rgba(99,102,241,0.15)">
+                <i class="fa-solid fa-users" style="color:#818cf8"></i>
+            </div>
+            <span class="stat-new-val" id="stat-users">1,200+</span>
+            <div class="stat-new-lbl">Students</div>
+        </div>
+        <div class="stat-new">
+            <div class="stat-new-ico" style="background:rgba(245,158,11,0.15)">
+                <i class="fa-solid fa-book-open" style="color:#fbbf24"></i>
+            </div>
+            <span class="stat-new-val" id="stat-courses">22</span>
+            <div class="stat-new-lbl">Courses</div>
+        </div>
+        <div class="stat-new">
+            <div class="stat-new-ico" style="background:rgba(16,185,129,0.15)">
+                <i class="fa-solid fa-chalkboard-user" style="color:#34d399"></i>
+            </div>
+            <span class="stat-new-val" id="stat-instructors">15+</span>
+            <div class="stat-new-lbl">Instructors</div>
+        </div>
+        <div class="stat-new">
+            <div class="stat-new-ico" style="background:rgba(244,63,94,0.15)">
+                <i class="fa-solid fa-graduation-cap" style="color:#f87171"></i>
+            </div>
+            <span class="stat-new-val">2</span>
+            <div class="stat-new-lbl">Semesters</div>
+        </div>
+    </div>
+
+    <!-- CTA BANNER -->
+    <div class="hero-cta-banner">
+        <div class="cta-banner-left">
+            <span class="cta-banner-icon">&#x1F680;</span>
+            <div>
+                <div class="cta-banner-title">Start Your Learning Journey Today</div>
+                <div class="cta-banner-sub">Small steps make big dreams come true &#x2665;</div>
+            </div>
+        </div>
+        <a href="auth-register.html"
+            onclick="(function(e){var u=null;try{u=JSON.parse(localStorage.getItem('currentUser'));}catch(x){}if(u&&u.id){e.preventDefault();window.location.href='payment.html?method=manual';}})(event)"
+            class="cta-banner-btn">
+            Get Started &#x2192;
+        </a>
     </div>
 
     <!-- ── DESKTOP GRID WRAPPER — two columns on ≥1024px ── -->
@@ -900,7 +1229,7 @@ body {
         </div>
     </div>
 
-    <!-- 3. DESCRIPTION — English only, no Amharic -->
+    <!-- 3. DESCRIPTION — English only -->
     <h2 class="desc-title">Welcome to Academic Success</h2>
     <p class="desc-body">
         Ethiopian Freshman Curriculum &amp; Health Science CoC Preparation
@@ -911,68 +1240,7 @@ body {
     </div><!-- /desktop-left -->
     <div class="desktop-right">
 
-    <!-- 4. FOUR FEATURE ICONS -->
-    <div class="features-row">
-        <a href="courses.html" class="feat">
-            <div class="feat-icon" style="background:rgba(99,102,241,0.15)">
-                <i class="fa-solid fa-play" style="color:#818cf8"></i>
-            </div>
-            <span class="feat-label">Video<br>Lessons</span>
-        </a>
-        <a href="courses.html" class="feat">
-            <div class="feat-icon" style="background:rgba(244,63,94,0.12)">
-                <i class="fa-solid fa-file-pdf" style="color:#f87171"></i>
-            </div>
-            <span class="feat-label">PDF<br>Notes</span>
-        </a>
-        <a href="courses.html" class="feat">
-            <div class="feat-icon" style="background:rgba(245,158,11,0.12)">
-                <i class="fa-solid fa-circle-question" style="color:#fbbf24"></i>
-            </div>
-            <span class="feat-label">Quizzes &amp;<br>Exams</span>
-        </a>
-        <a href="offline.html" class="feat">
-            <div class="feat-icon" style="background:rgba(16,185,129,0.12)">
-                <i class="fa-solid fa-cloud-arrow-down" style="color:#34d399"></i>
-            </div>
-            <span class="feat-label">Offline<br>Access</span>
-        </a>
-    </div>
-
-    <!-- 5. SEARCH BAR -->
-    <div class="search-bar">
-        <i class="fa-solid fa-magnifying-glass" style="color:var(--text3);font-size:0.88rem;flex-shrink:0"></i>
-        <input type="text" id="heroSearch"
-            placeholder="Search courses, topics, instructors..."
-            onkeydown="if(event.key==='Enter')doSearch()">
-        <button onclick="doSearch()">Search</button>
-    </div>
-
-    <!-- 6. STATS ROW -->
-    <div class="stats-row">
-        <div class="stat">
-            <div class="stat-ico">&#x1F465;</div>
-            <span class="stat-val" id="stat-users">1,200+</span>
-            <div class="stat-lbl">Students</div>
-        </div>
-        <div class="stat">
-            <div class="stat-ico">&#x1F4DA;</div>
-            <span class="stat-val" id="stat-courses">22</span>
-            <div class="stat-lbl">Courses</div>
-        </div>
-        <div class="stat">
-            <div class="stat-ico">&#x1F393;</div>
-            <span class="stat-val" id="stat-instructors">15+</span>
-            <div class="stat-lbl">Instructors</div>
-        </div>
-        <div class="stat">
-            <div class="stat-ico">&#x1F4C5;</div>
-            <span class="stat-val">2</span>
-            <div class="stat-lbl">Semesters</div>
-        </div>
-    </div>
-
-    <!-- 7. PRICE PILLS -->
+    <!-- PRICE PILLS -->
     <div class="price-row">
         <a href="payment.html?method=manual" class="ppill ppill-blue">
             <i class="fa-solid fa-graduation-cap"></i> Freshman &mdash; 399 ETB
